@@ -658,7 +658,7 @@ const i18n = {
   .menu-overlay {
     position:         fixed;
     inset:            0;
-    z-index:          var(--z-modal);
+    z-index:          9999; /* Supera CTAFloat y cualquier otro elemento fijo */
     background:       var(--color-bg-void);
     display:          grid;
     grid-template-rows: 72px 1fr auto;
@@ -944,24 +944,24 @@ const i18n = {
     gap:                   var(--space-3);
   }
 
-  @media (max-width: 480px) {
-    .menu-services__grid { grid-template-columns: 1fr; }
-  }
+  /* Grid siempre 2 columnas — mobile incluido (Konpo Studio pattern) */
 
   /* Recuadro individual de servicio — fondo fotográfico */
   .menu-svc-box {
-    display:        flex;
-    flex-direction: column;
-    gap:            var(--space-2);
-    padding:        var(--space-5) var(--space-5);
+    display:         flex;
+    flex-direction:  column;
+    justify-content: flex-end;           /* Texto abajo a la izquierda */
+    gap:             var(--space-1);
+    padding:         var(--space-4);
+    aspect-ratio:    1 / 1;              /* Bloque simétrico — Konpo Studio */
     background-color: var(--color-bg-elevated); /* fallback sin foto */
     background-size: cover;
     background-position: center;
-    border:         1px solid rgba(255,255,255,0.10);
-    border-radius:  2px;                 /* Arquitectónico */
+    border:          1px solid rgba(255,255,255,0.10);
+    border-radius:   2px;                /* Arquitectónico */
     text-decoration: none;
-    position:       relative;
-    overflow:       hidden;
+    position:        relative;
+    overflow:        hidden;
 
     /* Estado inicial oculto */
     opacity:   0;
@@ -1016,7 +1016,10 @@ const i18n = {
     display:     flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-1);
+    position:    absolute;   /* Anclado arriba — el cuerpo queda abajo */
+    top:         var(--space-4);
+    left:        var(--space-4);
+    right:       var(--space-4);
   }
 
   .menu-svc-box__num {
@@ -1051,7 +1054,6 @@ const i18n = {
     font-size:   var(--text-xs);
     color:       rgba(255,255,255,0.36);
     line-height: var(--leading-normal);
-    flex:        1;
   }
 
   .menu-svc-box__arrow {
