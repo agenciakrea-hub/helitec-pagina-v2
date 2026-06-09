@@ -63,8 +63,8 @@ interface Aeronave {
     tecnicas: TecnicasAny;
   };
   rutas_imagenes: {
-    thumbnail: string;
-    hero: string;
+    thumbnail: string | null;   /* null cuando no hay foto asignada aún */
+    hero:      string | null;   /* null dispara el crash .startsWith() en BaseLayout */
     plano_cabina?: string | null;
     exterior: string[];
     interior: string[];
@@ -209,7 +209,7 @@ const breadcrumbJson  = JSON.stringify({
 <BaseLayout
   title={pageTitle}
   description={pageDescription}
-  ogImage={aeronave.rutas_imagenes.hero}
+  ogImage={aeronave.rutas_imagenes.hero ?? '/assets/og/og-default.jpg'}
   lang={lang}
 >
 
@@ -227,7 +227,9 @@ const breadcrumbJson  = JSON.stringify({
     <!-- Fondo: imagen placeholder + overlay oscuro -->
     <div
       class="detail-hero__bg"
-      style={`background-image: url('${encodeURI(aeronave.rutas_imagenes.hero)}')`}
+      style={aeronave.rutas_imagenes.hero
+        ? `background-image: url('${encodeURI(aeronave.rutas_imagenes.hero)}')`
+        : undefined}
       aria-hidden="true"
     ></div>
 

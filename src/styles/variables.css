@@ -101,7 +101,8 @@
   --font-secondary: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
   /* Pesos */
-  --fw-light:       300;
+  --fw-thin:        200;   /* Ultra-thin — display headings premium */
+  --fw-light:       300;   /* Light — cuerpo y titulares base       */
   --fw-regular:     400;
   --fw-medium:      500;
   --fw-semibold:    600;
@@ -158,9 +159,13 @@
   --space-48:   12rem;     /* 192px */
 
   /* Espaciado semántico de secciones */
-  --section-gap:       var(--space-32);   /* Separación entre secciones desktop */
-  --section-gap-mobile:var(--space-20);   /* Separación móvil                   */
-  --section-padding-x: var(--space-8);    /* Padding horizontal de sección      */
+  --section-gap:        10rem;            /* 160px — espacio generoso, deliberado */
+  --section-gap-mobile: var(--space-20);  /* 80px  — móvil                        */
+  --section-padding-x:  var(--space-8);   /* Padding horizontal de sección        */
+
+  /* Side rail — barra lateral fija (redes sociales + nav vertical) */
+  /* Valor activo cuando SideRail.astro esté presente en la página   */
+  --sidebar-w: 56px;
 
 
   /* ----------------------------------------------------------
@@ -235,12 +240,13 @@
      ---------------------------------------------------------- */
 
   /* Duraciones */
-  --duration-instant:  80ms;
-  --duration-fast:     150ms;
-  --duration-base:     300ms;
-  --duration-slow:     500ms;
-  --duration-slower:   700ms;
-  --duration-reveal:   900ms;  /* Scroll reveal animations            */
+  --duration-instant:    80ms;
+  --duration-fast:      150ms;
+  --duration-base:      300ms;
+  --duration-slow:      500ms;
+  --duration-slower:    700ms;
+  --duration-reveal:   1000ms;  /* Scroll reveal — cinematográfico    */
+  --duration-cinematic:1200ms;  /* Hero y transiciones de portada     */
 
   /* Curvas de easing */
   --ease-standard:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
