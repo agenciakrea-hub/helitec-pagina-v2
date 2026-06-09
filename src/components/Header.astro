@@ -124,13 +124,15 @@ const i18n = {
 
     <!-- Logo -->
     <a href={lang === 'es' ? '/' : '/en/'} class="header-logo" aria-label={i18n.logoAlt}>
-      <!--
-        TODO: Reemplazar con el SVG oficial del Kit de Marca v4.0.
-        Actualmente: logo textual Montserrat como placeholder.
-        El SVG real debe ir en /public/assets/logo/helitec-logo-white.svg
-      -->
-      <span class="header-logo__mark" aria-hidden="true">H</span>
-      <span class="header-logo__wordmark">ELITEC</span>
+      <img
+        src="/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png"
+        alt="Consorcio Helitec"
+        class="header-logo__img"
+        width="160"
+        height="32"
+        loading="eager"
+        decoding="sync"
+      />
     </a>
 
     <!-- Acciones del header -->
@@ -188,8 +190,15 @@ const i18n = {
   <!-- Cabecera del overlay: logo + botón cerrar -->
   <div class="menu-overlay__head">
     <a href={lang === 'es' ? '/' : '/en/'} class="header-logo header-logo--overlay" tabindex="-1">
-      <span class="header-logo__mark" aria-hidden="true">H</span>
-      <span class="header-logo__wordmark">ELITEC</span>
+      <img
+        src="/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png"
+        alt="Consorcio Helitec"
+        class="header-logo__img"
+        width="160"
+        height="32"
+        loading="eager"
+        decoding="sync"
+      />
     </a>
     <button
       class="menu-close"
@@ -345,26 +354,16 @@ const i18n = {
     flex-shrink: 0;
   }
 
-  .header-logo__mark {
-    font-family: var(--font-primary);
-    font-size: 1.5rem;
-    font-weight: var(--fw-bold);
-    color: var(--brand-rojo-helitec);
-    line-height: 1;
-    letter-spacing: -0.04em;
+  .header-logo__img {
+    height: 30px;
+    width: auto;
+    display: block;
+    /* Garantiza que se vea nítido en pantallas de alta densidad */
+    image-rendering: -webkit-optimize-contrast;
   }
 
-  .header-logo__wordmark {
-    font-family: var(--font-primary);
-    font-size: 1.5rem;
-    font-weight: var(--fw-bold);
-    color: var(--color-text-primary);
-    line-height: 1;
-    letter-spacing: 0.05em;
-  }
-
-  .header-logo--overlay .header-logo__wordmark {
-    color: var(--color-text-primary);
+  @media (max-width: 480px) {
+    .header-logo__img { height: 26px; }
   }
 
 
