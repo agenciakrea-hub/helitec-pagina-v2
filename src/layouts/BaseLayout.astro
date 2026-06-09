@@ -1,0 +1,230 @@
+---
+/**
+ * HELITEC — BaseLayout.astro
+ * Esqueleto HTML base para todas las páginas del sitio.
+ *
+ * Props:
+ *   title       — Título de la página (se añade " | Consorcio Helitec" automáticamente)
+ *   description — Meta description (máx 160 caracteres)
+ *   ogImage     — URL de imagen Open Graph (opcional, fallback al og-default)
+ *   canonical   — URL canónica explícita (opcional, fallback a Astro.url)
+ *   lang        — Idioma de la página: 'es' (default) | 'en'
+ *   noindex     — true para páginas legales/privadas (opcional)
+ */
+
+interface Props {
+  title:        string;
+  description:  string;
+  ogImage?:     string;
+  canonical?:   string;
+  lang?:        'es' | 'en';
+  noindex?:     boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage     = '/assets/og/og-default.jpg',
+  canonical   = Astro.url.href,
+  lang        = 'es',
+  noindex     = false,
+} = Astro.props;
+
+const siteName   = 'Consorcio Helitec C.A.';
+const siteUrl    = 'https://www.helitec.com'; // TODO: actualizar con dominio final
+const fullTitle  = `${title} | ${siteName}`;
+const ogImageAbs = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+
+// Alternados de idioma para <link rel="alternate">
+const alternateLang = lang === 'es' ? 'en' : 'es';
+const alternateHref = lang === 'es'
+  ? Astro.url.href.replace(siteUrl, `${siteUrl}/en`)
+  : Astro.url.href.replace(`${siteUrl}/en`, siteUrl);
+---
+
+<!DOCTYPE html>
+<html lang={lang} dir="ltr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- ── RENDIMIENTO: Preconnect a recursos externos ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- ── TIPOGRAFÍAS: Montserrat + Playfair Display ──
+       Pesos cargados:
+       Montserrat     — 300 (Light), 400 (Regular), 500 (Medium),
+                        600 (SemiBold), 700 (Bold)
+       Playfair Display — 400 (Regular), 500 (Medium), 700 (Bold)
+       display=swap garantiza texto visible durante la carga (FOUT)
+  -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ── SEO PRIMARIO ── -->
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
+  {!noindex && <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+
+  <!-- ── CANÓNICA Y ALTERNADOS DE IDIOMA ── -->
+  <link rel="canonical" href={canonical} />
+  <link rel="alternate" hreflang={lang}         href={canonical} />
+  <link rel="alternate" hreflang={alternateLang} href={alternateHref} />
+  <link rel="alternate" hreflang="x-default"   href={`${siteUrl}/`} />
+
+  <!-- ── OPEN GRAPH (Facebook, LinkedIn, WhatsApp preview) ── -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content={siteName} />
+  <meta property="og:title"       content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url"         content={canonical} />
+  <meta property="og:image"       content={ogImageAbs} />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"   content={`${siteName} — Aviación corporativa y chárter ejecutivo`} />
+  <meta property="og:locale"      content={lang === 'es' ? 'es_VE' : 'en_US'} />
+
+  <!-- ── TWITTER / X CARD ── -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image"       content={ogImageAbs} />
+
+  <!-- ── DATOS ESTRUCTURADOS: JSON-LD (AirlineOperator + LocalBusiness) ──
+       Ayuda a Google a entender que es una empresa de aviación.
+       Crítico para aparecer en búsquedas como "vuelos charter Venezuela".
+  -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": ["Organization", "LocalBusiness"],
+          "@id": "https://www.helitec.com/#organization",
+          "name": "Consorcio Helitec C.A.",
+          "alternateName": "Helitec",
+          "url": "https://www.helitec.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.helitec.com/assets/logo/helitec-logo.svg",
+            "width": 280,
+            "height": 80
+          },
+          "image": "https://www.helitec.com/assets/og/og-default.jpg",
+          "description": "Operador de Servicio Público de Transporte Aéreo de Pasajeros, Carga y Traslados Aeromédicos. Certificado INAC. Más de 35 años de operaciones en Venezuela.",
+          "foundingDate": "1990",
+          "telephone": ["+58-212-959-6385", "+58-212-959-8753", "+58-212-959-2526"],
+          "email": "info@helitec.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "CCCT, Chuao",
+            "addressLocality": "Caracas",
+            "addressCountry": "VE"
+          },
+          "areaServed": ["VE", "CO", "EC", "PA", "CR", "MX"],
+          "sameAs": []
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.helitec.com/#website",
+          "url": "https://www.helitec.com",
+          "name": "Consorcio Helitec C.A.",
+          "publisher": {
+            "@id": "https://www.helitec.com/#organization"
+          },
+          "inLanguage": ["es-VE", "en"]
+        }
+      ]
+    }
+  </script>
+
+  <!-- ── FAVICON y ICONOS ──
+       TODO: Generar set completo con RealFaviconGenerator.net
+       usando el logo oficial del Kit de Marca v4.0
+  -->
+  <link rel="icon"             type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon"             type="image/png"     href="/favicon-32x32.png" sizes="32x32" />
+  <link rel="apple-touch-icon"                      href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest"                              href="/site.webmanifest" />
+  <meta name="theme-color" content="#023a78" />
+  <meta name="msapplication-TileColor" content="#023a78" />
+
+  <!-- ── META CORPORATIVOS ADICIONALES ── -->
+  <meta name="author"      content="Consorcio Helitec C.A." />
+  <meta name="copyright"   content="© Consorcio Helitec C.A. Todos los derechos reservados." />
+  <meta name="category"    content="Aviation, Corporate Transport, Air Charter" />
+  <meta name="coverage"    content="Venezuela, Latin America" />
+
+  <!-- ── SLOT PARA META TAGS ADICIONALES POR PÁGINA ──
+       Uso: <BaseLayout><Fragment slot="head"><meta .../></Fragment>
+  -->
+  <slot name="head" />
+</head>
+
+<body>
+
+  <!-- Accesibilidad: saltar al contenido principal -->
+  <a href="#main-content" class="skip-link">
+    {lang === 'es' ? 'Saltar al contenido' : 'Skip to content'}
+  </a>
+
+  <!-- ══════════════════════════════════════════════
+       HEADER — Componente externo
+       Se inyectará: <Header lang={lang} />
+       ══════════════════════════════════════════════ -->
+  <slot name="header" />
+
+  <!-- ══════════════════════════════════════════════
+       CONTENIDO PRINCIPAL
+       ══════════════════════════════════════════════ -->
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <!-- ══════════════════════════════════════════════
+       FOOTER — Componente externo
+       Se inyectará: <Footer lang={lang} />
+       ══════════════════════════════════════════════ -->
+  <slot name="footer" />
+
+  <!-- ══════════════════════════════════════════════
+       BOTÓN CTA FLOTANTE WHATSAPP
+       Se inyectará: <CTAFloat lang={lang} />
+       ══════════════════════════════════════════════ -->
+  <slot name="cta" />
+
+  <!-- ══════════════════════════════════════════════
+       SCRIPTS GLOBALES
+       Cargados con strategy="idle" para no bloquear
+       ══════════════════════════════════════════════ -->
+
+  <!--
+    TODO — Activar en Fase 3 (componentes JS):
+
+    Scroll Reveal Observer
+    ──────────────────────
+    Observa elementos con class="reveal" y añade "is-visible"
+    al entrar en el viewport.
+
+    Counter Observer
+    ──────────────────────
+    Observa elementos con class="counter-value" y anima
+    el valor de 0 al data-target al entrar en viewport.
+
+    Language Toggle
+    ──────────────────────
+    Persiste la preferencia de idioma en localStorage.
+
+    <script src="/scripts/reveal.js" defer></script>
+    <script src="/scripts/counter.js" defer></script>
+    <script src="/scripts/lang.js" defer></script>
+  -->
+
+</body>
+</html>

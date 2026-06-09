@@ -1,0 +1,441 @@
+{
+  "_meta": {
+    "version": "1.1.0",
+    "ultima_actualizacion": "2026-06-09",
+    "fuente": "Extraído de helitec-main.com + verificación manual",
+    "nota": "Assets reales mapeados. Archivos con espacios en el nombre (Helicoptero Eslinga, Avion y Ambulancia, Cabina) requieren renombrado con guiones para producción (recomendado). Los paths con espacio funcionan en CSS url() con comillas; para img src se aplica encodeURI() en la plantilla. Imágenes AERO_01–04 y f* son provisionales para aeronaves sin fotos específicas — verificar con el cliente.",
+    "assets_sin_asignar": [
+      "/assets/atardecer.jpg",
+      "/assets/image00.jpg"
+    ],
+    "logos": {
+      "horizontal_blanco": "/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png",
+      "vertical_color":    "/assets/Logo-Helitec-Vert-no-bkg-1.png",
+      "vertical_blanco":   "/assets/Logo-Helitec-Vert-no-bkg-1-blanco.png",
+      "aoc":               "/assets/AOC.png"
+    }
+  },
+  "flota": [
+    {
+      "id": "metro-iii",
+      "modelo": "Metro III",
+      "fabricante": "Fairchild Swearingen",
+      "categoria": "ala-fija",
+      "tipo": "turbohélice-bimotor",
+      "configuracion": "ejecutiva",
+      "activo": true,
+      "aeromedico": true,
+      "descripcion_es": "Aeronave turbohélice bimotor con cabina presurizada, configurada para vuelos ejecutivos nacionales e internacionales. Capacidad adaptada para traslados aeromédicos de alta complejidad mediante camilla certificada Spectrum Aeromed.",
+      "descripcion_en": "Twin turboprop aircraft with pressurized cabin, configured for national and international executive flights. Adaptable for complex aeromedical transfers via Spectrum Aeromed certified stretcher.",
+      "capacidad_pasajeros": 13,
+      "especificaciones": {
+        "configuracion_interior": {
+          "capacidad": "13 pasajeros (Ejecutiva)",
+          "distribucion": "2 Club Seating (4 puestos c/u), 2 frontales y 1 Sofá (3 puestos)",
+          "mesa_plegable": true,
+          "bano": 1,
+          "carga_trasera_kg": 350,
+          "carga_delantera_kg": 100
+        },
+        "tecnicas": {
+          "cabina_presurizada": true,
+          "acceso_carga_vuelo": true,
+          "motores": "2x Garrett TPE 331-11",
+          "potencia_hp": 1000,
+          "velocidad_crucero_kts": 265,
+          "autonomia_horas": "5:00 + 1:30 reserva",
+          "peso_max_despegue_lb": 16000,
+          "techo_servicio_pies": 25000
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/YV147T_EXT1.jpg",
+        "hero":         "/assets/YV147T_EXT2.jpg",
+        "plano_cabina": "/assets/Cabina YV147T.png",
+        "exterior": [
+          "/assets/YV147T_EXT1.jpg",
+          "/assets/YV147T_EXT2.jpg"
+        ],
+        "interior": [
+          "/assets/YV147T_1.jpg",
+          "/assets/YV147T_2.jpg",
+          "/assets/YV147T_3.jpg",
+          "/assets/YV147T_4.jpg",
+          "/assets/YV147T_5.jpg",
+          "/assets/YV147T_6.jpg"
+        ],
+        "aeromedico": [
+          "/assets/Aeromedico_1.jpg",
+          "/assets/Avion y Ambulancia 1.jpg",
+          "/assets/Avion y Ambulancia 2.jpg",
+          "/assets/PHOTO1.jpg",
+          "/assets/PHOTO2.jpg",
+          "/assets/PHOTO3.jpg",
+          "/assets/PHOTO4.jpg",
+          "/assets/PHOTO5.jpg",
+          "/assets/PHOTO6.jpg",
+          "/assets/PHOTO7.jpg"
+        ]
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-metro-iii.pdf"
+      ],
+      "matriculas_conocidas": ["YV-147T"],
+      "servicios": ["charter-ejecutivo", "transporte-carga", "aeromedico"]
+    },
+    {
+      "id": "metro-23-ejecutivo",
+      "modelo": "Metro 23 Ejecutivo",
+      "fabricante": "Fairchild Swearingen",
+      "categoria": "ala-fija",
+      "tipo": "turbohélice-bimotor",
+      "configuracion": "ejecutiva",
+      "activo": true,
+      "aeromedico": true,
+      "descripcion_es": "Versión ejecutiva del Metro 23, con cabina presurizada y acceso a carga en vuelo. Motor de mayor potencia respecto al Metro III, diseñado para comitivas corporativas y logística aérea de alta prioridad.",
+      "descripcion_en": "Executive variant of the Metro 23, featuring pressurized cabin with in-flight cargo access. Higher-output engine than the Metro III, purpose-built for corporate delegations and high-priority air logistics.",
+      "capacidad_pasajeros": 12,
+      "especificaciones": {
+        "configuracion_interior": {
+          "capacidad": "12 pasajeros (Ejecutiva)",
+          "distribucion": "3 Club Seating (4 puestos cada uno)",
+          "mesas_plegables": true,
+          "bano": 1,
+          "carga_trasera_kg": 350,
+          "carga_delantera_kg": 100
+        },
+        "tecnicas": {
+          "cabina_presurizada": true,
+          "acceso_carga_vuelo": true,
+          "motores": "2x Garrett TPE 331-12",
+          "potencia_hp": 1100,
+          "velocidad_crucero_kts": 275,
+          "autonomia_horas": "5:00 + 1:30 reserva",
+          "peso_max_despegue_lb": 16500,
+          "techo_servicio_pies": 25000
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/YV185T_1.jpg",
+        "hero":         "/assets/YV185T_2.jpg",
+        "plano_cabina": "/assets/Cabina YV185T.png",
+        "exterior": [
+          "/assets/YV185T_1.jpg",
+          "/assets/YV185T_2.jpg"
+        ],
+        "interior": [
+          "/assets/YV185T_3.jpg",
+          "/assets/YV185T_4.jpg",
+          "/assets/YV185T_5.jpg"
+        ],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-metro-23-ejecutivo.pdf"
+      ],
+      "matriculas_conocidas": ["YV-185T"],
+      "servicios": ["charter-ejecutivo", "transporte-carga", "aeromedico"]
+    },
+    {
+      "id": "metro-23-commuter",
+      "modelo": "Metro 23 Commuter",
+      "fabricante": "Fairchild Swearingen",
+      "categoria": "ala-fija",
+      "tipo": "turbohélice-bimotor",
+      "configuracion": "commuter",
+      "activo": true,
+      "aeromedico": false,
+      "descripcion_es": "Configuración de mayor capacidad de la familia Metro 23, ideal para el transporte de grupos corporativos, brigadas industriales y personal de plataformas petroleras. Misma plataforma técnica que el Ejecutivo con 18 asientos.",
+      "descripcion_en": "Highest-capacity configuration in the Metro 23 family, ideal for corporate group transport, industrial crews and oil platform personnel. Same technical platform as the Executive variant with 18 seats.",
+      "capacidad_pasajeros": 18,
+      "especificaciones": {
+        "configuracion_interior": {
+          "capacidad": "18 pasajeros (Commuter)",
+          "distribucion": "3 Club Seating (4 puestos cada uno) + filas adicionales",
+          "mesas_plegables": true,
+          "bano": 1,
+          "carga_trasera_kg": 350,
+          "carga_delantera_kg": 100
+        },
+        "tecnicas": {
+          "cabina_presurizada": true,
+          "acceso_carga_vuelo": true,
+          "motores": "2x Garrett TPE 331-12",
+          "potencia_hp": 1100,
+          "velocidad_crucero_kts": 275,
+          "autonomia_horas": "5:00 + 1:30 reserva",
+          "peso_max_despegue_lb": 16500,
+          "techo_servicio_pies": 25000
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/YV221T_1.jpg",
+        "hero":         "/assets/YV221T_1.jpg",
+        "plano_cabina": null,
+        "exterior": [
+          "/assets/YV221T_1.jpg",
+          "/assets/YV221T_2.jpg",
+          "/assets/1CargaMetro23.png",
+          "/assets/2CargaMetro23.png"
+        ],
+        "interior": [],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-metro-23-commuter.pdf"
+      ],
+      "matriculas_conocidas": ["YV-221T"],
+      "servicios": ["charter-ejecutivo", "transporte-grupos", "transporte-carga"]
+    },
+    {
+      "id": "metro-23-merlin-iiib",
+      "modelo": "Metro 23 Merlin IIIB",
+      "fabricante": "Fairchild Swearingen",
+      "categoria": "ala-fija",
+      "tipo": "turbohélice-bimotor",
+      "configuracion": "ejecutiva-vip",
+      "activo": true,
+      "aeromedico": false,
+      "descripcion_es": "Variante ejecutiva de menor capacidad de la línea Merlin. Motor TPE 331-10 con 850 Hp por unidad. Cabina presurizada con acceso a carga en vuelo, orientada a comitivas ejecutivas pequeñas de alta exigencia.",
+      "descripcion_en": "Lower-capacity executive variant of the Merlin line. TPE 331-10 engine at 850 Hp per unit. Pressurized cabin with in-flight cargo access, oriented to small high-demand executive delegations.",
+      "capacidad_pasajeros": 6,
+      "especificaciones": {
+        "configuracion_interior": {
+          "capacidad": "6 pasajeros (Ejecutiva)",
+          "distribucion": "3 Club Seating (4 puestos cada uno)",
+          "mesas_plegables": true,
+          "bano": null,
+          "carga_trasera_kg": 350,
+          "carga_delantera_kg": 100
+        },
+        "tecnicas": {
+          "cabina_presurizada": true,
+          "acceso_carga_vuelo": true,
+          "motores": "2x Garrett TPE 331-10",
+          "potencia_hp": 850,
+          "velocidad_crucero_kts": 265,
+          "autonomia_horas": "5:00 + 1:30 reserva",
+          "peso_max_despegue_lb": 12500,
+          "techo_servicio_pies": 25000
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/AERO_01.jpg",
+        "hero":         "/assets/AERO_02.jpg",
+        "plano_cabina": null,
+        "exterior": [
+          "/assets/AERO_01.jpg",
+          "/assets/AERO_02.jpg"
+        ],
+        "interior": [],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-metro-23-merlin-iiib.pdf"
+      ],
+      "matriculas_conocidas": [],
+      "servicios": ["charter-ejecutivo", "transporte-carga"]
+    },
+    {
+      "id": "metro-23-merlin-300",
+      "modelo": "Metro 23 Merlin 300",
+      "fabricante": "Fairchild Swearingen",
+      "categoria": "ala-fija",
+      "tipo": "turbohélice-bimotor",
+      "configuracion": "ejecutiva-vip",
+      "activo": true,
+      "aeromedico": false,
+      "descripcion_es": "Versión de mayor peso máximo de despegue dentro de la línea Merlin (13.500 lb). Baño a bordo incluido. Configuración ejecutiva para 6 pasajeros, ideal para rutas nacionales e internacionales de media distancia.",
+      "descripcion_en": "Highest MTOW variant within the Merlin line (13,500 lb). Onboard lavatory included. Executive configuration for 6 passengers, ideal for national and international medium-range routes.",
+      "capacidad_pasajeros": 6,
+      "especificaciones": {
+        "configuracion_interior": {
+          "capacidad": "6 pasajeros (Ejecutiva)",
+          "distribucion": "Configuración ejecutiva VIP",
+          "mesas_plegables": true,
+          "bano": 1,
+          "carga_trasera_kg": 100,
+          "carga_delantera_kg": 100
+        },
+        "tecnicas": {
+          "cabina_presurizada": true,
+          "acceso_carga_vuelo": true,
+          "motores": "2x Garrett TPE 331-10",
+          "potencia_hp": 850,
+          "velocidad_crucero_kts": 265,
+          "autonomia_horas": "5:00 + 1:30 reserva",
+          "peso_max_despegue_lb": 13500,
+          "techo_servicio_pies": 25000
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/YV1923_ext.jpg",
+        "hero":         "/assets/YV1923_ext.jpg",
+        "plano_cabina": null,
+        "exterior": [
+          "/assets/YV1923_ext.jpg"
+        ],
+        "interior": [
+          "/assets/YV1923_1.jpg",
+          "/assets/YV1923_2.jpg",
+          "/assets/YV1923_3.jpg",
+          "/assets/YV1923_4.jpg",
+          "/assets/YV1923_5.jpg",
+          "/assets/YV1923_6.jpg",
+          "/assets/YV1923_7.jpg",
+          "/assets/YV1923_8.jpg",
+          "/assets/YV1923_9.jpg",
+          "/assets/YV1923_10.jpg",
+          "/assets/YV1923_11.jpg",
+          "/assets/YV1923_12.jpg",
+          "/assets/YV1923_13.jpg"
+        ],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-metro-23-merlin-300.pdf"
+      ],
+      "matriculas_conocidas": ["YV-1923"],
+      "servicios": ["charter-ejecutivo", "transporte-carga"]
+    },
+    {
+      "id": "md501",
+      "modelo": "MD 500",
+      "designacion": "MD501",
+      "fabricante": "MD Helicopters Inc.",
+      "categoria": "ala-rotatoria",
+      "tipo": "helicóptero-monomotor",
+      "configuracion": "utilitario-ejecutivo",
+      "activo": true,
+      "aeromedico": false,
+      "descripcion_es": "Helicóptero monomotor liviano de alta versatilidad. Diseñado para operaciones en zonas de difícil acceso, plataformas petroleras y traslados ejecutivos en distancias cortas. Motor Rolls-Royce 250 C20R1.",
+      "descripcion_en": "Highly versatile light single-engine helicopter. Designed for operations in hard-to-reach areas, oil platforms and executive short-distance transfers. Rolls-Royce 250 C20R1 engine.",
+      "capacidad_pasajeros": 4,
+      "especificaciones": {
+        "tecnicas": {
+          "fabricante": "MD Helicopters Inc.",
+          "motor": "Rolls-Royce 250 C20R1",
+          "potencia_hp": 450,
+          "velocidad_crucero_kts": 115,
+          "autonomia_horas": "2:30",
+          "tanque_auxiliar_gal": 21,
+          "carga_externa_kg": 450,
+          "carga_interna_kg": 500,
+          "techo_servicio_pies": 16000,
+          "sistema_antitorque": "Rotor de cola convencional"
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/Helicoptero 5.jpg",
+        "hero":         "/assets/Helicoptero_en pico.jpg",
+        "plano_cabina": null,
+        "exterior": [
+          "/assets/Helicoptero 5.jpg",
+          "/assets/Helicoptero_en pico.jpg",
+          "/assets/Helicoptero en pantano.jpg",
+          "/assets/Helicoptero en techo.jpg"
+        ],
+        "interior": [
+          "/assets/Helicoptero Eslinga 1.jpg",
+          "/assets/Helicoptero Eslinga 2.jpg",
+          "/assets/Helicoptero Eslinga 3.jpg",
+          "/assets/Helicoptero Eslinga 4.jpg",
+          "/assets/Helicoptero Eslinga 5.jpg"
+        ],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-md501.pdf"
+      ],
+      "matriculas_conocidas": [],
+      "servicios": ["charter-ejecutivo", "transporte-carga", "petroleo-offshore"]
+    },
+    {
+      "id": "md600",
+      "modelo": "MD 600",
+      "designacion": "MD600",
+      "fabricante": "MD Helicopters Inc.",
+      "categoria": "ala-rotatoria",
+      "tipo": "helicóptero-monomotor",
+      "configuracion": "utilitario-ejecutivo",
+      "activo": true,
+      "aeromedico": false,
+      "descripcion_es": "Versión evolucionada del MD 500 con motor de mayor potencia (650 Hp) y tanque auxiliar ampliado. Ofrece mayor alcance y capacidad de carga externa frente al MD501, manteniendo la maniobrabilidad característica de la familia MD.",
+      "descripcion_en": "Evolved MD 500 variant with higher-output engine (650 Hp) and expanded auxiliary tank. Offers greater range and external payload capacity vs. the MD501, retaining the MD family's characteristic maneuverability.",
+      "capacidad_pasajeros": 4,
+      "especificaciones": {
+        "tecnicas": {
+          "fabricante": "MD Helicopters Inc.",
+          "motor": "Rolls-Royce 250 C30",
+          "potencia_hp": 650,
+          "velocidad_crucero_kts": 125,
+          "autonomia_horas": "3:00",
+          "tanque_auxiliar_gal": 52,
+          "carga_externa_kg": 650,
+          "carga_interna_kg": 500,
+          "techo_servicio_pies": 22000,
+          "sistema_antitorque": "Rotor de cola convencional"
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/AERO_03.jpg",
+        "hero":         "/assets/AERO_03.jpg",
+        "plano_cabina": null,
+        "exterior": [
+          "/assets/AERO_03.jpg",
+          "/assets/AERO_04.jpg"
+        ],
+        "interior": [],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-md600.pdf"
+      ],
+      "matriculas_conocidas": [],
+      "servicios": ["charter-ejecutivo", "transporte-carga", "petroleo-offshore"]
+    },
+    {
+      "id": "md902-explorer",
+      "modelo": "MD 902 Explorer",
+      "designacion": "MD902",
+      "fabricante": "MD Helicopters Inc.",
+      "categoria": "ala-rotatoria",
+      "tipo": "helicóptero-bimotor",
+      "configuracion": "ejecutivo-premium",
+      "activo": true,
+      "aeromedico": false,
+      "descripcion_es": "Helicóptero bimotor de tecnología NOTAR® (No Tail Rotor): sistema de antitorque mediante chorro de aire que elimina el rotor de cola, reduciendo el nivel de ruido, incrementando la seguridad operacional y el rendimiento aerodinámico. El de mayor capacidad y autonomía de la flota rotativa de Helitec.",
+      "descripcion_en": "Twin-engine helicopter with NOTAR® (No Tail Rotor) technology: air-jet anti-torque system that eliminates the tail rotor, reducing noise levels, increasing operational safety and aerodynamic performance. The highest-capacity and longest-range rotary aircraft in Helitec's fleet.",
+      "capacidad_pasajeros": 6,
+      "especificaciones": {
+        "tecnicas": {
+          "fabricante": "MD Helicopters Inc.",
+          "motores": "2x Pratt & Whitney Canada PWC 206",
+          "potencia_hp_total": 620,
+          "velocidad_crucero_kts": 125,
+          "autonomia_horas": "3:00",
+          "techo_servicio_pies": 16000,
+          "sistema_antitorque": "NOTAR® (sin rotor de cola)",
+          "certificacion_notar": true
+        }
+      },
+      "rutas_imagenes": {
+        "thumbnail":    "/assets/f2_9806.jpg",
+        "hero":         "/assets/f4_9425.jpg",
+        "plano_cabina": null,
+        "exterior": [
+          "/assets/f2_9806.jpg",
+          "/assets/f4_9425.jpg",
+          "/assets/f5-fullsizerender.jpg"
+        ],
+        "interior": [],
+        "aeromedico": []
+      },
+      "rutas_pdf": [
+        "/assets/pdfs/ficha-tecnica-md902-explorer.pdf"
+      ],
+      "matriculas_conocidas": [],
+      "servicios": ["charter-ejecutivo", "transporte-carga", "petroleo-offshore"]
+    }
+  ]
+}

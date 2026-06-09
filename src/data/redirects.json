@@ -1,0 +1,142 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "descripcion": "Mapa de redirecciones 301 de helitec-main.com hacia la nueva estructura de helitec.com. Implementar en astro.config.mjs bajo la clave 'redirects', o en el archivo _redirects de Netlify / vercel.json según el host final.",
+    "nota_github_pages": "GitHub Pages no soporta redirecciones 301 nativas. Durante la fase de staging usar un componente Astro <meta http-equiv='refresh'> como fallback, o un archivo 404.html que ejecute el redirect por JS."
+  },
+  "redirects": [
+    {
+      "origen": "/index.php",
+      "destino": "/",
+      "status": 301,
+      "notas": "Home genérica sin bandera"
+    },
+    {
+      "origen": "/index.php?bandera=1",
+      "destino": "/",
+      "status": 301,
+      "notas": "Home principal con parámetro legacy"
+    },
+    {
+      "origen": "/index.php?bandera=2",
+      "destino": "/",
+      "status": 301,
+      "notas": "Cualquier bandera no asignada → home"
+    },
+    {
+      "origen": "/empresa.html",
+      "destino": "/nosotros",
+      "status": 301,
+      "notas": "Sección La Empresa → nueva ruta /nosotros"
+    },
+    {
+      "origen": "/seguridad.html",
+      "destino": "/seguridad-y-calidad",
+      "status": 301,
+      "notas": "Seguridad Operacional SMS"
+    },
+    {
+      "origen": "/servicios.html",
+      "destino": "/servicios",
+      "status": 301,
+      "notas": "Página general de servicios"
+    },
+    {
+      "origen": "/service1.html",
+      "destino": "/flota/ala-fija",
+      "status": 301,
+      "notas": "Catálogo de aviones. En la web nueva cada aeronave tiene su propia ruta /flota/[id]"
+    },
+    {
+      "origen": "/service2.html",
+      "destino": "/flota/ala-rotatoria",
+      "status": 301,
+      "notas": "Catálogo de helicópteros"
+    },
+    {
+      "origen": "/service3.html",
+      "destino": "/servicios/aeromedico",
+      "status": 301,
+      "notas": "Traslados Aeromédicos"
+    },
+    {
+      "origen": "/galeria.html",
+      "destino": "/galeria",
+      "status": 301,
+      "notas": "Galería de imágenes"
+    },
+    {
+      "origen": "/faq.html",
+      "destino": "/preguntas-frecuentes",
+      "status": 301,
+      "notas": "Preguntas Frecuentes"
+    },
+    {
+      "origen": "/legal1.php",
+      "destino": "/legal/contrato-de-servicio",
+      "status": 301,
+      "notas": "Contrato de Servicio"
+    },
+    {
+      "origen": "/legal2.php",
+      "destino": "/legal/condiciones-generales",
+      "status": 301,
+      "notas": "Condiciones Generales"
+    },
+    {
+      "origen": "/contacto.php",
+      "destino": "/contacto",
+      "status": 301,
+      "notas": "Página de contacto y formulario"
+    },
+    {
+      "origen": "/solicitud.php",
+      "destino": "/contacto",
+      "status": 301,
+      "notas": "Formulario de solicitud → consolidado en /contacto"
+    }
+  ],
+  "rutas_nuevas_sin_equivalente_viejo": [
+    {
+      "ruta": "/flota/metro-iii",
+      "descripcion": "Página de detalle del Metro III. No existía URL individual en el sitio viejo (era una pestaña dentro de service1.html)."
+    },
+    {
+      "ruta": "/flota/metro-23-ejecutivo",
+      "descripcion": "Página de detalle del Metro 23 Ejecutivo."
+    },
+    {
+      "ruta": "/flota/metro-23-commuter",
+      "descripcion": "Página de detalle del Metro 23 Commuter."
+    },
+    {
+      "ruta": "/flota/metro-23-merlin-iiib",
+      "descripcion": "Página de detalle del Metro 23 Merlin IIIB."
+    },
+    {
+      "ruta": "/flota/metro-23-merlin-300",
+      "descripcion": "Página de detalle del Metro 23 Merlin 300."
+    },
+    {
+      "ruta": "/flota/md501",
+      "descripcion": "Página de detalle del MD501."
+    },
+    {
+      "ruta": "/flota/md600",
+      "descripcion": "Página de detalle del MD600."
+    },
+    {
+      "ruta": "/flota/md902-explorer",
+      "descripcion": "Página de detalle del MD902 Explorer."
+    }
+  ],
+  "implementacion_astro": {
+    "archivo": "astro.config.mjs",
+    "ejemplo": "redirects: { '/empresa.html': '/nosotros', '/service1.html': '/flota/ala-fija', ... }",
+    "nota": "Astro acepta el mapa de redirects directamente en la config para adapters de Netlify/Vercel. Para GitHub Pages usar el componente <Redirect> o meta refresh."
+  },
+  "implementacion_netlify": {
+    "archivo": "public/_redirects",
+    "formato": "/empresa.html  /nosotros  301"
+  }
+}

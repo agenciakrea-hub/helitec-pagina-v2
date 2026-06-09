@@ -1,0 +1,20 @@
+# Helitec — 301 Redirects
+# Cloudflare Pages: place this file in public/ so Astro copies it to dist/ on build.
+#
+# NOTE: Query-string parameters (?bandera=X) cannot be matched in Cloudflare Pages
+# _redirects — only the path is matched. All /index.php requests (any querystring)
+# are caught by the rule below and redirect to the home page.
+
+/index.php                         /                              301
+/empresa.html                      /nosotros                      301
+/seguridad.html                    /seguridad-y-calidad           301
+/servicios.html                    /servicios                     301
+/service1.html                     /flota                         301
+/service2.html                     /flota                         301
+/service3.html                     /servicios                     301
+/galeria.html                      /galeria                       301
+/faq.html                          /preguntas-frecuentes          301
+/legal1.php                        /legal/contrato-de-servicio    301
+/legal2.php                        /legal/condiciones-generales   301
+/contacto.php                      /contacto                      301
+/solicitud.php                     /contacto                      301
