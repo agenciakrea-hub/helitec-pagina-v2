@@ -3,10 +3,21 @@
     "version": "1.1.0",
     "ultima_actualizacion": "2026-06-09",
     "fuente": "Extraído de helitec-main.com + verificación manual",
-    "nota": "Assets reales mapeados. Archivos con espacios en el nombre (Helicoptero Eslinga, Avion y Ambulancia, Cabina) requieren renombrado con guiones para producción (recomendado). Los paths con espacio funcionan en CSS url() con comillas; para img src se aplica encodeURI() en la plantilla. Imágenes AERO_01–04 y f* son provisionales para aeronaves sin fotos específicas — verificar con el cliente.",
+    "nota": "Fix 2026-06-09: AERO_01/02 = interior de cabina → asignados a Merlin IIIB interior[]. AERO_03/04 = Metro turboprop en AEROCENTRO → Merlin IIIB exterior[]. f2_9806/f4_9425/f5-fullsizerender = Metro III YV-147T en evento aeromédico → movidos a metro-iii.aeromedico[]. MD 600 y MD 902 thumbnail=null (no existen fotos específicas de esas aeronaves — proveer al webmaster para activar tarjetas). Archivos con espacios en nombre: usar encodeURI() en todos los templates.",
     "assets_sin_asignar": [
       "/assets/atardecer.jpg",
-      "/assets/image00.jpg"
+      "/assets/image00.jpg",
+      "/assets/1IMG_2567n.jpg",
+      "/assets/IMG_0934.jpg",
+      "/assets/IMG_0936.jpg",
+      "/assets/IMG_0968.jpg",
+      "/assets/IMG_0971.jpg",
+      "/assets/IMG_0975.jpg",
+      "/assets/IMG_0976.jpg",
+      "/assets/IMG_2552.jpg",
+      "/assets/IMG_2608.jpg",
+      "/assets/IMG_7488.png",
+      "/assets/img_1618.jpg"
     ],
     "logos": {
       "horizontal_blanco": "/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png",
@@ -54,7 +65,8 @@
         "plano_cabina": "/assets/Cabina YV147T.png",
         "exterior": [
           "/assets/YV147T_EXT1.jpg",
-          "/assets/YV147T_EXT2.jpg"
+          "/assets/YV147T_EXT2.jpg",
+          "/assets/YV147T-2.jpg"
         ],
         "interior": [
           "/assets/YV147T_1.jpg",
@@ -74,7 +86,10 @@
           "/assets/PHOTO4.jpg",
           "/assets/PHOTO5.jpg",
           "/assets/PHOTO6.jpg",
-          "/assets/PHOTO7.jpg"
+          "/assets/PHOTO7.jpg",
+          "/assets/f2_9806.jpg",
+          "/assets/f4_9425.jpg",
+          "/assets/f5-fullsizerender.jpg"
         ]
       },
       "rutas_pdf": [
@@ -220,14 +235,18 @@
         }
       },
       "rutas_imagenes": {
-        "thumbnail":    "/assets/AERO_01.jpg",
-        "hero":         "/assets/AERO_02.jpg",
+        "thumbnail":    "/assets/AERO_03.jpg",
+        "hero":         "/assets/AERO_03.jpg",
         "plano_cabina": null,
         "exterior": [
+          "/assets/AERO_03.jpg",
+          "/assets/AERO_04.jpg",
+          "/assets/1IMG_2557n.jpg"
+        ],
+        "interior": [
           "/assets/AERO_01.jpg",
           "/assets/AERO_02.jpg"
         ],
-        "interior": [],
         "aeromedico": []
       },
       "rutas_pdf": [
@@ -378,13 +397,10 @@
         }
       },
       "rutas_imagenes": {
-        "thumbnail":    "/assets/AERO_03.jpg",
-        "hero":         "/assets/AERO_03.jpg",
+        "thumbnail":    null,
+        "hero":         null,
         "plano_cabina": null,
-        "exterior": [
-          "/assets/AERO_03.jpg",
-          "/assets/AERO_04.jpg"
-        ],
+        "exterior": [],
         "interior": [],
         "aeromedico": []
       },
@@ -420,14 +436,10 @@
         }
       },
       "rutas_imagenes": {
-        "thumbnail":    "/assets/f2_9806.jpg",
-        "hero":         "/assets/f4_9425.jpg",
+        "thumbnail":    null,
+        "hero":         null,
         "plano_cabina": null,
-        "exterior": [
-          "/assets/f2_9806.jpg",
-          "/assets/f4_9425.jpg",
-          "/assets/f5-fullsizerender.jpg"
-        ],
+        "exterior": [],
         "interior": [],
         "aeromedico": []
       },
