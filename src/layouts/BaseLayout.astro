@@ -12,6 +12,10 @@
  *   noindex     — true para páginas legales/privadas (opcional)
  */
 
+// ── Estilos globales ── (deben importarse aquí para que Astro los empaquete)
+import '../styles/variables.css';
+import '../styles/global.css';
+
 interface Props {
   title:        string;
   description:  string;
