@@ -17,7 +17,7 @@ import CTAFloat   from '../components/CTAFloat.astro';
 
 const lang = 'es';
 
-const WA_NUMBER = '582129596385';
+const WA_NUMBER = '584166235254';
 const WA_MSG    = 'Hola Helitec, me gustaría recibir asesoría corporativa sobre sus servicios de vuelos chárter.';
 const waHref    = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_MSG)}`;
 
@@ -75,8 +75,20 @@ const services = [
   ════════════════════════════════════════════════════════════ -->
   <section class="hero" id="hero" aria-label="Presentación">
 
-    <!-- Fondo: gradiente atmosférico + grid punteado -->
-    <div class="hero-atmosphere" aria-hidden="true"></div>
+    <!-- Fondo fotográfico con animación Ken Burns -->
+    <div class="hero-bg-img" aria-hidden="true">
+      <img
+        src="/assets/PHOTO-2024-10-30-15-40-52.JPG"
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        width="1920"
+        height="1080"
+      />
+    </div>
+    <!-- Overlay de legibilidad -->
+    <div class="hero-overlay" aria-hidden="true"></div>
 
     <div class="hero-inner container">
 
@@ -118,22 +130,6 @@ const services = [
           <span class="hero-scroll-text">Desplazar</span>
         </div>
 
-      </div>
-
-      <!-- ── Elemento visual: brújula de aviación ──────── -->
-      <div class="hero-visual" aria-hidden="true">
-        <div class="hv-ring hv-ring--outer"></div>
-        <div class="hv-ring hv-ring--mid"></div>
-        <div class="hv-ring hv-ring--inner"></div>
-        <div class="hv-tick hv-tick--h"></div>
-        <div class="hv-tick hv-tick--v"></div>
-        <!-- Graduaciones cardinales -->
-        <span class="hv-cardinal hv-cardinal--n">N</span>
-        <span class="hv-cardinal hv-cardinal--e">E</span>
-        <span class="hv-cardinal hv-cardinal--s">S</span>
-        <span class="hv-cardinal hv-cardinal--w">O</span>
-        <!-- Centro -->
-        <div class="hv-core"></div>
       </div>
 
     </div>
@@ -293,71 +289,6 @@ const services = [
 ════════════════════════════════════════════════════════════ -->
 <style>
 
-/* ── Contenedor global ──────────────────────────────────── */
-/* TODO: mover a global.css cuando se refactorice          */
-.container {
-  width: 100%;
-  max-width: 1280px;
-  margin-inline: auto;
-  padding-inline: var(--space-8);
-}
-@media (max-width: 640px) {
-  .container { padding-inline: var(--space-5); }
-}
-
-/* ── Botones (base + variantes no definidas en global.css) */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-4) var(--space-8);
-  border-radius: var(--radius-full);
-  font-family: var(--font-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--fw-semibold);
-  letter-spacing: var(--tracking-wide);
-  text-decoration: none;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition:
-    background    var(--transition-fast),
-    border-color  var(--transition-fast),
-    color         var(--transition-fast),
-    box-shadow    var(--transition-base),
-    transform     var(--transition-base);
-}
-.btn:active { transform: scale(0.97); }
-
-/* Primario — rojo de marca */
-.btn--primary {
-  background: var(--brand-rojo-helitec);
-  color: #fff;
-  border-color: var(--brand-rojo-helitec);
-  box-shadow: 0 4px 18px rgba(229, 59, 28, 0.30);
-}
-.btn--primary:hover {
-  background: #c93218;
-  border-color: #c93218;
-  box-shadow: 0 6px 26px rgba(229, 59, 28, 0.45);
-  transform: translateY(-1px);
-  color: #fff;
-}
-
-/* Ghost — outline azul cielo */
-.btn--ghost {
-  background: transparent;
-  color: var(--brand-azul-cielo);
-  border-color: rgba(88, 181, 240, 0.40);
-}
-.btn--ghost:hover {
-  background: rgba(88, 181, 240, 0.08);
-  border-color: var(--brand-azul-cielo);
-  color: #fff;
-  transform: translateY(-1px);
-}
-
 /* ── Encabezados de sección (reutilizable) ──────────────── */
 .section-header {
   margin-bottom: var(--space-16);
@@ -365,7 +296,7 @@ const services = [
 .section-title {
   font-family: var(--font-primary);
   font-size: clamp(1.875rem, 3.5vw, 2.75rem);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-light);
   color: #fff;
   line-height: 1.1;
   margin-top: var(--space-3);
@@ -392,49 +323,15 @@ const services = [
   overflow: hidden;
 }
 
-/* Fondo: gradiente atmosférico + dot-grid via ::before / ::after */
-.hero-atmosphere {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-/* Glow azul a la derecha */
-.hero-atmosphere::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 55% 75% at 78% 50%, rgba(2, 58, 120, 0.40) 0%, transparent 70%),
-    radial-gradient(ellipse 35% 55% at 78% 50%, rgba(88, 181, 240, 0.07) 0%, transparent 60%);
-}
-/* Dot-grid sutil sobre la zona derecha */
-.hero-atmosphere::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(88, 181, 240, 0.12) 1px, transparent 1px);
-  background-size: 40px 40px;
-  -webkit-mask-image: radial-gradient(ellipse 50% 80% at 78% 50%, black 0%, transparent 65%);
-          mask-image: radial-gradient(ellipse 50% 80% at 78% 50%, black 0%, transparent 65%);
-}
-
-/* Layout interno: 2 columnas en desktop */
+/* Layout interno: columna única sobre la foto */
 .hero-inner {
-  display: grid;
-  grid-template-columns: 55fr 45fr;
-  gap: var(--space-16);
-  align-items: center;
-  padding-block: var(--space-24);
+  padding-block: clamp(var(--space-24), 14vh, var(--space-32));
   position: relative;
   z-index: 1;
 }
-@media (max-width: 900px) {
-  .hero-inner {
-    grid-template-columns: 1fr;
-    gap: var(--space-12);
-    padding-block: var(--space-20) var(--space-16);
-  }
+
+.hero-content {
+  max-width: 680px;
 }
 
 /* Contenido textual */
@@ -445,7 +342,7 @@ const services = [
 .hero-heading {
   font-family: var(--font-primary);
   font-size: clamp(2.5rem, 6vw, 5rem);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-thin);
   color: #fff;
   line-height: 1.04;
   letter-spacing: -0.025em;
@@ -512,106 +409,8 @@ const services = [
   color: rgba(255, 255, 255, 0.35);
 }
 
-/* ── Elemento visual: brújula / radar ──────────────────── */
-.hero-visual {
-  position: relative;
-  width: 440px;
-  height: 440px;
-  margin-inline: auto;
-  flex-shrink: 0;
-}
-@media (max-width: 900px) {
-  .hero-visual { display: none; }
-}
-
-/* Anillos concéntricos */
-.hv-ring {
-  position: absolute;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.hv-ring--outer {
-  width: 420px;
-  height: 420px;
-  border: 1px solid rgba(88, 181, 240, 0.08);
-  animation: hv-rotate 120s linear infinite;
-}
-.hv-ring--mid {
-  width: 290px;
-  height: 290px;
-  border: 1px solid rgba(88, 181, 240, 0.14);
-  animation: hv-rotate 80s linear infinite reverse;
-}
-.hv-ring--inner {
-  width: 160px;
-  height: 160px;
-  border: 1px solid rgba(88, 181, 240, 0.22);
-  box-shadow: 0 0 24px rgba(88, 181, 240, 0.08) inset;
-  animation: hv-rotate 40s linear infinite;
-}
-@keyframes hv-rotate {
-  to { rotate: 360deg; }
-}
-
-/* Ejes (crosshair) */
-.hv-tick {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  background: rgba(88, 181, 240, 0.12);
-  transform-origin: center;
-}
-.hv-tick--h {
-  width: 420px;
-  height: 1px;
-  transform: translate(-50%, -50%);
-}
-.hv-tick--v {
-  width: 1px;
-  height: 420px;
-  transform: translate(-50%, -50%);
-}
-
-/* Cardinales */
-.hv-cardinal {
-  position: absolute;
-  font-family: var(--font-primary);
-  font-size: var(--text-xs);
-  font-weight: var(--fw-semibold);
-  letter-spacing: var(--tracking-widest);
-  color: rgba(88, 181, 240, 0.45);
-}
-.hv-cardinal--n { top: 6px;      left: 50%; transform: translateX(-50%); }
-.hv-cardinal--e { right: 6px;    top: 50%;  transform: translateY(-50%); }
-.hv-cardinal--s { bottom: 6px;   left: 50%; transform: translateX(-50%); }
-.hv-cardinal--w { left: 6px;     top: 50%;  transform: translateY(-50%); }
-
-/* Punto central */
-.hv-core {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--brand-azul-cielo);
-  box-shadow: 0 0 16px rgba(88, 181, 240, 0.60);
-  animation: hv-pulse-core 2.5s ease-in-out infinite;
-}
-@keyframes hv-pulse-core {
-  0%, 100% { box-shadow: 0 0 16px rgba(88, 181, 240, 0.60); }
-  50%       { box-shadow: 0 0 28px rgba(88, 181, 240, 0.90), 0 0 6px rgba(88, 181, 240, 1); }
-}
-
 /* Respetar prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  .hv-ring--outer,
-  .hv-ring--mid,
-  .hv-ring--inner,
-  .hv-core { animation: none; }
   .hero-scroll-line::after { animation: none; }
 }
 

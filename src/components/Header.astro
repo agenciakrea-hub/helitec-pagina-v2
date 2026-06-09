@@ -65,6 +65,7 @@ const i18n = {
         title: 'Aviación Ejecutiva',
         desc:  'Charter corporativo en Metro Series. Continuidad operacional para alta dirección.',
         href:  '/flota#ala-fija',
+        photo: '/assets/PHOTO-2024-10-30-15-40-52.JPG',
       },
       {
         num:  '02',
@@ -72,6 +73,7 @@ const i18n = {
         title: 'Operaciones Petroleras',
         desc:  'MD Series certificado. Plataformas offshore, campos remotos Oil & Gas.',
         href:  '/flota#ala-rotatoria',
+        photo: '/assets/Helicoptero_en%20pico.jpg',
       },
       {
         num:  '03',
@@ -79,6 +81,7 @@ const i18n = {
         title: 'Traslados Aeromédicos',
         desc:  'Evacuaciones críticas para Banca, Industria y sector petrolero. 24/7.',
         href:  '/servicios#aeromedico',
+        photo: '/assets/Aeromedico_1.jpg',
       },
       {
         num:  '04',
@@ -86,6 +89,7 @@ const i18n = {
         title: 'Logística de Carga',
         desc:  'Transporte de equipos industriales y suministros a zonas de difícil acceso.',
         href:  '/servicios#carga',
+        photo: '/assets/Helicoptero%20Eslinga%201.jpg',
       },
     ],
 
@@ -126,6 +130,7 @@ const i18n = {
         title: 'Executive Aviation',
         desc:  'Corporate charter on Metro Series. Operational continuity for senior management.',
         href:  '/en/fleet#fixed-wing',
+        photo: '/assets/PHOTO-2024-10-30-15-40-52.JPG',
       },
       {
         num:  '02',
@@ -133,6 +138,7 @@ const i18n = {
         title: 'Petroleum Operations',
         desc:  'Certified MD Series. Offshore platforms, remote Oil & Gas fields.',
         href:  '/en/fleet#rotary-wing',
+        photo: '/assets/Helicoptero_en%20pico.jpg',
       },
       {
         num:  '03',
@@ -140,6 +146,7 @@ const i18n = {
         title: 'Aeromedical Transfers',
         desc:  'Critical evacuations for Banking, Industry & Oil sector. 24/7.',
         href:  '/en/services#aeromedical',
+        photo: '/assets/Aeromedico_1.jpg',
       },
       {
         num:  '04',
@@ -147,6 +154,7 @@ const i18n = {
         title: 'Cargo Logistics',
         desc:  'Industrial equipment and supplies to remote or hard-to-reach locations.',
         href:  '/en/services#cargo',
+        photo: '/assets/Helicoptero%20Eslinga%201.jpg',
       },
     ],
 
@@ -332,7 +340,7 @@ const i18n = {
           <a
             href={svc.href}
             class="menu-svc-box"
-            style={`--svc-index: ${i}`}
+            style={`--svc-index: ${i}; background-image: linear-gradient(160deg, rgba(4,10,22,0.92) 0%, rgba(2,20,58,0.80) 50%, rgba(6,14,28,0.88) 100%), url('${svc.photo}')`}
             tabindex="-1"
           >
             <div class="menu-svc-box__header">
@@ -940,14 +948,16 @@ const i18n = {
     .menu-services__grid { grid-template-columns: 1fr; }
   }
 
-  /* Recuadro individual de servicio */
+  /* Recuadro individual de servicio — fondo fotográfico */
   .menu-svc-box {
     display:        flex;
     flex-direction: column;
     gap:            var(--space-2);
     padding:        var(--space-5) var(--space-5);
-    background:     rgba(255,255,255,0.024);
-    border:         1px solid rgba(255,255,255,0.07);
+    background-color: var(--color-bg-elevated); /* fallback sin foto */
+    background-size: cover;
+    background-position: center;
+    border:         1px solid rgba(255,255,255,0.10);
     border-radius:  2px;                 /* Arquitectónico */
     text-decoration: none;
     position:       relative;
@@ -983,10 +993,22 @@ const i18n = {
     transition: opacity var(--transition-base);
   }
 
-  .menu-svc-box:hover {
-    background:   rgba(88,181,240,0.04);
-    border-color: rgba(88,181,240,0.20);
+  /* Overlay de hover vía ::after (no interfiere con el inline background-image) */
+  .menu-svc-box::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(88,181,240,0.07);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
   }
+
+  .menu-svc-box:hover {
+    border-color: rgba(88,181,240,0.35);
+  }
+
+  .menu-svc-box:hover::after { opacity: 1; }
 
   .menu-svc-box:hover::before { opacity: 0.7; }
 
