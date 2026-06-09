@@ -1,0 +1,295 @@
+/* ============================================================
+   HELITEC — DESIGN TOKENS
+   Manual de Marca v4.0 · Agencia Krea · Mayo 2026
+   ============================================================
+   ORGANIZACIÓN:
+   1. Colores de Marca (raw, del manual)
+   2. Sistema Oscuro — Superficies y jerarquía de fondos
+   3. Texto — jerarquía cromática
+   4. Bordes y separadores
+   5. Tipografía — familias, escala, pesos, interlineado
+   6. Espaciado — escala 4px base
+   7. Contenedores y layout
+   8. Border-radius
+   9. Sombras
+   10. Transiciones y easing
+   11. Z-index
+   12. WhatsApp CTA — colores dedicados
+   ============================================================ */
+
+:root {
+
+  /* ----------------------------------------------------------
+     1. COLORES DE MARCA (fuente: Manual de Marca v4.0)
+     ---------------------------------------------------------- */
+
+  --brand-azul-helitec:   #023a78;   /* Azul primario institucional      */
+  --brand-azul-cielo:     #58b5f0;   /* Azul cielo, acento y highlights  */
+  --brand-rojo-helitec:   #e53b1c;   /* Rojo secundario, CTAs de acción  */
+  --brand-blanco:         #ffffff;
+
+  /* Escalas de opacidad del azul helitec (para fondos seccionales) */
+  --brand-azul-80:        rgba(2, 58, 120, 0.80);
+  --brand-azul-60:        rgba(2, 58, 120, 0.60);
+  --brand-azul-40:        rgba(2, 58, 120, 0.40);
+  --brand-azul-20:        rgba(2, 58, 120, 0.20);
+
+  /* Escala del azul cielo */
+  --brand-sky-80:         rgba(88, 181, 240, 0.80);
+  --brand-sky-40:         rgba(88, 181, 240, 0.40);
+  --brand-sky-15:         rgba(88, 181, 240, 0.15);
+  --brand-sky-08:         rgba(88, 181, 240, 0.08);
+
+  /* Escala del rojo helitec */
+  --brand-rojo-80:        rgba(229, 59, 28, 0.80);
+  --brand-rojo-15:        rgba(229, 59, 28, 0.15);
+
+
+  /* ----------------------------------------------------------
+     2. SISTEMA OSCURO — SUPERFICIES
+     Derivado del azul de marca. La oscuridad tiene una
+     subyacente temperatura azul fría para coherencia cromática.
+     ---------------------------------------------------------- */
+
+  /* Fondos de página */
+  --color-bg-void:        #030810;   /* Más profundo; hero fullscreen     */
+  --color-bg-base:        #060e1c;   /* Fondo base de la página           */
+  --color-bg-surface:     #0a1628;   /* Secciones alternas, nav           */
+  --color-bg-elevated:    #0f1f3a;   /* Cards de servicio, panels         */
+  --color-bg-overlay:     #162848;   /* Hover de cards, modals ligeros    */
+
+  /* Sección de marca — usa el azul helitec directamente */
+  --color-bg-brand:       #023a78;   /* Para secciones con fondo azul     */
+  --color-bg-brand-deep:  #011f45;   /* Versión más profunda del brand    */
+
+
+  /* ----------------------------------------------------------
+     3. TEXTO — JERARQUÍA CROMÁTICA
+     ---------------------------------------------------------- */
+
+  --color-text-primary:   #ffffff;                    /* H1, H2, copy principal    */
+  --color-text-secondary: rgba(255, 255, 255, 0.72);  /* Body text estándar        */
+  --color-text-muted:     rgba(255, 255, 255, 0.45);  /* Subtítulos, metadatos     */
+  --color-text-faint:     rgba(255, 255, 255, 0.22);  /* Labels deshabilitados     */
+  --color-text-accent:    #58b5f0;                    /* Links, énfasis cromático  */
+  --color-text-cta:       #e53b1c;                    /* CTAs textuales, alertas   */
+
+  /* Texto sobre fondos claros (para secciones blancas si aplica) */
+  --color-text-on-light:       #060e1c;
+  --color-text-on-light-muted: rgba(6, 14, 28, 0.60);
+
+
+  /* ----------------------------------------------------------
+     4. BORDES Y SEPARADORES
+     ---------------------------------------------------------- */
+
+  --color-border-subtle:  rgba(255, 255, 255, 0.05);  /* Divisores internos        */
+  --color-border-light:   rgba(255, 255, 255, 0.10);  /* Bordes de cards estándar  */
+  --color-border-medium:  rgba(255, 255, 255, 0.18);  /* Cards interactivas        */
+  --color-border-strong:  rgba(255, 255, 255, 0.35);  /* Énfasis en hover          */
+  --color-border-brand:   rgba(88, 181, 240, 0.28);   /* Borde de acento azul      */
+  --color-border-cta:     rgba(229, 59, 28, 0.50);    /* Borde de acción roja      */
+
+
+  /* ----------------------------------------------------------
+     5. TIPOGRAFÍA
+     Fuentes: Montserrat (primaria), Playfair Display (secundaria)
+     Cargadas desde Google Fonts en BaseLayout.astro
+     ---------------------------------------------------------- */
+
+  --font-primary:   'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-secondary: 'Playfair Display', Georgia, 'Times New Roman', serif;
+
+  /* Pesos */
+  --fw-thin:        200;   /* Ultra-thin — display headings premium */
+  --fw-light:       300;   /* Light — cuerpo y titulares base       */
+  --fw-regular:     400;
+  --fw-medium:      500;
+  --fw-semibold:    600;
+  --fw-bold:        700;
+
+  /* Escala tipográfica — Modular Scale 1.25 (Major Third) */
+  --text-xs:        0.694rem;   /* ~11px — overlines, badges         */
+  --text-sm:        0.833rem;   /* ~13px — footnotes, captions       */
+  --text-base:      1rem;       /* 16px  — body copy                 */
+  --text-md:        1.125rem;   /* ~18px — body large                */
+  --text-lg:        1.25rem;    /* 20px  — leads, subtítulos         */
+  --text-xl:        1.563rem;   /* 25px  — H4, card titles           */
+  --text-2xl:       1.953rem;   /* ~31px — H3                        */
+  --text-3xl:       2.441rem;   /* ~39px — H2                        */
+  --text-4xl:       3.052rem;   /* ~49px — H1 secundario             */
+  --text-5xl:       3.815rem;   /* ~61px — H1 primario               */
+  --text-display:   5.25rem;    /* ~84px — Titulares hero desktop    */
+  --text-display-sm:3.5rem;     /* ~56px — Titulares hero mobile     */
+
+  /* Interlineado */
+  --leading-tight:  1.15;
+  --leading-snug:   1.30;
+  --leading-normal: 1.55;
+  --leading-relaxed:1.75;
+
+  /* Espaciado de letras */
+  --tracking-tighter: -0.03em;
+  --tracking-tight:   -0.02em;
+  --tracking-normal:   0em;
+  --tracking-wide:     0.06em;
+  --tracking-wider:    0.12em;
+  --tracking-widest:   0.18em;  /* Para overlines en mayúsculas      */
+
+
+  /* ----------------------------------------------------------
+     6. ESPACIADO — ESCALA 4px BASE
+     Nomenclatura: múltiplos de 4
+     ---------------------------------------------------------- */
+
+  --space-1:    0.25rem;   /*  4px */
+  --space-2:    0.5rem;    /*  8px */
+  --space-3:    0.75rem;   /* 12px */
+  --space-4:    1rem;      /* 16px */
+  --space-5:    1.25rem;   /* 20px */
+  --space-6:    1.5rem;    /* 24px */
+  --space-8:    2rem;      /* 32px */
+  --space-10:   2.5rem;    /* 40px */
+  --space-12:   3rem;      /* 48px */
+  --space-16:   4rem;      /* 64px */
+  --space-20:   5rem;      /* 80px */
+  --space-24:   6rem;      /* 96px */
+  --space-32:   8rem;      /* 128px */
+  --space-40:   10rem;     /* 160px */
+  --space-48:   12rem;     /* 192px */
+
+  /* Espaciado semántico de secciones */
+  --section-gap:        10rem;            /* 160px — espacio generoso, deliberado */
+  --section-gap-mobile: var(--space-20);  /* 80px  — móvil                        */
+  --section-padding-x:  var(--space-8);   /* Padding horizontal de sección        */
+
+  /* Side rail — barra lateral fija (redes sociales + nav vertical) */
+  /* Valor activo cuando SideRail.astro esté presente en la página   */
+  --sidebar-w: 56px;
+
+
+  /* ----------------------------------------------------------
+     7. CONTENEDORES Y LAYOUT
+     ---------------------------------------------------------- */
+
+  --container-xs:   480px;
+  --container-sm:   640px;
+  --container-md:   768px;
+  --container-lg:   1024px;
+  --container-xl:   1280px;
+  --container-2xl:  1440px;
+  --container-max:  1600px;
+
+  /* Padding interno del container */
+  --container-px:      clamp(1.25rem, 5vw, 3rem);
+
+
+  /* ----------------------------------------------------------
+     8. BORDER-RADIUS
+     Estética: minimal y geométrica, sin exceso de redondeo
+     ---------------------------------------------------------- */
+
+  --radius-none:   0;
+  --radius-xs:     2px;
+  --radius-sm:     4px;
+  --radius-base:   6px;
+  --radius-md:     8px;
+  --radius-lg:     12px;
+  --radius-xl:     16px;
+  --radius-2xl:    24px;
+  --radius-full:   9999px;
+
+
+  /* ----------------------------------------------------------
+     9. SOMBRAS
+     Todas con temperatura azul fría para coherencia con marca
+     ---------------------------------------------------------- */
+
+  --shadow-xs:
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.20);
+
+  --shadow-sm:
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.30);
+
+  --shadow-md:
+    0 4px 16px rgba(0, 0, 0, 0.50),
+    0 2px 6px rgba(0, 0, 0, 0.30);
+
+  --shadow-lg:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 3px 10px rgba(0, 0, 0, 0.30);
+
+  --shadow-xl:
+    0 16px 56px rgba(0, 0, 0, 0.60),
+    0 6px 20px rgba(0, 0, 0, 0.35);
+
+  /* Sombra de glow azul para elementos activos/hover */
+  --shadow-glow-sky:
+    0 0 24px rgba(88, 181, 240, 0.18),
+    0 0  8px rgba(88, 181, 240, 0.10);
+
+  --shadow-glow-red:
+    0 0 20px rgba(229, 59, 28, 0.25),
+    0 0  8px rgba(229, 59, 28, 0.15);
+
+
+  /* ----------------------------------------------------------
+     10. TRANSICIONES Y EASING
+     ---------------------------------------------------------- */
+
+  /* Duraciones */
+  --duration-instant:    80ms;
+  --duration-fast:      150ms;
+  --duration-base:      300ms;
+  --duration-slow:      500ms;
+  --duration-slower:    700ms;
+  --duration-reveal:   1000ms;  /* Scroll reveal — cinematográfico    */
+  --duration-cinematic:1200ms;  /* Hero y transiciones de portada     */
+
+  /* Curvas de easing */
+  --ease-standard:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out:       cubic-bezier(0.16, 1.00, 0.30, 1.00);  /* Spring-like out  */
+  --ease-in:        cubic-bezier(0.55, 0.00, 1.00, 0.45);
+  --ease-in-out:    cubic-bezier(0.65, 0.00, 0.35, 1.00);  /* Preciso y limpio */
+  --ease-bounce:    cubic-bezier(0.34, 1.56, 0.64, 1.00);  /* Micro-interacc.  */
+
+  /* Shortcuts semánticos */
+  --transition-fast:   var(--duration-fast)  var(--ease-standard);
+  --transition-base:   var(--duration-base)  var(--ease-standard);
+  --transition-smooth: var(--duration-slow)  var(--ease-out);
+  --transition-reveal: var(--duration-reveal) var(--ease-out);
+
+
+  /* ----------------------------------------------------------
+     11. Z-INDEX — ESCALA SEMÁNTICA
+     ---------------------------------------------------------- */
+
+  --z-below:      -1;
+  --z-base:        0;
+  --z-raised:     10;   /* Cards elevadas en hover              */
+  --z-dropdown:   100;  /* Menús desplegables                   */
+  --z-sticky:     200;  /* Header sticky                        */
+  --z-overlay:    300;  /* Overlays de secciones y backdrops    */
+  --z-modal:      400;  /* Modales y lightboxes                 */
+  --z-toast:      500;  /* Notificaciones                       */
+  --z-cta-float:  600;  /* Botón flotante WhatsApp CTA          */
+  --z-top:        900;  /* Loading screens, cursores custom     */
+
+
+  /* ----------------------------------------------------------
+     12. WHATSAPP CTA — COLORES DEDICADOS
+     El botón flotante usa el rojo de marca para máxima visibilidad
+     ---------------------------------------------------------- */
+
+  --cta-bg:           var(--brand-rojo-helitec);
+  --cta-bg-hover:     #c93218;               /* Rojo ligeramente más profundo  */
+  --cta-text:         #ffffff;
+  --cta-shadow:       var(--shadow-glow-red);
+  --cta-border:       rgba(255, 255, 255, 0.20);
+
+  /* Número de WhatsApp — se usará en los href de JS (no hardcodear aquí) */
+  /* wa.me/58XXXXXXXXXX — configurar en src/data/config.js                */
+
+}

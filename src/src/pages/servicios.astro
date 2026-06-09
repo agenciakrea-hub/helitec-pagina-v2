@@ -1,0 +1,791 @@
+---
+/**
+ * HELITEC — servicios.astro
+ * Página de servicios corporativos. Fase 8.
+ * Mobile-first estricto. Zigzag en desktop, tarjetas limpias en mobile.
+ *
+ * Secciones:
+ *   .svc-hero      — Hero interno (corto)
+ *   #servicios     — 4 filas zigzag: ejecutivos / aeromédico / carga / admin
+ *   #seguridad     — Trust section: INAC, SMS OACI, auditoría, etc.
+ *   .svc-cta       — CTA final → WhatsApp
+ */
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header     from '../components/Header.astro';
+import Footer     from '../components/Footer.astro';
+import CTAFloat   from '../components/CTAFloat.astro';
+
+const lang = 'es';
+
+const WA_NUMBER = '584166235254';
+function waLink(msg: string) {
+  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+/* ── Datos de servicios ─────────────────────────────────────
+   desc: máximo 2 oraciones. bullets: máximo 5 ítems. Sin slop.
+────────────────────────────────────────────────────────────*/
+const services = [
+  {
+    num:     '01',
+    tag:     'Ala Fija · Ala Rotatoria',
+    title:   'Vuelos Ejecutivos',
+    desc:    'Transporte aéreo privado bajo demanda para comitivas corporativas, directivos y delegaciones industriales. Ala fija para rutas con pista; helicópteros para zonas sin infraestructura aeroportuaria.',
+    bullets: [
+      'Salidas a demanda, sin horarios ni escalas forzadas',
+      'Cabinas presurizadas con configuración ejecutiva',
+      'Privacidad y discreción operacional garantizada',
+      'Cobertura nacional e internacional bajo certificado INAC',
+      'Coordinación directa con el cliente para cada misión',
+    ],
+    img:    '/assets/PXL_20250116_193849051.jpeg',
+    waMsg:  'Hola Helitec, deseo asesoría para cotizar un vuelo ejecutivo corporativo.',
+  },
+  {
+    num:     '02',
+    tag:     'Programa Aeromédico Certificado',
+    title:   'Emergencias Aeromédicas',
+    desc:    'Evacuaciones médicas y traslados de alta complejidad con equipamiento paramédico certificado a bordo. Metro III presurizado con camilla Spectrum Aeromed, disponible 24/7/365.',
+    bullets: [
+      'Disponibilidad 24 horas, 365 días del año',
+      'Camilla certificada Spectrum Aeromed a bordo',
+      'Tripulación con entrenamiento en medicina aeronáutica',
+      'Cabina presurizada para traslados de alta complejidad',
+      'Coordinación directa con hospitales de origen y destino',
+    ],
+    img:    '/assets/PHOTO-2024-10-30-15-40-52.JPG',
+    waMsg:  'Hola Helitec, necesitamos información sobre el servicio aeromédico de emergencia.',
+  },
+  {
+    num:     '03',
+    tag:     'Industria Petrolera · Logística',
+    title:   'Carga y Sector Industrial',
+    desc:    'Transporte de personal, materiales y carga prioritaria hacia plataformas offshore, plantas industriales y zonas de extracción. Configuración mixta pasajeros/carga disponible en las aeronaves Metro.',
+    bullets: [
+      'Bodegas delantera y trasera en aeronaves Metro (350 + 100 kg)',
+      'Helicópteros MD para plataformas offshore y zonas sin pista',
+      'Configuración mixta: pasajeros y carga en un mismo vuelo',
+      'Manejo de materiales críticos y de alta prioridad',
+      'Acuerdos marco para empresas del sector energético',
+    ],
+    img:    '/assets/PHOTO-2026-02-02-12-58-36.jpg',
+    waMsg:  'Hola Helitec, necesito información sobre vuelos de carga y transporte industrial.',
+  },
+  {
+    num:     '04',
+    tag:     'Servicio Corporativo B2B',
+    title:   'Administración de Aeronaves',
+    desc:    'Gestión operacional integral para propietarios de aeronaves que requieren delegar las responsabilidades técnicas, regulatorias y de tripulación. La aeronave opera bajo la estructura de seguridad y el certificado INAC de Helitec.',
+    bullets: [
+      'Operación bajo certificado de aeronavegabilidad de Helitec',
+      'Gestión de mantenimiento preventivo y correctivo',
+      'Provisión de tripulación certificada por el INAC',
+      'Administración de documentación aeronáutica vigente',
+      'Reducción del riesgo regulatorio para el propietario',
+    ],
+    img:    '/assets/PHOTO-2024-10-18-18-51-04 4.JPG',
+    waMsg:  'Hola Helitec, me interesa conocer el programa de administración de aeronaves.',
+  },
+] as const;
+
+/* ── Trust items — sección de seguridad y cumplimiento ─────*/
+interface TrustItem { title: string; desc: string; iconPaths: string[] }
+
+const trustItems: TrustItem[] = [
+  {
+    title: 'Certificado INAC',
+    desc:  'Proveedor de Servicio Público de Transporte Aéreo bajo supervisión permanente del Instituto Nacional de Aeronáutica Civil.',
+    iconPaths: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
+  },
+  {
+    title: 'SMS OACI Anexo 19',
+    desc:  'Sistema de Gestión de Seguridad Operacional conforme al estándar internacional de la OACI para operadores de aviación comercial.',
+    iconPaths: [
+      'M9 11l3 3L22 4',
+      'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11',
+    ],
+  },
+  {
+    title: 'Mantenimiento Continuo',
+    desc:  'Programa de mantenimiento preventivo y correctivo bajo estándares de Continued Airworthiness. Documentación en regla para cada aeronave operada.',
+    iconPaths: [
+      'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
+    ],
+  },
+  {
+    title: 'Auditoría Independiente',
+    desc:  'Operaciones supervisadas por un auditor externo con capacidad de veto. Ningún vuelo se ejecuta fuera de los parámetros de seguridad establecidos.',
+    iconPaths: [
+      'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z',
+      'circle cx="12" cy="12" r="3"',
+    ],
+  },
+  {
+    title: 'Entrenamiento CRM',
+    desc:  'Tripulaciones con programas de recurrencia periódica, Crew Resource Management y procedimientos de emergencia actualizados.',
+    iconPaths: [
+      'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2',
+      'circle cx="9" cy="7" r="4"',
+      'M23 21v-2a4 4 0 0 0-3-3.87',
+      'M16 3.13a4 4 0 0 1 0 7.75',
+    ],
+  },
+  {
+    title: 'Cobertura de Seguros',
+    desc:  'Pólizas de responsabilidad civil y cobertura de casco conformes a los requisitos mínimos del INAC para operadores de transporte aéreo público.',
+    iconPaths: [
+      'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
+      'M14 2v6h6',
+      'M16 13H8M16 17H8M10 9H8',
+    ],
+  },
+];
+
+const waHrefGeneral = waLink('Hola Helitec, me gustaría recibir asesoría corporativa sobre sus servicios de aviación.');
+---
+
+<BaseLayout
+  title="Servicios Corporativos y Aeromédicos"
+  description="Vuelos ejecutivos, emergencias aeromédicas, transporte de carga y administración de aeronaves. Operador INAC certificado. Disponibilidad 24/7 en Venezuela."
+  lang={lang}
+>
+
+  <Header slot="header" lang={lang} />
+
+
+  <!-- ════════════════════════════════════════════════════════
+       HERO INTERNO
+  ════════════════════════════════════════════════════════════ -->
+  <section class="svc-hero" aria-label="Servicios">
+    <div class="container">
+      <div class="svc-hero__content reveal">
+        <p class="text-overline">Operaciones Certificadas INAC</p>
+        <h1 class="svc-hero__title">Servicios Aéreos<br /><em>para la Industria</em></h1>
+        <p class="svc-hero__sub">
+          Soluciones de aviación ejecutiva, industrial y aeromédica para empresas
+          que no pueden permitirse comprometer tiempos, privacidad o seguridad.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       SERVICIOS — Layout zigzag
+  ════════════════════════════════════════════════════════════ -->
+  <section class="svc-list" id="servicios" aria-label="Catálogo de servicios">
+    <div class="container">
+      {services.map((svc, i) => (
+        <article
+          class={`svc-row reveal${i % 2 === 1 ? ' svc-row--reverse' : ''}`}
+          data-delay="1"
+          id={svc.num === '02' ? 'aeromedico' : undefined}
+          aria-labelledby={`svc-title-${i}`}
+        >
+
+          <!-- Imagen -->
+          <div class="svc-img-col">
+            <div class="svc-img-wrap">
+              <img
+                src={encodeURI(svc.img)}
+                alt={`${svc.title} — Consorcio Helitec`}
+                class="svc-img"
+                loading="lazy"
+                decoding="async"
+                onerror="this.style.display='none'"
+              />
+              <!-- Número de referencia sobre la imagen (esquina) -->
+              <span class="svc-img-num" aria-hidden="true">{svc.num}</span>
+            </div>
+          </div>
+
+          <!-- Cuerpo de texto -->
+          <div class="svc-body-col">
+            <!-- Número fantasma de fondo (decorativo) -->
+            <span class="svc-ghost-num" aria-hidden="true">{svc.num}</span>
+
+            <p class="svc-tag text-overline">{svc.tag}</p>
+
+            <h2 class="svc-title" id={`svc-title-${i}`}>
+              {svc.title}
+            </h2>
+
+            <p class="svc-desc">{svc.desc}</p>
+
+            <!-- Lista de beneficios con checkmarks -->
+            <ul class="svc-bullets" aria-label={`Características de ${svc.title}`}>
+              {svc.bullets.map(b => (
+                <li class="svc-bullet">
+                  <svg
+                    class="bullet-check"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+
+            <!-- CTA específico del servicio -->
+            <a
+              href={waLink(svc.waMsg)}
+              class="svc-cta-link btn btn--ghost-sm"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Cotizar ${svc.title} vía WhatsApp`}
+            >
+              Solicitar información
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+
+        </article>
+      ))}
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       TRUST SECTION — Seguridad y cumplimiento regulatorio
+       Diseñado para dar confianza al auditor corporativo.
+  ════════════════════════════════════════════════════════════ -->
+  <section class="trust" id="seguridad" aria-labelledby="trust-title">
+    <div class="container">
+
+      <div class="trust-header reveal">
+        <p class="text-overline">Seguridad &amp; Cumplimiento</p>
+        <h2 class="trust-title" id="trust-title">
+          Bajo los mismos estándares<br /><em>de las aerolíneas comerciales</em>
+        </h2>
+      </div>
+
+      <!-- Declaración institucional -->
+      <blockquote class="trust-statement reveal" data-delay="1">
+        <svg class="trust-quote-icon" width="32" height="32" viewBox="0 0 24 24"
+             fill="none" aria-hidden="true">
+          <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <p>
+          Cada misión que operamos está sujeta a los mismos controles, auditorías y
+          estándares de aeronavegabilidad que exige la aviación comercial regular.
+          No operamos bajo estándares de aviación general.
+        </p>
+      </blockquote>
+
+      <!-- Grid de trust items -->
+      <div class="trust-grid">
+        {trustItems.map((item, i) => (
+          <div class="trust-item reveal" data-delay={String((i % 3) + 1)}>
+            <!-- Ícono SVG -->
+            <div class="trust-icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                {item.iconPaths.map(p => (
+                  p.startsWith('circle') || p.startsWith('rect')
+                    ? <Fragment set:html={`<${p}/>`} />
+                    : <path d={p} />
+                ))}
+              </svg>
+            </div>
+            <h3 class="trust-item-title">{item.title}</h3>
+            <p class="trust-item-desc">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════
+       CTA FINAL
+  ════════════════════════════════════════════════════════════ -->
+  <section class="svc-cta-section" aria-label="Solicitar asesoría">
+    <div class="container">
+      <div class="svc-cta-inner reveal">
+        <div class="svc-cta-text">
+          <p class="text-overline">Contacto Directo</p>
+          <h2 class="svc-cta-title">¿Qué servicio necesita?</h2>
+          <p class="svc-cta-sub">
+            Nuestro equipo de operaciones está disponible las 24 horas para
+            asesorarle sobre disponibilidad de aeronaves, rutas y condiciones de vuelo.
+          </p>
+        </div>
+        <div class="svc-cta-actions">
+          <a
+            href={waHrefGeneral}
+            class="btn btn--primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Asesoría Corporativa
+          </a>
+          <a href="/flota" class="btn btn--ghost">
+            Ver la Flota
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <Footer slot="footer" lang={lang} />
+  <CTAFloat slot="cta" lang={lang} />
+
+</BaseLayout>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     ESTILOS SCOPED — Mobile-first
+════════════════════════════════════════════════════════════ -->
+<style>
+
+/* ── Contenedor ─────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+}
+@media (min-width: 640px) { .container { padding-inline: var(--space-8); } }
+
+/* ── Botones ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-family: var(--font-primary); font-size: var(--text-sm);
+  font-weight: var(--fw-semibold); letter-spacing: var(--tracking-wide);
+  text-decoration: none; line-height: 1; white-space: nowrap;
+  cursor: pointer; border: 2px solid transparent;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+              color var(--transition-fast), box-shadow var(--transition-base),
+              transform var(--transition-base);
+}
+.btn:active { transform: scale(0.97); }
+.btn--primary {
+  background: var(--brand-rojo-helitec); color: #fff;
+  border-color: var(--brand-rojo-helitec);
+  box-shadow: 0 4px 18px rgba(229,59,28,0.30);
+}
+.btn--primary:hover {
+  background: #c93218; border-color: #c93218; color: #fff;
+  box-shadow: 0 6px 26px rgba(229,59,28,0.45); transform: translateY(-1px);
+}
+.btn--ghost {
+  background: transparent; color: var(--brand-azul-cielo);
+  border-color: rgba(88,181,240,0.40);
+}
+.btn--ghost:hover {
+  background: rgba(88,181,240,0.08); border-color: var(--brand-azul-cielo);
+  color: #fff; transform: translateY(-1px);
+}
+.btn--ghost-sm {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-family: var(--font-primary); font-size: var(--text-xs);
+  font-weight: var(--fw-semibold); letter-spacing: var(--tracking-wide);
+  text-decoration: none; line-height: 1; white-space: nowrap; cursor: pointer;
+  background: transparent; color: var(--brand-azul-cielo);
+  border: 1.5px solid rgba(88,181,240,0.35);
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+              color var(--transition-fast), transform var(--transition-base);
+}
+.btn--ghost-sm:hover {
+  background: rgba(88,181,240,0.10); border-color: var(--brand-azul-cielo);
+  color: #fff; transform: translateY(-1px);
+}
+.btn--ghost-sm svg { transition: transform var(--transition-fast); }
+.btn--ghost-sm:hover svg { transform: translateX(3px); }
+
+
+/* ════════════════════════════════════════════════════════
+   HERO INTERNO
+════════════════════════════════════════════════════════════ */
+.svc-hero {
+  background: var(--color-bg-base);
+  padding-block: var(--space-20) var(--space-16);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background-image: radial-gradient(
+    ellipse 70% 90% at 80% 40%,
+    rgba(2, 58, 120, 0.22) 0%, transparent 70%
+  );
+}
+.svc-hero__content { max-width: 680px; }
+
+.svc-hero__title {
+  font-family: var(--font-primary);
+  font-size: clamp(2.25rem, 5.5vw, 4.25rem);
+  font-weight: var(--fw-bold);
+  color: #fff;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin-block: var(--space-5) var(--space-6);
+}
+.svc-hero__title em {
+  font-family: var(--font-secondary);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--brand-azul-cielo);
+}
+.svc-hero__sub {
+  font-size: clamp(var(--text-base), 1.5vw, var(--text-lg));
+  font-weight: var(--fw-light);
+  color: rgba(255,255,255,0.55);
+  line-height: 1.75;
+  max-width: 60ch;
+}
+
+
+/* ════════════════════════════════════════════════════════
+   SECCIÓN DE SERVICIOS — Mobile-first
+════════════════════════════════════════════════════════════ */
+.svc-list {
+  background: var(--color-bg-base);
+  padding-block: var(--space-10) var(--space-20);
+}
+
+/* ── Fila de servicio (mobile: columna única) ──────────── */
+.svc-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-block: var(--space-16);
+  position: relative;
+}
+
+.svc-row + .svc-row {
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Desktop (≥900px): grid 2 columnas, 50/50, zigzag */
+@media (min-width: 900px) {
+  .svc-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-20);
+    align-items: center;
+    padding-block: var(--space-24);
+  }
+  /* Reverse: imagen a la derecha */
+  .svc-row--reverse .svc-img-col  { order: 2; }
+  .svc-row--reverse .svc-body-col { order: 1; }
+}
+
+/* ── Columna de imagen ─────────────────────────────────── */
+.svc-img-wrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle, rgba(88,181,240,0.07) 1px, transparent 1px),
+    linear-gradient(160deg, var(--color-bg-brand-deep) 0%, #0a1d3d 55%, var(--color-bg-brand) 100%);
+  background-size: 30px 30px, auto;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.svc-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms var(--ease-out);
+}
+.svc-row:hover .svc-img { transform: scale(1.04); }
+
+/* Número de referencia sobre la imagen */
+.svc-img-num {
+  position: absolute;
+  bottom: var(--space-4);
+  left: var(--space-5);
+  font-family: var(--font-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-widest);
+  color: rgba(255,255,255,0.40);
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+/* ── Columna de texto ──────────────────────────────────── */
+.svc-body-col {
+  position: relative;
+  /* Padding interno para que el número fantasma no corte el texto */
+  padding-top: var(--space-3);
+}
+
+/* Número fantasma de fondo — decorativo, muy sutil */
+.svc-ghost-num {
+  position: absolute;
+  top: -0.35em;
+  left: -0.1em;
+  font-family: var(--font-primary);
+  font-size: clamp(6rem, 14vw, 11rem);
+  font-weight: 900;
+  color: rgba(88,181,240,0.03);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+/* El contenido real está por encima */
+.svc-body-col > *:not(.svc-ghost-num) { position: relative; z-index: 1; }
+
+.svc-tag { margin-bottom: var(--space-4); }
+
+.svc-title {
+  font-family: var(--font-primary);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: var(--fw-bold);
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin-bottom: var(--space-5);
+}
+
+.svc-desc {
+  font-size: var(--text-base);
+  font-weight: var(--fw-light);
+  color: rgba(255,255,255,0.55);
+  line-height: 1.75;
+  margin-bottom: var(--space-7);
+  max-width: 52ch;
+}
+
+/* ── Lista de beneficios ───────────────────────────────── */
+.svc-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+}
+
+.svc-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.62);
+  line-height: 1.65;
+}
+
+/* Checkmark — azul cielo, alineado con la primera línea de texto */
+.bullet-check {
+  color: var(--brand-azul-cielo);
+  flex-shrink: 0;
+  margin-top: 3px;
+  opacity: 0.80;
+}
+
+.svc-cta-link { margin-top: var(--space-2); }
+
+
+/* ════════════════════════════════════════════════════════
+   TRUST SECTION
+════════════════════════════════════════════════════════════ */
+.trust {
+  background: var(--color-bg-brand-deep);
+  padding-block: var(--space-20) var(--space-24);
+  border-top:    1px solid rgba(88,181,240,0.10);
+  border-bottom: 1px solid rgba(88,181,240,0.08);
+}
+
+.trust-header {
+  margin-bottom: var(--space-12);
+  max-width: 640px;
+}
+.trust-title {
+  font-family: var(--font-primary);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: var(--fw-bold);
+  color: #fff;
+  line-height: 1.1;
+  margin-top: var(--space-3);
+}
+.trust-title em {
+  font-family: var(--font-secondary);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--brand-azul-cielo);
+}
+
+/* Declaración institucional */
+.trust-statement {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+  background: rgba(88,181,240,0.06);
+  border: 1px solid rgba(88,181,240,0.15);
+  border-left: 3px solid var(--brand-azul-cielo);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-7) var(--space-8);
+  margin-bottom: var(--space-14);
+  max-width: 800px;
+}
+.trust-statement p {
+  font-size: var(--text-base);
+  font-weight: var(--fw-light);
+  font-style: italic;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.75;
+  margin: 0;
+}
+.trust-quote-icon {
+  flex-shrink: 0;
+  color: var(--brand-azul-cielo);
+  opacity: 0.50;
+  margin-top: 2px;
+}
+
+/* Grid de trust items — mobile-first */
+.trust-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 540px) {
+  .trust-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+  .trust-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Item individual */
+.trust-item {
+  padding: var(--space-7) var(--space-7);
+  background: rgba(0,0,0,0.20);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--radius-lg, 12px);
+  transition: border-color var(--transition-base), background var(--transition-base);
+}
+.trust-item:hover {
+  border-color: rgba(88,181,240,0.18);
+  background: rgba(88,181,240,0.04);
+}
+
+.trust-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(88,181,240,0.10);
+  border: 1px solid rgba(88,181,240,0.18);
+  color: var(--brand-azul-cielo);
+  margin-bottom: var(--space-5);
+}
+
+.trust-item-title {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--fw-semibold);
+  color: #fff;
+  margin-bottom: var(--space-3);
+  line-height: 1.3;
+}
+
+.trust-item-desc {
+  font-size: var(--text-sm);
+  font-weight: var(--fw-light);
+  color: rgba(255,255,255,0.45);
+  line-height: 1.75;
+}
+
+
+/* ════════════════════════════════════════════════════════
+   CTA FINAL
+════════════════════════════════════════════════════════════ */
+.svc-cta-section {
+  background: var(--color-bg-surface);
+  padding-block: var(--space-20);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.svc-cta-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+@media (min-width: 900px) {
+  .svc-cta-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+  }
+}
+.svc-cta-text { flex: 1 1 360px; }
+.svc-cta-title {
+  font-family: var(--font-primary);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: var(--fw-bold);
+  color: #fff;
+  line-height: 1.15;
+  margin-block: var(--space-3) var(--space-5);
+}
+.svc-cta-sub {
+  font-size: var(--text-sm);
+  font-weight: var(--fw-light);
+  color: rgba(255,255,255,0.50);
+  line-height: 1.75;
+  max-width: 52ch;
+}
+.svc-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+</style>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPT — Reveal observer (mismo patrón que el resto del sitio)
+════════════════════════════════════════════════════════════ -->
+<script>
+  (() => {
+    const reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      }),
+      { threshold: 0.10 }
+    );
+    reveals.forEach(el => io.observe(el));
+  })();
+</script>

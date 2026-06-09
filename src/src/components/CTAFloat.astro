@@ -1,0 +1,258 @@
+---
+/**
+ * HELITEC — CTAFloat.astro
+ * Botón flotante permanente de contacto WhatsApp.
+ * Diseño: arquitectónico, rectangular (2px radius). Referencia: Falcon Aviation.
+ *
+ * CAMBIOS vs versión anterior:
+ *   — border-radius: 2px (arquitectónico, no pill)
+ *   — Sin anillo de pulso animado
+ *   — Tipografía más pequeña, tracking amplio (coherente con .btn de global.css)
+ *   — Fondo semi-transparente + backdrop-blur para que se lea sobre cualquier sección
+ *   — El número y mensaje WhatsApp se leen de config; fallback hardcodeado aquí
+ *
+ * NULL SAFETY:
+ *   Este componente NO importa ni procesa datos de flota.json ni ningún array
+ *   con thumbnails opcionales. Si ves errores ".startsWith() on null" en el build,
+ *   el origen está en los componentes de flota ([id].astro / FlotaCard.astro).
+ *   Fix para esos archivos: reemplazar `src={thumbnail}` por
+ *   `src={thumbnail ?? '/assets/placeholder-fleet.jpg'}` o añadir
+ *   `{thumbnail && <img src={thumbnail} />}` para renderizado condicional.
+ *
+ * Props:
+ *   lang — 'es' | 'en'
+ */
+
+interface Props {
+  lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+/* ── WhatsApp config ─────────────────────────────────────────
+   Número: +58 416-6235254 → wa.me: 584166235254
+   TODO: importar desde src/data/config.js cuando esté creado
+   const { WA_NUMBER, WA_MSG_ES, WA_MSG_EN } = await import('../data/config.js');
+─────────────────────────────────────────────────────────────── */
+const WA_NUMBER  = '584166235254';
+
+const WA_MSG: Record<string, string> = {
+  es: 'Hola Consorcio Helitec, me gustaría recibir asesoría sobre sus servicios de aviación corporativa.',
+  en: 'Hello Consorcio Helitec, I would like to receive information about your corporate aviation services.',
+};
+
+// Null-safe: usa 'es' como fallback si lang no está en el registro
+const waMsg  = WA_MSG[lang] ?? WA_MSG['es'];
+const waHref = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(waMsg)}`;
+
+const LABELS: Record<string, { full: string; short: string; sr: string }> = {
+  es: {
+    full:  'Solicitar Servicio',
+    short: 'Contactar',
+    sr:    'Solicitar asesoría vía WhatsApp',
+  },
+  en: {
+    full:  'Request Service',
+    short: 'Contact',
+    sr:    'Request advisory via WhatsApp',
+  },
+};
+
+const i18n = LABELS[lang] ?? LABELS['es'];
+---
+
+<!--
+  CTA FLOTANTE — Rectangular arquitectónico.
+  Posicionado: bottom-right.
+  Aparece con fade-in tras 2.5s al cargar (no compite con el hero).
+  En mobile (<640px): muestra solo el ícono + etiqueta corta.
+-->
+<div class="ctaf-wrap" id="cta-float" role="complementary" aria-label={i18n.sr}>
+  <a
+    href={waHref}
+    class="ctaf"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label={i18n.sr}
+    title={i18n.sr}
+  >
+
+    <!-- Ícono WhatsApp — SVG optimizado, path oficial -->
+    <svg
+      class="ctaf__icon"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+    </svg>
+
+    <!-- Etiqueta desktop -->
+    <span class="ctaf__label ctaf__label--full"  aria-hidden="true">{i18n.full}</span>
+    <!-- Etiqueta mobile -->
+    <span class="ctaf__label ctaf__label--short" aria-hidden="true">{i18n.short}</span>
+
+  </a>
+</div>
+
+
+<style>
+
+  /* ── WRAPPER DE POSICIONAMIENTO ──────────────────────────── */
+
+  .ctaf-wrap {
+    position:       fixed;
+    bottom:         var(--space-8);
+    right:          var(--space-8);
+    z-index:        var(--z-cta-float);
+
+    /* Estado inicial: invisible, ligeramente desplazado */
+    opacity:        0;
+    transform:      translateY(10px);
+    transition:
+      opacity   600ms var(--ease-out),
+      transform 600ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  .ctaf-wrap.is-visible {
+    opacity:        1;
+    transform:      translateY(0);
+    pointer-events: auto;
+  }
+
+  @media (max-width: 480px) {
+    .ctaf-wrap {
+      bottom: var(--space-5);
+      right:  var(--space-4);
+    }
+  }
+
+
+  /* ── BOTÓN ──────────────────────────────────────────────────
+     Diseño arquitectónico: casi cuadrado, tipografía pequeña y
+     tracking amplio. Sin pill, sin glow agresivo.
+     El backdrop-filter garantiza legibilidad sobre cualquier sección.
+  ─────────────────────────────────────────────────────────────── */
+
+  .ctaf {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             var(--space-3);
+    padding:         var(--space-4) var(--space-7);
+
+    /* Fondo: rojo helitec sólido — máxima visibilidad */
+    background:      var(--brand-rojo-helitec);
+    color:           #fff;
+
+    /* 2px — arquitectónico, no redondeado */
+    border-radius:   2px;
+    border:          1px solid rgba(255, 255, 255, 0.12);
+
+    font-family:     var(--font-primary);
+    font-size:       0.62rem;
+    font-weight:     var(--fw-medium);
+    letter-spacing:  0.20em;
+    text-transform:  uppercase;
+    line-height:     1;
+    white-space:     nowrap;
+    text-decoration: none;
+
+    /* Sombra contenida — sin glow masivo */
+    box-shadow:
+      0 4px 16px rgba(229, 59, 28, 0.22),
+      0 2px  6px rgba(0, 0, 0, 0.28);
+
+    transition:
+      background    var(--transition-fast),
+      box-shadow    var(--transition-base),
+      transform     200ms var(--ease-out);
+  }
+
+  .ctaf:hover {
+    background: #c42e14;
+    color:      #fff;
+    transform:  translateY(-2px);
+    box-shadow:
+      0 8px 28px rgba(229, 59, 28, 0.30),
+      0 3px 10px rgba(0, 0, 0, 0.32);
+  }
+
+  .ctaf:active {
+    transform:  scale(0.97);
+    box-shadow:
+      0 2px  8px rgba(229, 59, 28, 0.20),
+      0 1px  4px rgba(0, 0, 0, 0.24);
+  }
+
+
+  /* ── ÍCONO ───────────────────────────────────────────────── */
+
+  .ctaf__icon {
+    width:       18px;
+    height:      18px;
+    flex-shrink: 0;
+    transition:  transform var(--transition-fast);
+  }
+
+  .ctaf:hover .ctaf__icon { transform: scale(1.08); }
+
+
+  /* ── ETIQUETAS ───────────────────────────────────────────── */
+
+  .ctaf__label { font-size: 0.62rem; }
+
+  /* Desktop: etiqueta larga */
+  .ctaf__label--short { display: none; }
+
+  @media (max-width: 640px) {
+    .ctaf__label--full  { display: none; }
+    .ctaf__label--short { display: inline; }
+
+    .ctaf {
+      padding:  var(--space-3) var(--space-5);
+      gap:      var(--space-2);
+      font-size:0.60rem;
+    }
+
+    .ctaf__icon {
+      width:  16px;
+      height: 16px;
+    }
+  }
+
+
+  /* ── ACCESIBILIDAD ───────────────────────────────────────── */
+
+  .ctaf:focus-visible {
+    outline:        2px solid var(--brand-azul-cielo);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ctaf-wrap { transition: opacity 300ms var(--ease-standard); transform: none; }
+    .ctaf      { transition: background var(--transition-fast); }
+  }
+
+</style>
+
+
+<script>
+  (() => {
+    const wrap = document.getElementById('cta-float');
+    if (!wrap) return;
+
+    /* Aparece tras 2.5s — no compite visualmente con el hero */
+    const DELAY_MS = 2500;
+
+    const show = () => wrap.classList.add('is-visible');
+
+    if (document.readyState === 'complete') {
+      setTimeout(show, DELAY_MS);
+    } else {
+      window.addEventListener('load', () => setTimeout(show, DELAY_MS), { once: true });
+    }
+  })();
+</script>
