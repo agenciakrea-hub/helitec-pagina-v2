@@ -35,8 +35,6 @@
  *   object-fit: cover en fotos — ✓
  */
 
-import type { ImageMetadata } from 'astro';
-
 interface Props {
   lang?: 'es' | 'en';
 }
@@ -45,11 +43,11 @@ const { lang = 'es' } = Astro.props;
 
 /* ── Importar datos de flota ─────────────────────────────────────────────── */
 /*
- * flota.json está en src/data/ (no en la raíz del proyecto).
- * Ruta relativa desde src/components/sections/: ../../data/flota.json
+ * flota.json está en la RAÍZ del proyecto (mismo nivel que src/, package.json).
+ * Ruta relativa desde src/components/sections/: ../../../flota.json
  * Astro permite importar JSON estático en el frontmatter.
  */
-import flotaData from '../../data/flota.json';
+import flotaData from '../../../flota.json';
 
 const activeFleet = flotaData.flota.filter((a: any) => a.activo === true);
 
