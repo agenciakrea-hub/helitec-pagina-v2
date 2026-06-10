@@ -288,6 +288,25 @@ const {
           'aria-label',
           isOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'
         );
+
+        /*
+         * Scroll lock: evita que el fondo de la página se desplace
+         * mientras el menú está abierto.
+         * Se guarda el scrollY actual para restaurarlo al cerrar,
+         * evitando el salto visual en iOS/Android.
+         */
+        if (isOpen) {
+          const scrollY = window.scrollY;
+          document.body.style.top      = `-${scrollY}px`;
+          document.body.style.overflow = 'hidden';
+          document.body.style.width    = '100%';
+        } else {
+          const scrollY = Math.abs(parseInt(document.body.style.top || '0', 10));
+          document.body.style.overflow = '';
+          document.body.style.top      = '';
+          document.body.style.width    = '';
+          window.scrollTo({ top: scrollY, behavior: 'instant' });
+        }
       });
     }
   })();

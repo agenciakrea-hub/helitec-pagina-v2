@@ -259,9 +259,9 @@ const services = [
      */
     position:         absolute;
     left:             0;
-    top:              -15%;
+    top:              -25%;
     width:            100%;
-    height:           130%;
+    height:           150%;   /* 150%: margen de 25% en cada lado para STRENGTH=0.40 */
 
     object-fit:       cover;    /* ANTI-SLOP OBLIGATORIO */
     object-position:  center;
@@ -370,9 +370,9 @@ const services = [
       font-size: var(--text-2xl);
     }
 
-    /* 1 columna en móvil */
-    .sgrid__grid {
-      grid-template-columns: 1fr;
+    /* Grid 2×2 conservado en móvil — celdas más compactas */
+    .sgrid__frame {
+      height: clamp(130px, 32vw, 200px);
     }
   }
 
@@ -415,7 +415,7 @@ const services = [
    *   · Skip frames fuera del viewport: ahorra cálculos innecesarios
    */
 
-  var STRENGTH = 0.20;
+  var STRENGTH = 0.40;
   var frames   = Array.from(document.querySelectorAll('.sgrid__frame'));
   var ticking  = false;
 

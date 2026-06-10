@@ -71,7 +71,7 @@ const { lang = 'es' } = Astro.props;
       preload="metadata"
       aria-hidden="true"
     >
-      <source src="/assets/videohelitec.mov" type="video/mp4" />
+      <source src="/assets/videohelitec.mp4" type="video/mp4" />
     </video>
 
     <!--
@@ -114,8 +114,9 @@ const { lang = 'es' } = Astro.props;
 
     <!-- Descriptor: Inter 300, rgba(255,255,255,.60) -->
     <p class="hero__desc">
-      Transporte ejecutivo, industrial y aeromédico bajo los
-      estándares más exigentes de la industria aeronáutica venezolana.
+      Transporte ejecutivo, industrial y aeromédico bajo
+      <span class="hero__accent-line">los estándares más exigentes</span>
+      de la industria aeronáutica venezolana.
     </p>
 
     <!-- ── CTAs GHOST ──────────────────────────────────────────────────────── -->
@@ -265,6 +266,9 @@ const { lang = 'es' } = Astro.props;
 
     width:     100%;
     max-width: var(--content-max);
+
+    /* Desplaza el bloque de contenido un poco hacia arriba del centro */
+    transform: translateY(-6vh);
   }
 
 
@@ -327,6 +331,37 @@ const { lang = 'es' } = Astro.props;
 
     max-width: 48ch;
     margin-inline: auto;
+  }
+
+
+  /* ── Subrayado bicolor: rojo → azul (de izquierda a derecha) ────────────── */
+
+  .hero__accent-line {
+    position: relative;
+    display:  inline;
+  }
+
+  .hero__accent-line::after {
+    content:  '';
+    position: absolute;
+    bottom:   -2px;
+    left:     0;
+    right:    0;
+    height:   1.5px;
+
+    /*
+     * Línea de dos tramos: rojo (--c-red) en el 50% izquierdo,
+     * azul/sky (--c-sky) en el 50% derecho.
+     * Nota: se usa linear-gradient en un pseudo-elemento de 1.5px —
+     * no es un fondo de sección ni decorativo genérico (ANTI-SLOP conforme).
+     */
+    background: linear-gradient(
+      to right,
+      var(--c-red)  50%,
+      var(--c-sky)  50%
+    );
+
+    pointer-events: none;
   }
 
 
