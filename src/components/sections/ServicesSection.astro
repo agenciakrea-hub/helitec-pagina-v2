@@ -199,11 +199,15 @@ const NUM_CARDS = services.length; // 4
   /* ── Sección: altura total del recorrido de scroll ──────────────────────── */
   .sstack {
     /*
-     * height = (N + 1) × 100vh
-     * Con N=4: 500vh — cada tarjeta tiene ~100vh de "tiempo" en pantalla.
-     * El +1 da espacio extra para que la última tarjeta repose antes de salir.
+     * Fase 7.1 — Aumentado a 700vh (desde 500vh):
+     *   scrollableH = 700vh - 100vh (stage) = 600vh
+     *   600vh / 4 tarjetas = 150vh por tarjeta
+     *   El JS divide cada slot en 50% hold + 50% transición:
+     *     · 75vh sin movimiento → tiempo de lectura por tarjeta
+     *     · 75vh animación entrada/salida
+     *   Elimina el "saltar tarjetas" al hacer scroll rápido.
      */
-    height:   500vh;
+    height:   700vh;
     position: relative;
   }
 
@@ -437,145 +441,235 @@ const NUM_CARDS = services.length; // 4
 
 <script>
   /**
-   * ServicesSection — Scroll-driven stack animation
+   * ServicesSection — Scroll-driven stack animation · Fase 7.1
    *
-   * Arquitectura:
-   *   · 1 sticky stage (100vh) que nunca se mueve
-   *   · N tarjetas absolutely positioned dentro del stage
-   *   · JS calcula la posición de scroll RELATIVA a la sección
-   *   · Cada tarjeta anima entre 3 estados:
-   *       WAITING  (antes de su turno):   translateY(100%), opacity 0
-   *       ENTERING (llegando desde abajo): translateY eased 100→0, opacity 0→1
-   *       ACTIVE   (visible):             translateY(0), opacity 1
-   *       BEHIND   (cubierta por siguiente): scale 0.96→0.93, opacity 0.9→0.7
+   * Mejoras sobre la versión anterior:
    *
-   * Misma técnica que Hero.astro: requestAnimationFrame + passive scroll listener.
-   * Smoothstep easing para la entrada: p * p * (3 - 2 * p)
+   *   1. ZONA DE HOLD (scroll resistance)
+   *      Cada tarjeta tiene dos fases dentro de su "slot" de scroll:
+   *        · HOLD  (50%): tarjeta completamente visible, nada se mueve.
+   *                       El usuario puede leer sin que la UI lo presione.
+   *        · ENTER (50%): siguiente tarjeta sube, actual retrocede.
+   *      Resultado: pasar el dedo rápido ya no salta tarjetas.
+   *      Con height: 700vh → scrollableH = 600vh → 150vh/tarjeta →
+   *        75vh de lectura + 75vh de animación por tarjeta.
+   *
+   *   2. MODO COMPACTO (retorno limpio)
+   *      Una vez vista la sección completa, al volver a scrollear HACIA ARRIBA
+   *      las 4 tarjetas se colapsan en una cuadrícula 2×2 de miniaturas.
+   *      No hay re-animación tediosa: el usuario pasa por encima rápido.
+   *      Al volver a bajar, se restaura la animación normal.
    */
   (function () {
-    const section = document.getElementById('servicios');
+    var section = document.getElementById('servicios');
     if (!section) return;
 
-    const stage = section.querySelector('.sstack__stage');
-    const cards = Array.from(section.querySelectorAll('.sstack__card'));
-    const dots  = Array.from(section.querySelectorAll('.sstack__progress-dot'));
-    const N     = cards.length; // 4
+    var stage = section.querySelector('.sstack__stage');
+    var cards = Array.from(section.querySelectorAll('.sstack__card'));
+    var dots  = Array.from(section.querySelectorAll('.sstack__progress-dot'));
+    var N     = cards.length; /* 4 */
 
     if (!stage || !cards.length) return;
 
     /* ── Helpers ──────────────────────────────────────────────────────── */
-
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-    /* Smoothstep: misma función que en Hero.astro */
-    function smoothstep(t) {
-      const p = clamp(t, 0, 1);
-      return p * p * (3 - 2 * p);
-    }
-
-    /* Lerp: interpolación lineal */
+    function smoothstep(t) { var p = clamp(t, 0, 1); return p * p * (3 - 2 * p); }
     function lerp(a, b, t) { return a + (b - a) * t; }
 
     /* ── Estado global ────────────────────────────────────────────────── */
-    let ticking = false;
+    var ticking      = false;
+    var isCompleted  = false;   /* Sección ya fue scrolleada completa */
+    var inCompact    = false;   /* Modo miniatura activo */
+    var prevScrollY  = window.scrollY;
+    var transTimer   = null;
 
-    /* ── Función de animación ─────────────────────────────────────────── */
+    /* ─────────────────────────────────────────────────────────────────────
+       MODO NORMAL — animación scroll-driven con zonas de hold
+    ───────────────────────────────────────────────────────────────────── */
     function updateStack() {
+      var rect      = section.getBoundingClientRect();
+      var sectionH  = section.offsetHeight;   /* 700vh */
+      var viewH     = window.innerHeight;
+      var scrollableH = sectionH - viewH;     /* 600vh */
+
+      var scrolled = clamp(-rect.top, 0, scrollableH);
+
       /*
-       * Calcular el progreso de scroll DENTRO de la sección.
+       * Zonas de hold:
+       *   HOLD_FRAC  = primeros 50% del slot → cardP congelado (tarjeta activa, quieta)
+       *   ENTER_FRAC = últimos 50% del slot  → siguiente tarjeta entra / actual retrocede
        *
-       * rect.top es la distancia del top de la sección al top del viewport.
-       * Cuando el usuario llega al top de la sección: rect.top = 0
-       * Cuando la sección se ha scrolleado completa: rect.top = -scrollableHeight
+       * rawPos ∈ [0, N]:  posición normalizada en el espacio de N tarjetas.
+       * slotIdx:          índice de la tarjeta cuyo slot estamos recorriendo (0..N-1).
+       * slotFrac:         posición dentro del slot actual [0, 1).
        */
-      const rect            = section.getBoundingClientRect();
-      const sectionH        = section.offsetHeight;         /* 500vh */
-      const viewH           = window.innerHeight;
-      const scrollableH     = sectionH - viewH;             /* 400vh */
+      var HOLD_FRAC  = 0.50;
+      var ENTER_FRAC = 0.50;
 
-      /* Cuánto se ha scrolleado dentro de la sección (0 to scrollableH) */
-      const scrolled = clamp(-rect.top, 0, scrollableH);
+      var rawPos   = (scrolled / scrollableH) * N;
+      var slotIdx  = clamp(Math.floor(rawPos), 0, N - 1);
+      var slotFrac = rawPos - slotIdx;
 
-      /*
-       * Mapeo: 0..scrollableH → 1..(N+1)
-       * De esta forma:
-       *   scrolled = 0         → cardP = 1  (tarjeta 0 ya visible)
-       *   scrolled = 1×100vh   → cardP = 2  (tarjeta 1 entra)
-       *   scrolled = 2×100vh   → cardP = 3  (tarjeta 2 entra)
-       *   scrolled = 3×100vh   → cardP = 4  (tarjeta 3 entra y es la última)
-       */
-      const cardP = 1 + (scrolled / scrollableH) * N;
+      var cardP;
+      if (slotFrac < HOLD_FRAC) {
+        /* Zona hold: tarjeta activa, ningún movimiento */
+        cardP = 1 + slotIdx;
+      } else {
+        /* Zona enter: animación de entrada / salida */
+        var enterP = (slotFrac - HOLD_FRAC) / ENTER_FRAC;
+        cardP = 1 + slotIdx + enterP;
+      }
 
-      /* Actualizar cada tarjeta */
-      cards.forEach((card, i) => {
-        /*
-         * local:
-         *   < 0 → tarjeta aún no visible (esperando debajo)
-         *   0→1 → tarjeta ENTRANDO desde abajo
-         *   1   → tarjeta completamente visible (ACTIVA)
-         *   >1  → tarjeta DETRÁS (cubierta por la siguiente)
-         */
-        const local = cardP - i;
+      /* Nunca pasar de N (última tarjeta no va detrás de nada) */
+      cardP = clamp(cardP, 1, N);
 
-        let ty      = 0;    /* translateY en % */
-        let scale   = 1;
-        let opacity = 1;
+      /* Aplicar a cada tarjeta */
+      cards.forEach(function (card, i) {
+        var local   = cardP - i;
+        var ty      = 0;
+        var scale   = 1;
+        var opacity = 1;
 
         if (local <= 0) {
-          /* Esperando — debajo del viewport */
           ty      = 100;
           opacity = 0;
-
         } else if (local < 1) {
-          /* Entrando: deslizamiento hacia arriba con smoothstep */
-          const enterP = smoothstep(local); /* 0 → 1 con ease */
-          ty      = (1 - enterP) * 100;
-          opacity = clamp(enterP * 1.5, 0, 1); /* Fade más rápido que el slide */
-
+          var ep = smoothstep(local);
+          ty      = (1 - ep) * 100;
+          opacity = clamp(ep * 1.5, 0, 1);
         } else {
-          /* Activa o Detrás */
-          ty = 0;
-
-          const behindProgress = clamp(local - 1, 0, 1); /* 0 (activa) → 1 (cubierta) */
-
-          scale   = lerp(1,    0.93, smoothstep(behindProgress));
-          opacity = lerp(1,    0.65, smoothstep(behindProgress));
+          var bp = clamp(local - 1, 0, 1);
+          scale   = lerp(1, 0.93, smoothstep(bp));
+          opacity = lerp(1, 0.65, smoothstep(bp));
         }
 
-        /* Aplicar transformación — usar template literal para precisión */
-        if (ty !== 0) {
-          card.style.transform = `translateY(${ty.toFixed(3)}%)`;
-        } else {
-          card.style.transform = `scale(${scale.toFixed(4)})`;
-        }
-
-        card.style.opacity = String(opacity.toFixed(3));
+        card.style.transform = ty !== 0
+          ? 'translateY(' + ty.toFixed(3) + '%)'
+          : 'scale(' + scale.toFixed(4) + ')';
+        card.style.opacity = opacity.toFixed(3);
       });
 
-      /* Actualizar dots de progreso */
-      const activeIdx = clamp(Math.floor(cardP) - 1, 0, N - 1);
-
-      dots.forEach((dot, i) => {
+      /* Dots de progreso */
+      var activeIdx = clamp(Math.floor(cardP) - 1, 0, N - 1);
+      dots.forEach(function (dot, i) {
         dot.classList.toggle('is-active', i === activeIdx);
       });
 
       ticking = false;
     }
 
-    /* ── Inicializar ────────────────────────────────────────────────────── */
-    updateStack();
+    /* ─────────────────────────────────────────────────────────────────────
+       MODO COMPACTO — cuadrícula 2×2 de miniaturas
+    ───────────────────────────────────────────────────────────────────── */
 
-    /* ── Listener de scroll ─────────────────────────────────────────────── */
-    window.addEventListener('scroll', function () {
-      if (!ticking) {
+    /*
+     * Posiciones para cuadrícula 2×2.
+     * translate(±25%, ±25%): desplaza el centro de cada tarjeta a su cuadrante.
+     * Las tarjetas son position:absolute; inset:0 → dimensiones = viewport.
+     * 25% de 100vw = 25vw; 25% de 100vh = 25vh.
+     * scale(0.44) → cada tarjeta ocupa ~44vw × 44vh ≈ 23px de gap entre ellas.
+     */
+    var COMPACT_POSITIONS = [
+      'translate(-25%, -25%)',  /* 0: superior izquierda */
+      'translate( 25%, -25%)',  /* 1: superior derecha   */
+      'translate(-25%,  25%)',  /* 2: inferior izquierda */
+      'translate( 25%,  25%)',  /* 3: inferior derecha   */
+    ];
+    var COMPACT_SCALE   = 0.44;
+    var COMPACT_OPACITY = '0.78';
+
+    function showCompactGrid() {
+      cards.forEach(function (card, i) {
+        card.style.transform = COMPACT_POSITIONS[i] + ' scale(' + COMPACT_SCALE + ')';
+        card.style.opacity   = COMPACT_OPACITY;
+      });
+      /* Todos los dots activos en modo compacto */
+      dots.forEach(function (dot) { dot.classList.add('is-active'); });
+      ticking = false;
+    }
+
+    /* ── Transición suave al cambiar de modo ───────────────────────────── */
+    var TRANS_DUR = 360; /* ms */
+    var TRANS_CSS = 'transform ' + TRANS_DUR + 'ms cubic-bezier(0.4, 0, 0.2, 1), ' +
+                    'opacity '   + TRANS_DUR + 'ms ease';
+
+    function setTransition(on) {
+      var val = on ? TRANS_CSS : 'none';
+      cards.forEach(function (c) { c.style.transition = val; });
+    }
+
+    function enterCompact() {
+      if (inCompact) return;
+      inCompact = true;
+      clearTimeout(transTimer);
+      setTransition(true);
+      showCompactGrid();
+      transTimer = setTimeout(function () { setTransition(false); }, TRANS_DUR + 20);
+    }
+
+    function exitCompact() {
+      if (!inCompact) return;
+      inCompact = false;
+      clearTimeout(transTimer);
+      setTransition(true);
+      updateStack();
+      transTimer = setTimeout(function () { setTransition(false); }, TRANS_DUR + 20);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────
+       HANDLER DE SCROLL — elige modo según dirección y estado
+    ───────────────────────────────────────────────────────────────────── */
+    function onScroll() {
+      var scrollY      = window.scrollY;
+      var scrollingUp  = scrollY < prevScrollY;
+      prevScrollY = scrollY;
+
+      var rect      = section.getBoundingClientRect();
+      var sectionH  = section.offsetHeight;
+      var viewH     = window.innerHeight;
+      var scrollableH = sectionH - viewH;
+
+      var scrolled  = clamp(-rect.top, 0, scrollableH);
+
+      /*
+       * Marcar sección como "completada" cuando la última tarjeta
+       * ha terminado de entrar.
+       * Eso ocurre cuando rawPos ≥ N-1 (inicio del slot de la última tarjeta).
+       * Con N=4: rawPos = 3 → scrolled = 3/4 × 600vh = 450vh.
+       */
+      if (scrolled >= (N - 1) / N * scrollableH) {
+        isCompleted = true;
+      }
+
+      /* ¿El stage sticky está activo? (sección anclada al viewport) */
+      var inSection = rect.top <= 0 && rect.bottom >= viewH;
+
+      if (inSection && scrollingUp && isCompleted) {
+        enterCompact();
+      } else if (inSection && !scrollingUp) {
+        exitCompact();
+      } else if (!inSection && inCompact) {
+        /* Salió de la sección — reset silencioso */
+        inCompact = false;
+        setTransition(false);
+      }
+
+      if (!inCompact && !ticking) {
         requestAnimationFrame(updateStack);
         ticking = true;
       }
-    }, { passive: true });
+    }
 
-    /* ── ResizeObserver: recalcular en cambio de viewport ─────────────── */
+    /* ── Inicializar ────────────────────────────────────────────────────── */
+    updateStack();
+
+    /* ── Listeners ─────────────────────────────────────────────────────── */
+    window.addEventListener('scroll', onScroll, { passive: true });
+
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(updateStack).observe(section);
+      new ResizeObserver(function () {
+        if (!inCompact) updateStack();
+      }).observe(section);
     }
 
   })();
