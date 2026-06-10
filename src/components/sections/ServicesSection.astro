@@ -23,8 +23,8 @@
  *   object-fit: cover       — ✓ en todas las imágenes
  *   Tipografía: weight 200  — ✓ en h3
  *
- * IMÁGENES: Requieren /assets/servicio-1.jpg a servicio-4.jpg
- * Si no existen, el overlay sobre color sólido es el fallback visual.
+ * IMÁGENES (reales, Fase 6.1):
+ *   YV1923_1.jpg · Helicoptero%20en%20pantano.jpg · Avion%20y%20Ambulancia%201.jpg · Helicoptero%20Eslinga%201.jpg
  */
 
 interface Props {
@@ -34,6 +34,11 @@ interface Props {
 const { lang = 'es' } = Astro.props;
 
 /* ── Datos de servicios ─────────────────────────────────────────────────── */
+/*
+ * Rutas de imagen con espacios en el nombre se codifican con encodeURI()
+ * para garantizar URLs válidas en el build de Astro y en los navegadores.
+ * Ejemplo: 'Helicoptero en pantano.jpg' → 'Helicoptero%20en%20pantano.jpg'
+ */
 const services = [
   {
     num:   '01',
@@ -44,9 +49,8 @@ const services = [
       : 'Fixed-wing Metro and Merlin fleet for high-efficiency corporate transport. Direct connections between Caracas, the interior, and the Caribbean.',
     cta:   lang === 'es' ? 'Solicitar vuelo ejecutivo' : 'Request executive flight',
     href:  '/#contacto',
-    img:   '/assets/servicio-1.jpg',
-    alt:   lang === 'es' ? 'Cabina ejecutiva de aeronave Helitec' : 'Helitec executive aircraft cabin',
-    /* Color accent para el número decorativo */
+    img:   '/assets/YV1923_1.jpg',                                      /* Interior ejecutivo Metro 23 Merlin 300 */
+    alt:   lang === 'es' ? 'Interior ejecutivo Metro 23 Merlin 300 — Consorcio Helitec' : 'Metro 23 Merlin 300 executive cabin interior — Consorcio Helitec',
     accent: 'var(--c-sky)',
   },
   {
@@ -58,8 +62,8 @@ const services = [
       : 'MD helicopters with 24/7 availability for aerial support on offshore platforms and onshore energy sector facilities.',
     cta:   lang === 'es' ? 'Consultar operaciones' : 'Inquire about operations',
     href:  '/#contacto',
-    img:   '/assets/servicio-2.jpg',
-    alt:   lang === 'es' ? 'Helicóptero Helitec en operación petrolera' : 'Helitec helicopter in petroleum operation',
+    img:   encodeURI('/assets/Helicoptero en pantano.jpg'),              /* MD Helitec operando en zona pantanosa / offshore */
+    alt:   lang === 'es' ? 'Helicóptero MD Helitec en operación en zona pantanosa' : 'Helitec MD helicopter operating in swamp/offshore zone',
     accent: 'rgba(255,255,255,0.5)',
   },
   {
@@ -67,26 +71,26 @@ const services = [
     slug:  'aeromedico',
     title: lang === 'es' ? 'Traslados Aeromédicos' : 'Aeromedical Transfers',
     desc:  lang === 'es'
-      ? 'MD 902 Explorer NOTAR® sin torque de cola para evacuaciones médicas de emergencia. Equipado para UCI aérea. Respuesta inmediata.'
-      : 'MD 902 Explorer NOTAR® tail-rotor-less for emergency medical evacuations. Equipped for airborne ICU. Immediate response.',
+      ? 'Metro III con configuración aeromédica certificada y camilla Spectrum Aeromed. Coordinación inmediata con ambulancias en tierra. Respuesta 24/7.'
+      : 'Metro III with certified aeromedical configuration and Spectrum Aeromed stretcher. Immediate coordination with ground ambulances. 24/7 response.',
     cta:   lang === 'es' ? 'Activar emergencia médica' : 'Activate medical emergency',
     href:  'https://wa.me/584166235254?text=EMERGENCIA+AEROM%C3%89DICA',
-    img:   '/assets/servicio-3.jpg',
-    alt:   lang === 'es' ? 'MD 902 Explorer aeromédico Helitec' : 'Helitec aeromedical MD 902 Explorer',
+    img:   encodeURI('/assets/Avion y Ambulancia 1.jpg'),                /* Metro III YV-147T junto a ambulancia en pista */
+    alt:   lang === 'es' ? 'Metro III Helitec junto a ambulancia — servicio aeromédico' : 'Helitec Metro III alongside ambulance — aeromedical service',
     accent: 'var(--c-red)',
     isExternal: true,
   },
   {
     num:   '04',
     slug:  'mantenimiento',
-    title: lang === 'es' ? 'Mantenimiento Certificado' : 'Certified Maintenance',
+    title: lang === 'es' ? 'Operaciones de Carga y Eslinga' : 'Cargo & Sling Operations',
     desc:  lang === 'es'
-      ? 'Hangar y taller aeronáutico con técnicos certificados INAC. Mantenimiento programado, inspecciones AOC y soporte técnico para operadores externos.'
-      : 'Hangar and aeronautical workshop with INAC-certified technicians. Scheduled maintenance, AOC inspections and technical support for external operators.',
-    cta:   lang === 'es' ? 'Consultar mantenimiento' : 'Inquire about maintenance',
+      ? 'Helicópteros MD equipados para carga externa con eslinga certificada. Transporte de equipos industriales a zonas de difícil acceso. Capacidad hasta 650 kg externos.'
+      : 'MD helicopters equipped for external sling load operations. Industrial equipment transport to hard-to-reach zones. Up to 650 kg external capacity.',
+    cta:   lang === 'es' ? 'Consultar operaciones de carga' : 'Inquire about cargo ops',
     href:  '/#contacto',
-    img:   '/assets/servicio-4.jpg',
-    alt:   lang === 'es' ? 'Hangar de mantenimiento Helitec' : 'Helitec maintenance hangar',
+    img:   encodeURI('/assets/Helicoptero Eslinga 1.jpg'),               /* MD Helitec en operación con eslinga de carga externa */
+    alt:   lang === 'es' ? 'Helicóptero MD Helitec en operación con eslinga de carga externa' : 'Helitec MD helicopter performing external sling load operation',
     accent: 'rgba(255,255,255,0.5)',
   },
 ];

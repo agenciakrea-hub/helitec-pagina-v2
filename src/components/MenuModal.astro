@@ -28,8 +28,8 @@
  *   · Cards servicio: --j (0-3) × 60ms + base 200ms
  *   · Cierre: delay invertido (menor en los últimos) → salida fluida
  *
- * Assets esperados (en /assets/):
- *   servicio-1.jpg → servicio-4.jpg (fallback: --c-bg-raised)
+ * Assets asignados (en /assets/):
+ *   YV1923_1.jpg · Helicoptero%20en%20pantano.jpg · Avion%20y%20Ambulancia%201.jpg · Helicoptero%20Eslinga%201.jpg
  */
 
 interface Props {
@@ -47,30 +47,34 @@ const navLinks = [
   { label: 'Contacto',             href: '/#contacto'   },
 ];
 
+/*
+ * Rutas con espacios en nombre de archivo → encodeURI() obligatorio.
+ * Sincronizadas con el array de ServicesSection.astro (mismas fotos, mismo orden).
+ */
 const services = [
   {
     label: 'Aviación Ejecutiva',
     href:  '/#servicios',
-    img:   '/assets/servicio-1.jpg',
-    alt:   'Avión ejecutivo Helitec en vuelo',
+    img:   '/assets/YV1923_1.jpg',
+    alt:   'Interior ejecutivo Metro 23 Merlin 300 — Consorcio Helitec',
   },
   {
     label: 'Operaciones Petroleras',
     href:  '/#servicios',
-    img:   '/assets/servicio-2.jpg',
-    alt:   'Helicóptero Helitec en plataforma petrolera',
+    img:   encodeURI('/assets/Helicoptero en pantano.jpg'),
+    alt:   'Helicóptero MD Helitec en operación en zona pantanosa',
   },
   {
     label: 'Traslados Aeromédicos',
     href:  '/#servicios',
-    img:   '/assets/servicio-3.jpg',
-    alt:   'Aeronave aeromédica Helitec en traslado',
+    img:   encodeURI('/assets/Avion y Ambulancia 1.jpg'),
+    alt:   'Metro III Helitec junto a ambulancia — servicio aeromédico',
   },
   {
-    label: 'Mantenimiento',
+    label: 'Carga y Eslinga',
     href:  '/#servicios',
-    img:   '/assets/servicio-4.jpg',
-    alt:   'Hangar de mantenimiento Helitec',
+    img:   encodeURI('/assets/Helicoptero Eslinga 1.jpg'),
+    alt:   'Helicóptero MD Helitec en operación con eslinga de carga externa',
   },
 ];
 ---

@@ -1,19 +1,28 @@
 ---
 /**
  * StatsSection.astro
- * Consorcio Helitec — Sección "Por qué Helitec" (Estadísticas + Certificación INAC)
+ * Consorcio Helitec — "Por qué Helitec" (Dashboard de estadísticas operativas)
  *
- * Estructura:
- *   · Encabezado: overline + título fino + párrafo contexto
- *   · Grid de estadísticas: 4 celdas con número ultra-fino + etiqueta
- *   · Badge INAC: imagen AOC.png con marco formal
+ * v2 — Reingeniería K3 Studios + Contador numérico animado
  *
- * Tipografía: font-weight 200 (--fw-thin) en números,
- *             letter-spacing amplio en etiquetas.
+ * Grid 3×2 (desktop) / 2×3 (mobile) — 6 celdas compactas:
+ *   1. +117.000  · HORAS DE VUELO EN HELICÓPTEROS         (contador rAF)
+ *   2. +43.000   · HORAS DE VUELO EN AVIONES              (contador rAF)
+ *   3. +171.500  · PASAJEROS TRANSPORTADOS                (contador rAF)
+ *   4. Nacional e Internacional · COBERTURA DE OPERACIONES (texto fijo)
+ *   5. +35       · AÑOS DE EXPERIENCIA                    (contador rAF)
+ *   6. INAC · OACI · CERTIFICACIONES ACTIVAS              (texto fijo)
  *
- * NOTA PARA EL CLIENTE: Los valores marcados con [DATO] son placeholders.
- *   Confirmar con operaciones: años de fundación, horas totales de vuelo.
- *   El número "8" de aeronaves se toma directamente de flota.json.
+ * Animaciones:
+ *   A. Reveal staggered (K3): IntersectionObserver → fade-up por celda,
+ *      transition-delay escalonado mediante --i CSS custom property
+ *   B. Number counter: requestAnimationFrame, easeOutCubic, 2000ms,
+ *      separador de miles "." (convención venezolana: 117.000)
+ *
+ * Reglas anti-slop:
+ *   PROHIBIDO box-shadow       — ✓
+ *   PROHIBIDO linear-gradient  — ✓
+ *   border-radius ≤ 4px        — ✓ (var(--r-micro) en todo)
  */
 
 interface Props {
@@ -22,37 +31,67 @@ interface Props {
 
 const { lang = 'es' } = Astro.props;
 
-/* ── Datos de estadísticas ── */
-/* NOTA: Reemplazar valores con datos confirmados por el cliente */
-const stats = [
+/* ── Definición de las 6 celdas estadísticas ─────────────────────────────── */
+
+interface StatCell {
+  /** Valor numérico a animar. null = texto fijo sin contador */
+  value:     number | null;
+  /** Texto estático si value es null */
+  display?:  string;
+  /** Prefijo que se mantiene durante la animación (ej: "+") */
+  prefix?:   string;
+  /** Etiqueta descriptiva bajo el valor */
+  label:     string;
+  /** true → activa el contador rAF en JS */
+  animate:   boolean;
+}
+
+const stats: StatCell[] = [
   {
-    value: '+25',
-    unit:  'años',
-    label: lang === 'es' ? 'De operaciones ininterrumpidas' : 'Years of continuous operations',
+    value:   117000,
+    prefix:  '+',
+    label:   lang === 'es' ? 'Horas de vuelo en helicópteros' : 'Helicopter flight hours',
+    animate: true,
   },
   {
-    value: '8',
-    unit:  '',
-    label: lang === 'es' ? 'Aeronaves en flota activa' : 'Active fleet aircraft',
+    value:   43000,
+    prefix:  '+',
+    label:   lang === 'es' ? 'Horas de vuelo en aviones' : 'Fixed-wing flight hours',
+    animate: true,
   },
   {
-    value: '+30K',
-    unit:  'hrs',
-    label: lang === 'es' ? 'Horas de vuelo acumuladas' : 'Accumulated flight hours',
+    value:   171500,
+    prefix:  '+',
+    label:   lang === 'es' ? 'Pasajeros transportados' : 'Passengers transported',
+    animate: true,
   },
   {
-    value: 'INAC',
-    unit:  '',
-    label: lang === 'es' ? 'Certificación Aeronáutica Oficial' : 'Official Aeronautical Certification',
+    value:   null,
+    display: lang === 'es' ? 'Nacional e Internacional' : 'Domestic & International',
+    label:   lang === 'es' ? 'Cobertura de operaciones' : 'Operations coverage',
+    animate: false,
+  },
+  {
+    value:   35,
+    prefix:  '+',
+    label:   lang === 'es' ? 'Años de experiencia' : 'Years of experience',
+    animate: true,
+  },
+  {
+    value:   null,
+    display: 'INAC · OACI',
+    label:   lang === 'es' ? 'Certificaciones activas' : 'Active certifications',
+    animate: false,
   },
 ];
 ---
+
 
 <section class="stats" id="por-que-helitec" aria-labelledby="stats-heading">
 
   <div class="stats__inner">
 
-    <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
+    <!-- ── Encabezado de sección ──────────────────────────────────────────── -->
     <header class="stats__header">
 
       <p class="stats__overline">
@@ -66,54 +105,95 @@ const stats = [
         }
       </h2>
 
-      <p class="stats__desc">
-        {lang === 'es'
-          ? 'Operamos bajo los estándares más exigentes de la aviación civil venezolana. Cada vuelo refleja nuestro compromiso con la seguridad, la precisión y la confiabilidad que la industria demanda.'
-          : 'We operate under the most demanding standards of Venezuelan civil aviation. Every flight reflects our commitment to the safety, precision and reliability that the industry demands.'
-        }
-      </p>
-
     </header>
 
-    <!-- ── Grid de estadísticas ─────────────────────────────────────────── -->
-    <div class="stats__grid" role="list">
+    <!-- ── Grid de estadísticas — 6 celdas ──────────────────────────────── -->
+    <!--
+      data-stats-grid → punto de observación del IntersectionObserver
+      [data-stat-cell] → celdas individuales con animación K3
+      style="- -i: N"  → índice para el transition-delay escalonado
+    -->
+    <div
+      class="stats__grid"
+      data-stats-grid
+      role="list"
+      aria-label={lang === 'es' ? 'Estadísticas operativas de Helitec' : 'Helitec operational statistics'}
+    >
 
       {stats.map((stat, i) => (
-        <div class="stats__cell" role="listitem">
-          <div class="stats__number-wrap">
-            <span class="stats__value">{stat.value}</span>
-            {stat.unit && (
-              <span class="stats__unit">{stat.unit}</span>
+        <div
+          class="stats__cell"
+          data-stat-cell
+          style={`--i: ${i}`}
+          role="listitem"
+        >
+
+          <div class="stats__value-wrap">
+            {stat.animate && stat.value !== null ? (
+              /*
+               * Celdas numéricas animadas.
+               * data-counter  → marca el span para el script de conteo
+               * data-target   → valor final como string (ej: "117000")
+               * data-prefix   → prefijo a conservar durante el conteo ("+")
+               * El contenido inicial es el valor ya formateado para SSR/noscript.
+               */
+              <span
+                class="stats__value"
+                data-counter
+                data-target={String(stat.value)}
+                data-prefix={stat.prefix ?? ''}
+                aria-label={`${stat.prefix ?? ''}${stat.value.toLocaleString('de-DE')} ${stat.label}`}
+              >
+                {stat.prefix ?? ''}{stat.value.toLocaleString('de-DE')}
+              </span>
+            ) : (
+              <span
+                class={
+                  stat.display === 'INAC · OACI'
+                    ? 'stats__value stats__value--text stats__value--cert'
+                    : 'stats__value stats__value--text'
+                }
+              >
+                {stat.display}
+              </span>
             )}
           </div>
+
           <p class="stats__label">{stat.label}</p>
+
         </div>
       ))}
 
     </div>
 
-    <!-- ── Badge INAC / Certificación AOC ──────────────────────────────── -->
+    <!-- ── Bloque de certificación AOC ──────────────────────────────────── -->
+    <!--
+      Sello oficial del Certificado de Operador Aéreo emitido por el INAC.
+      Posicionado debajo del grid de estadísticas como cierre de la sección.
+      object-fit: contain — la imagen tiene fondo transparente (PNG).
+    -->
     <div class="stats__cert">
 
       <div class="stats__cert-badge">
         <img
           src="/assets/AOC.png"
-          alt="Certificado de Operador Aéreo — INAC Venezuela"
+          alt="Certificado de Operador Aéreo — Instituto Nacional de Aeronáutica Civil de Venezuela (INAC)"
           class="stats__cert-img"
-          width="120"
-          height="120"
+          width="80"
+          height="80"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
       <div class="stats__cert-info">
-        <p class="stats__cert-label">
+        <p class="stats__cert-title">
           {lang === 'es' ? 'Certificado de Operador Aéreo' : 'Air Operator Certificate'}
         </p>
         <p class="stats__cert-body">
           {lang === 'es'
-            ? 'Consorcio Helitec opera bajo Certificado AOC otorgado por el Instituto Nacional de Aeronáutica Civil (INAC) de Venezuela, garantizando el cumplimiento de todas las normativas de seguridad operacional.'
-            : 'Consorcio Helitec operates under an AOC Certificate granted by the Instituto Nacional de Aeronáutica Civil (INAC) of Venezuela, ensuring compliance with all operational safety regulations.'
+            ? 'Consorcio Helitec opera bajo Certificado AOC otorgado por el Instituto Nacional de Aeronáutica Civil (INAC) de Venezuela, garantizando el cumplimiento de todas las normativas de seguridad operacional nacional e internacional.'
+            : 'Consorcio Helitec operates under an AOC Certificate granted by Venezuela\'s Instituto Nacional de Aeronáutica Civil (INAC), ensuring compliance with all national and international operational safety regulations.'
           }
         </p>
       </div>
@@ -126,26 +206,36 @@ const stats = [
 
 
 <style>
-  /* ── Sección ─────────────────────────────────────────────────────────────── */
+  /* ════════════════════════════════════════════════════════════════════════
+     SECCIÓN
+  ════════════════════════════════════════════════════════════════════════ */
+
   .stats {
     background-color: var(--c-bg-raised);
     border-top:       1px solid var(--c-line);
-    padding-block:    clamp(64px, 10vh, 120px);
+    padding-block:    clamp(56px, 9vh, 104px);
   }
 
   .stats__inner {
-    max-width:    var(--content-max);
-    margin-inline: auto;
+    max-width:      var(--content-max);
+    margin-inline:  auto;
     padding-inline: calc(var(--sidebar-w) + var(--gutter));
   }
 
-  /* ── Encabezado ─────────────────────────────────────────────────────────── */
+  /* ════════════════════════════════════════════════════════════════════════
+     ENCABEZADO
+  ════════════════════════════════════════════════════════════════════════ */
+
   .stats__header {
-    max-width: 640px;
-    margin-bottom: clamp(48px, 7vh, 80px);
+    max-width:     520px;
+    margin-bottom: clamp(36px, 5vh, 56px);
   }
 
   .stats__overline {
+    display:     flex;
+    align-items: center;
+    gap:         12px;
+
     font-family:    var(--font-sans);
     font-size:      var(--text-xs);
     font-weight:    var(--fw-medium);
@@ -153,21 +243,17 @@ const stats = [
     text-transform: uppercase;
     color:          var(--c-sky);
 
-    margin-bottom: 16px;
-
-    /* Línea decorativa antes del texto */
-    display:     flex;
-    align-items: center;
-    gap:         12px;
+    margin-bottom: 14px;
   }
 
+  /* Línea decorativa horizontal antes del texto del overline */
   .stats__overline::before {
     content:          '';
     display:          block;
+    flex-shrink:      0;
     width:            32px;
     height:           1px;
     background-color: var(--c-sky);
-    flex-shrink:      0;
   }
 
   .stats__title {
@@ -178,167 +264,368 @@ const stats = [
     text-transform: uppercase;
     line-height:    1.1;
     color:          var(--c-text-1);
-
-    margin-bottom: 24px;
   }
 
-  .stats__desc {
-    font-family: var(--font-sans);
-    font-size:   clamp(0.875rem, 1.5vw, 1rem);
-    font-weight: var(--fw-light);
-    color:       var(--c-text-2);
-    line-height: 1.7;
-  }
+  /* ════════════════════════════════════════════════════════════════════════
+     GRID — truco gap + background-color para divisores sin border
+  ════════════════════════════════════════════════════════════════════════ */
 
-  /* ── Grid estadísticas ──────────────────────────────────────────────────── */
   .stats__grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display:               grid;
+    grid-template-columns: repeat(3, 1fr);
 
-    /* Líneas divisoras con el truco gap + background */
+    /*
+     * gap: 1px + background-color: var(--c-line) crea líneas divisoras de 1px
+     * entre las celdas sin necesidad de borders explícitos.
+     * Las celdas tienen background-color: var(--c-bg-raised) que cubre el gap.
+     */
     gap:              1px;
     background-color: var(--c-line);
     border:           1px solid var(--c-line);
-
-    margin-bottom: clamp(48px, 7vh, 72px);
   }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     CELDA — estado inicial + animación K3 staggered fade-up
+  ════════════════════════════════════════════════════════════════════════ */
 
   .stats__cell {
     background-color: var(--c-bg-raised);
-    padding:          clamp(24px, 4vw, 40px) clamp(20px, 3vw, 32px);
+
+    /*
+     * Padding compacto para el look "dashboard".
+     * Valores menores que la v1 para que las 6 celdas quepan
+     * en el viewport sin scroll excesivo.
+     */
+    padding: clamp(20px, 2.5vw, 28px) clamp(16px, 2vw, 24px);
 
     display:        flex;
     flex-direction: column;
     gap:            8px;
+
+    /*
+     * ESTADO INICIAL (antes de animación K3):
+     * Las celdas comienzan invisibles y desplazadas 24px hacia abajo.
+     * El JS añade .is-visible cuando el observer dispara → CSS anima.
+     */
+    opacity:     0;
+    transform:   translateY(24px);
+    will-change: opacity, transform;
+
+    transition:
+      opacity   0.55s var(--ease-out),
+      transform 0.55s var(--ease-out);
+
+    /*
+     * Delay escalonado K3: cada celda espera 90ms más que la anterior.
+     * --i se inyecta inline desde Astro: style="- -i: 0", "- -i: 1", …
+     * Celda 0 → 0ms, celda 1 → 90ms, celda 2 → 180ms, …, celda 5 → 450ms
+     */
+    transition-delay: calc(var(--i, 0) * 90ms);
   }
 
-  /* Número + unidad en línea */
-  .stats__number-wrap {
+  /* Estado visible — activado por JS tras IntersectionObserver */
+  .stats__cell.is-visible {
+    opacity:   1;
+    transform: translateY(0);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     VALORES NUMÉRICOS — celdas 1, 2, 3, 5
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .stats__value-wrap {
     display:     flex;
     align-items: baseline;
-    gap:         4px;
   }
 
   .stats__value {
     font-family:    var(--font-display);
-    font-size:      clamp(2.5rem, 4vw, 4rem);
+    font-size:      clamp(1.9rem, 3.2vw, 2.75rem);
     font-weight:    var(--fw-thin); /* 200 — OBLIGATORIO */
     letter-spacing: var(--ls-wide);
-    color:          var(--c-text-1);
     line-height:    1;
+    color:          var(--c-text-1);
+
+    /*
+     * font-variant-numeric: tabular-nums evita que los caracteres
+     * numéricos salten horizontalmente al cambiar de dígito durante
+     * la animación del contador.
+     */
+    font-variant-numeric:  tabular-nums;
+    font-feature-settings: "tnum" 1;
   }
 
-  .stats__unit {
-    font-family:    var(--font-sans);
-    font-size:      clamp(0.75rem, 1.2vw, 0.875rem);
-    font-weight:    var(--fw-light);
+  /* ════════════════════════════════════════════════════════════════════════
+     VALORES TEXTO — celdas 4 y 6 (sin animación numérica)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  /* Celda 4: "Nacional e Internacional" */
+  .stats__value--text {
+    font-family:    var(--font-display);
+    font-size:      clamp(1rem, 1.8vw, 1.35rem);
+    font-weight:    var(--fw-light); /* 300 */
     letter-spacing: var(--ls-wider);
-    text-transform: uppercase;
-    color:          var(--c-text-3);
-    padding-bottom: 0.25em; /* Alinea con la baseline del número */
+    line-height:    1.3;
+    color:          var(--c-text-1);
   }
+
+  /* Celda 6: "INAC · OACI" — mayúsculas, azul certificación */
+  .stats__value--cert {
+    font-size:      clamp(1.1rem, 2vw, 1.5rem);
+    font-weight:    var(--fw-light); /* 300 */
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-sky);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     ETIQUETA
+  ════════════════════════════════════════════════════════════════════════ */
 
   .stats__label {
     font-family:    var(--font-sans);
     font-size:      var(--text-xs);
     font-weight:    var(--fw-regular);
     letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
     color:          var(--c-text-2);
     line-height:    1.4;
   }
 
-  /* ── Badge de certificación ─────────────────────────────────────────────── */
-  .stats__cert {
-    display:     flex;
-    align-items: flex-start;
-    gap:         clamp(24px, 4vw, 40px);
+  /* ════════════════════════════════════════════════════════════════════════
+     RESPONSIVE
+  ════════════════════════════════════════════════════════════════════════ */
 
-    padding:          clamp(24px, 4vw, 40px);
-    border:           1px solid var(--c-line);
-    background-color: var(--c-bg);
-  }
-
-  .stats__cert-badge {
-    flex-shrink: 0;
-
-    width:  100px;
-    height: 100px;
-
-    display:         flex;
-    align-items:     center;
-    justify-content: center;
-
-    border:        1px solid var(--c-line-strong);
-    border-radius: var(--r-micro); /* 4px */
-    overflow:      hidden;
-
-    background-color: rgba(255,255,255,0.03);
-  }
-
-  .stats__cert-img {
-    width:      100%;
-    height:     100%;
-    object-fit: contain; /* Logo con transparencia — contain, no cover */
-    padding:    8px;
-  }
-
-  .stats__cert-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .stats__cert-label {
-    font-family:    var(--font-sans);
-    font-size:      var(--text-xs);
-    font-weight:    var(--fw-medium);
-    letter-spacing: var(--ls-widest);
-    text-transform: uppercase;
-    color:          var(--c-sky);
-    margin-bottom:  10px;
-  }
-
-  .stats__cert-body {
-    font-family: var(--font-sans);
-    font-size:   clamp(0.8rem, 1.5vw, 0.9rem);
-    font-weight: var(--fw-light);
-    color:       var(--c-text-2);
-    line-height: 1.65;
-  }
-
-  /* ── Responsive ─────────────────────────────────────────────────────────── */
-
-  /* Tablet (768–1023px): 2 columnas */
+  /* Tablet/Desktop menor: quitar offset del sidebar */
   @media (max-width: 1023px) {
     .stats__inner {
       padding-inline: var(--gutter);
     }
-
-    .stats__grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
   }
 
-  /* Mobile (< 640px): 1 columna, cert stack */
+  /* Mobile (< 640px): 2 columnas × 3 filas — compacto en viewport */
   @media (max-width: 639px) {
     .stats__grid {
       grid-template-columns: repeat(2, 1fr);
     }
 
+    .stats__cell {
+      padding: 18px 14px;
+    }
+
+    /* Valores numéricos más pequeños en pantallas estrechas */
+    .stats__value {
+      font-size: clamp(1.6rem, 7vw, 2.2rem);
+    }
+
+    .stats__value--text {
+      font-size: clamp(0.85rem, 4vw, 1rem);
+    }
+
+    .stats__value--cert {
+      font-size: clamp(0.9rem, 4.5vw, 1.1rem);
+    }
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     BLOQUE DE CERTIFICACIÓN AOC (debajo del grid)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .stats__cert {
+    display:     flex;
+    align-items: flex-start;
+    gap:         clamp(20px, 3vw, 32px);
+    margin-top:  1px; /* Une visualmente con el grid (gap trick visual) */
+
+    padding:          clamp(20px, 3vw, 32px);
+    border:           1px solid var(--c-line);
+    background-color: var(--c-bg); /* Un tono más oscuro que --c-bg-raised */
+  }
+
+  .stats__cert-badge {
+    flex-shrink: 0;
+    width:       80px;
+    height:      80px;
+
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+
+    border:           1px solid var(--c-line-strong);
+    border-radius:    var(--r-micro); /* 4px — límite sagrado */
+    background-color: rgba(255, 255, 255, 0.03);
+    overflow:         hidden;
+  }
+
+  .stats__cert-img {
+    width:      100%;
+    height:     100%;
+    object-fit: contain; /* PNG con transparencia — NUNCA cover */
+    padding:    6px;
+  }
+
+  .stats__cert-info {
+    flex:           1;
+    min-width:      0;
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+  }
+
+  .stats__cert-title {
+    font-family:    var(--font-sans);
+    font-size:      var(--text-xs);
+    font-weight:    var(--fw-semibold);
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-sky);
+  }
+
+  .stats__cert-body {
+    font-family: var(--font-sans);
+    font-size:   clamp(0.78rem, 1.3vw, 0.875rem);
+    font-weight: var(--fw-light);
+    color:       var(--c-text-2);
+    line-height: 1.65;
+  }
+
+  /* Mobile: cert en columna */
+  @media (max-width: 639px) {
     .stats__cert {
       flex-direction: column;
       align-items:    flex-start;
     }
 
     .stats__cert-badge {
-      width:  72px;
-      height: 72px;
-    }
-  }
-
-  /* Mobile muy pequeño: 1 col */
-  @media (max-width: 374px) {
-    .stats__grid {
-      grid-template-columns: 1fr;
+      width:  64px;
+      height: 64px;
     }
   }
 </style>
+
+
+<script>
+  /**
+   * StatsSection v2 — Motor de animaciones
+   *
+   * A. IntersectionObserver:
+   *    Observa [data-stats-grid]. Cuando el 20% del grid entra en el
+   *    viewport, añade .is-visible a todos los [data-stat-cell].
+   *    El CSS se encarga del fade-up escalonado via --i + transition-delay.
+   *
+   * B. Number Counter:
+   *    Para cada [data-counter] visible, lanza animateCounter().
+   *    La función usa requestAnimationFrame + easeOutCubic para una
+   *    deceleración natural. El número se formatea con "." como separador
+   *    de miles (convención venezolana: 117.000, no 117,000).
+   *
+   * Las animaciones se ejecutan una única vez (observer.unobserve).
+   */
+  (function () {
+
+    const grid = document.querySelector('[data-stats-grid]');
+    if (!grid) return;
+
+    const cells    = Array.from(grid.querySelectorAll('[data-stat-cell]'));
+    const counters = Array.from(grid.querySelectorAll('[data-counter]'));
+
+    /* ════════════════════════════════════════════════════════════════════
+       UTILIDADES
+    ════════════════════════════════════════════════════════════════════ */
+
+    /**
+     * Formatea un entero con punto como separador de miles.
+     * Ejemplo: 117000 → "117.000"
+     */
+    function formatNumber(n) {
+      return Math.round(n)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    /**
+     * Curva easeOutCubic: desaceleración suave al final.
+     * t ∈ [0, 1] → output ∈ [0, 1]
+     */
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       B. ANIMACIÓN DE CONTADOR numérico
+    ════════════════════════════════════════════════════════════════════ */
+
+    /**
+     * Anima el texto de `el` desde "prefix + 0" hasta "prefix + target"
+     * en `duration` milisegundos usando rAF + easeOutCubic.
+     *
+     * @param {Element} el       - <span data-counter>
+     * @param {number}  target   - Valor numérico final (ej: 117000)
+     * @param {string}  prefix   - Prefijo fijo (ej: "+")
+     * @param {number}  duration - Duración en ms (default: 2000)
+     */
+    function animateCounter(el, target, prefix, duration) {
+      duration = duration || 2000;
+      var startTime = null;
+
+      function tick(now) {
+        if (startTime === null) startTime = now;
+        var elapsed  = now - startTime;
+        var progress = Math.min(elapsed / duration, 1);
+        var eased    = easeOutCubic(progress);
+        var current  = Math.round(eased * target);
+
+        el.textContent = prefix + formatNumber(current);
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          /* Frame final exacto — compensa acumulación de error de redondeo */
+          el.textContent = prefix + formatNumber(target);
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       A. INTERSECTIONOBSERVER — REVEAL K3 + DISPATCH DE CONTADORES
+    ════════════════════════════════════════════════════════════════════ */
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+
+          /* 1. Reveal staggered: añadir .is-visible a todas las celdas */
+          cells.forEach(function (cell) {
+            cell.classList.add('is-visible');
+          });
+
+          /* 2. Disparar contador en cada celda numérica */
+          counters.forEach(function (counter) {
+            var target = parseInt(counter.dataset.target || '0', 10);
+            var prefix = counter.dataset.prefix || '';
+
+            if (!isNaN(target) && target > 0) {
+              animateCounter(counter, target, prefix, 2000);
+            }
+          });
+
+          /* 3. Una sola ejecución — dejar de observar */
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        /*
+         * 20% del grid visible → disparar animaciones.
+         * Suficiente para que el usuario vea el inicio de la entrada.
+         */
+        threshold: 0.20,
+      }
+    );
+
+    observer.observe(grid);
+
+  })();
+</script>
