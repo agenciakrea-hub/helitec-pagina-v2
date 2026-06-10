@@ -1,0 +1,201 @@
+---
+/**
+ * SidebarSocial.astro
+ * Consorcio Helitec — Columna social lateral izquierda
+ *
+ * Inspiración: Aerukart.com
+ * Posición: fixed · left: 0 · verticalmente centrado
+ * Desktop (≥ 1024px): visible
+ * Mobile (< 1024px): display:none — desaparece por completo
+ *
+ * Íconos: SVG inline, stroke puro — sin dependencias externas
+ * Hover: transición suave a blanco puro (#ffffff)
+ */
+
+interface Props {
+  /** URLs configurables. Pasar desde la página o dejar los valores por defecto. */
+  linkedin?:  string;
+  instagram?: string;
+}
+
+const {
+  linkedin  = 'https://www.linkedin.com/company/consorcio-helitec',
+  instagram = 'https://www.instagram.com/consorciohtelitec',
+} = Astro.props;
+---
+
+<aside class="sidebar" aria-label="Redes sociales de Consorcio Helitec">
+
+  <!-- Línea decorativa superior -->
+  <div class="sidebar__line" aria-hidden="true"></div>
+
+  <!-- Íconos sociales -->
+  <ul class="sidebar__list" role="list">
+
+    <!-- LinkedIn -->
+    <li class="sidebar__item">
+      <a
+        href={linkedin}
+        class="sidebar__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="LinkedIn de Consorcio Helitec (abre en nueva pestaña)"
+      >
+        <svg
+          class="sidebar__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+          <rect x="2" y="9" width="4" height="12" />
+          <circle cx="4" cy="4" r="2" />
+        </svg>
+      </a>
+    </li>
+
+    <!-- Instagram -->
+    <li class="sidebar__item">
+      <a
+        href={instagram}
+        class="sidebar__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Instagram de Consorcio Helitec (abre en nueva pestaña)"
+      >
+        <svg
+          class="sidebar__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <!--
+            Nota: rx/ry en el <rect> son atributos SVG del ícono visual,
+            NO son CSS border-radius de la interfaz. Permitido.
+          -->
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      </a>
+    </li>
+
+  </ul>
+
+  <!-- Línea decorativa inferior -->
+  <div class="sidebar__line" aria-hidden="true"></div>
+
+</aside>
+
+
+<style>
+  /* ── Contenedor principal ──────────────────────────────────────────────── */
+  .sidebar {
+    position:        fixed;
+    top:             0;
+    left:            0;
+    z-index:         var(--z-sidebar);  /* 100 */
+
+    /* Dimensiones y centrado vertical */
+    width:           var(--sidebar-w);  /* 72px */
+    height:          100dvh;            /* Dynamic viewport height — mobile-safe */
+
+    /* Flex columna: línea / íconos / línea */
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    gap:             0;
+
+    /* Sin fondo: el sidebar es transparente — el contenido de la página
+       se ve detrás. Borde derecho sutil marca la columna. */
+    border-right: 1px solid var(--c-line); /* rgba(255,255,255,0.10) */
+
+    /* Transición suave cuando el menú se abre (body.menu-is-open) */
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+
+  /* Ocultar cuando el menú modal está abierto */
+  :global(body.menu-is-open) .sidebar {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Líneas decorativas verticales ────────────────────────────────────── */
+  .sidebar__line {
+    flex:            1;           /* Ocupa el espacio disponible arriba/abajo */
+    width:           1px;
+    background:      var(--c-line);
+    min-height:      40px;        /* Altura mínima garantizada */
+  }
+
+  /* ── Lista de íconos ───────────────────────────────────────────────────── */
+  .sidebar__list {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    gap:             var(--sp-8); /* 32px entre íconos */
+
+    /* Padding vertical respecto a las líneas */
+    padding-block:   var(--sp-8);
+  }
+
+  .sidebar__item {
+    display: flex;
+  }
+
+  /* ── Links ─────────────────────────────────────────────────────────────── */
+  .sidebar__link {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+
+    /* Área de toque mínima 44x44px (accesibilidad) */
+    width:           40px;
+    height:          40px;
+
+    color:           var(--c-text-3); /* rgba(255,255,255,.35) — estado reposo */
+
+    /* Transición de color a blanco puro en hover */
+    transition:
+      color   var(--dur-fast) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
+
+    /* Sin decoración heredada */
+    opacity: 1;
+  }
+
+  .sidebar__link:hover,
+  .sidebar__link:focus-visible {
+    color:   var(--c-white); /* #ffffff — iluminado en blanco puro */
+    opacity: 1;              /* Cancelar el opacity:0.75 del reset */
+  }
+
+  /* ── Íconos SVG ─────────────────────────────────────────────────────────── */
+  .sidebar__icon {
+    width:  18px;
+    height: 18px;
+
+    /* object-fit del reset no aplica a SVG inline — correcto */
+    flex-shrink: 0;
+  }
+
+  /* ── MOBILE: desaparece por completo ────────────────────────────────────── */
+  @media (max-width: 1023px) {
+    .sidebar {
+      display: none;
+    }
+  }
+</style>

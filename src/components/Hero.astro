@@ -1,0 +1,519 @@
+---
+/**
+ * Hero.astro
+ * Consorcio Helitec — Hero section principal
+ *
+ * Layout: 100dvh, fondo fotográfico real + overlay rgba autorizado.
+ * Contenido (de arriba a abajo, centrado):
+ *   1. Logo Helitec grande (protagonista, animado en scroll)
+ *   2. H1: "AVIACIÓN CORPORATIVA DE PRECISIÓN" — Montserrat 200 thin
+ *   3. Párrafo descriptor — Inter 300, rgba blanco 60%
+ *   4. CTAs Ghost: "SOLICITAR COTIZACIÓN" + "CONOCER LA FLOTA"
+ *   5. Scroll hint: línea de 1px con punto animado descendente
+ *
+ * Transición de logo (rAF 60fps):
+ *   · Al cargar: logo hero visible (opacity 1), logo header invisible (opacity 0)
+ *   · Al hacer scroll ≤ 38vh: logo hero se desvanece + escala hacia abajo sutilmente
+ *   · En sincronía: logo del header aparece (opacity 0 → 1)
+ *   · Ilusión visual: el logo "se guarda" en el header de forma fluida
+ *   · Usa requestAnimationFrame → 60fps en mobile
+ *   · Usa passive:true en el listener → no bloquea el scroll del browser
+ *
+ * Nota: La animación requiere id="header-logo" en el <img> de Header.astro
+ */
+
+interface Props {
+  lang?: 'es' | 'en';
+}
+const { lang = 'es' } = Astro.props;
+---
+
+<section
+  class="hero"
+  id="hero"
+  aria-labelledby="hero-title"
+>
+
+  <!-- ── FONDO FOTOGRÁFICO ─────────────────────────────────────────────────── -->
+  <div class="hero__bg" aria-hidden="true">
+    <img
+      src="/assets/atardecer.jpg"
+      alt=""
+      class="hero__bg-img"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      aria-hidden="true"
+    />
+
+    <!--
+      Overlay rgba oscuro — ANTI-SLOP COMPLIANCE:
+      · No es linear-gradient decorativo (PROHIBIDO)
+      · Es background-color rgba sobre fotografía real para legibilidad
+      · Autorizado: "overlays oscuros sutiles (rgba) sobre fotografías reales"
+    -->
+    <div class="hero__bg-overlay" aria-hidden="true"></div>
+  </div>
+
+  <!-- ── CONTENIDO PRINCIPAL ──────────────────────────────────────────────── -->
+  <div class="hero__content">
+
+    <!--
+      LOGO GRANDE — protagonista del hero.
+      id="hero-logo": objetivo del script de transición scroll→header.
+      transform-origin: top center → escala hacia arriba al desvanecer.
+    -->
+    <div class="hero__logo-wrap" aria-hidden="true">
+      <img
+        id="hero-logo"
+        src="/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png"
+        alt="Consorcio Helitec"
+        class="hero__logo"
+        width="300"
+        height="75"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+
+    <!--
+      H1: Montserrat 200, letter-spacing amplio, uppercase (via CSS).
+      text-transform en CSS — texto en minúsculas en DOM para SEO.
+    -->
+    <h1 id="hero-title" class="hero__title">
+      Aviación Corporativa<br />de Precisión
+    </h1>
+
+    <!-- Descriptor: Inter 300, rgba(255,255,255,.60) -->
+    <p class="hero__desc">
+      Transporte ejecutivo, industrial y aeromédico bajo los
+      estándares más exigentes de la industria aeronáutica venezolana.
+    </p>
+
+    <!-- ── CTAs GHOST ──────────────────────────────────────────────────────── -->
+    <div class="hero__actions" role="group" aria-label="Acciones principales">
+
+      <!--
+        Ghost button principal: borde blanco 65%, hover fondo semi-transparente.
+        border-radius: var(--r-micro) = 4px — límite ABSOLUTO del proyecto.
+        PROHIBIDO: box-shadow / border-radius > 4px.
+      -->
+      <a href="/#contacto" class="hero__btn hero__btn--primary">
+        {lang === 'es' ? 'Solicitar Cotización' : 'Request a Quote'}
+      </a>
+
+      <!--
+        Ghost button secundario: borde sutil, texto rgba 65%.
+        Igual estructura — sin relleno, sin sombra.
+      -->
+      <a href="/flota" class="hero__btn hero__btn--outline">
+        {lang === 'es' ? 'Conocer la Flota' : 'View the Fleet'}
+      </a>
+
+    </div>
+
+  </div>
+
+  <!-- ── SCROLL HINT ───────────────────────────────────────────────────────── -->
+  <!--
+    Indicador visual de scroll: línea de 1px + punto descendente animado.
+    Desaparece al hacer scroll (gestionado por JS junto con la transición del logo).
+  -->
+  <div class="hero__scroll-hint" id="hero-scroll-hint" aria-hidden="true">
+    <div class="hero__scroll-track">
+      <div class="hero__scroll-dot"></div>
+    </div>
+  </div>
+
+</section>
+
+
+<style>
+  /* ══════════════════════════════════════════════════════════════════════════
+     HERO — CONTENEDOR PRINCIPAL
+  ══════════════════════════════════════════════════════════════════════════ */
+
+  .hero {
+    position:   relative;
+    height:     100dvh;        /* Dynamic viewport height — mobile-safe */
+    min-height: 580px;         /* Safety mínimo en pantallas muy bajas */
+
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+
+    overflow: hidden;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     FONDO FOTOGRÁFICO
+  ══════════════════════════════════════════════════════════════════════════ */
+
+  .hero__bg {
+    position: absolute;
+    inset:    0;
+    z-index:  0;
+  }
+
+  .hero__bg-img {
+    width:           100%;
+    height:          100%;
+    object-fit:      cover;           /* OBLIGATORIO — jamás distorsionar */
+    object-position: center 25%;      /* Muestra el cielo / zona superior */
+  }
+
+  /*
+   * Overlay rgba sobre foto real — autorizado por anti-slop rules.
+   * 52%: suficiente para que texto y logo "exploten" visualmente sobre
+   * el fondo, sin apagar completamente la fotografía.
+   */
+  .hero__bg-overlay {
+    position:         absolute;
+    inset:            0;
+    background-color: rgba(7, 8, 12, 0.52);
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     CONTENIDO
+  ══════════════════════════════════════════════════════════════════════════ */
+
+  .hero__content {
+    position: relative;
+    z-index:  1;
+
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    text-align:     center;
+
+    /*
+     * gap unificado entre todos los elementos del hero.
+     * Cada elemento tiene su propio ritmo visual gracias a margin adicional
+     * en los botones (.hero__actions) cuando sea necesario.
+     */
+    gap: var(--sp-6);
+
+    /*
+     * Padding top: clearance del header fijo (68px) + espacio de respiro.
+     * Padding sides: gutter fluido.
+     * Padding bottom: espacio para el scroll hint.
+     */
+    padding-top:    calc(var(--header-h) + var(--sp-8));
+    padding-bottom: var(--sp-20);
+    padding-inline: var(--gutter);
+
+    width:     100%;
+    max-width: var(--content-max);
+  }
+
+
+  /* ── Logo grande del hero ─────────────────────────────────────────────── */
+
+  .hero__logo-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .hero__logo {
+    height:    clamp(36px, 4.5vw, 54px);
+    width:     auto;
+    max-width: clamp(220px, 28vw, 340px);
+
+    object-fit:      contain;
+    object-position: center;
+
+    /*
+     * transform-origin: top center
+     * Al escalar (en el JS de scroll), el logo parece "subir y encogerse"
+     * hacia la posición del header — ilusión de viaje al header.
+     */
+    transform-origin: top center;
+
+    /* GPU hint para animación JS a 60fps */
+    will-change: opacity, transform;
+  }
+
+
+  /* ── H1 ── ────────────────────────────────────────────────────────────── */
+
+  .hero__title {
+    font-family:    var(--font-display);    /* Montserrat */
+    font-size:      clamp(1.75rem, 1rem + 3vw, 3.75rem);
+    font-weight:    var(--fw-thin);          /* 200 — "Exclusividad Silenciosa" */
+    letter-spacing: var(--ls-wide);          /* 0.06em — OBLIGATORIO para thin */
+    text-transform: uppercase;
+    line-height:    var(--lh-tight);         /* 1.1 */
+    color:          var(--c-text-1);
+
+    max-width: 24ch;
+
+    /*
+     * text-shadow: ÚNICA instancia permitida — para legibilidad sobre foto.
+     * Muy sutil: solo mejora contraste, no es decorativa.
+     */
+    text-shadow: var(--text-shadow-hero);
+  }
+
+
+  /* ── Párrafo descriptor ─────────────────────────────────────────────────── */
+
+  .hero__desc {
+    font-family: var(--font-sans);     /* Inter */
+    font-size:   var(--text-md);       /* clamp(1rem, .95rem+.3vw, 1.125rem) */
+    font-weight: var(--fw-light);      /* 300 */
+    line-height: var(--lh-relaxed);    /* 1.75 */
+    color:       var(--c-text-2);      /* rgba(255,255,255,.60) */
+
+    max-width: 48ch;
+    margin-inline: auto;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     CTAs GHOST
+     Reglas anti-slop aplicadas:
+     · Sin box-shadow en ningún estado
+     · border-radius: var(--r-micro) = 4px — límite absoluto
+     · Fondo transparente (ghost) — moderación de color de marca
+     · Sin degradados
+  ══════════════════════════════════════════════════════════════════════════ */
+
+  .hero__actions {
+    display:         flex;
+    flex-wrap:       wrap;
+    gap:             var(--sp-4);
+    justify-content: center;
+    margin-top:      var(--sp-2);
+  }
+
+  /* Base compartida: layout + tipografía */
+  .hero__btn {
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+
+    font-family:    var(--font-sans);    /* Inter */
+    font-size:      var(--text-sm);      /* 13–14px */
+    font-weight:    var(--fw-medium);    /* 500 */
+    letter-spacing: var(--ls-wider);     /* 0.12em */
+    text-transform: uppercase;
+
+    padding:        var(--sp-4) clamp(var(--sp-6), 4vw, var(--sp-10));
+    border-radius:  var(--r-micro);      /* 4px — MÁXIMO PERMITIDO */
+
+    opacity: 1;   /* Cancelar reset opacity:0.75 en hover */
+
+    transition:
+      border-color     var(--dur-fast) var(--ease-out),
+      color            var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      opacity          var(--dur-fast) var(--ease-out);
+  }
+
+  /* Ghost primario: borde blanco claro — acción principal */
+  .hero__btn--primary {
+    background-color: transparent;
+    border:           1px solid rgba(255, 255, 255, 0.65);
+    color:            var(--c-white);
+  }
+
+  .hero__btn--primary:hover,
+  .hero__btn--primary:focus-visible {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color:     var(--c-white);
+    color:            var(--c-white);
+    opacity:          1;
+  }
+
+  /* Ghost outline: borde muy sutil — acción secundaria */
+  .hero__btn--outline {
+    background-color: transparent;
+    border:           1px solid rgba(255, 255, 255, 0.28);
+    color:            rgba(255, 255, 255, 0.65);
+  }
+
+  .hero__btn--outline:hover,
+  .hero__btn--outline:focus-visible {
+    border-color: rgba(255, 255, 255, 0.55);
+    color:        var(--c-white);
+    opacity:      1;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     SCROLL HINT — línea + punto descendente animado
+     No es decorativo de marca — es funcional (indica scroll).
+     Desaparece progresivamente con el scroll (gestionado por JS).
+  ══════════════════════════════════════════════════════════════════════════ */
+
+  .hero__scroll-hint {
+    position:  absolute;
+    bottom:    var(--sp-8);
+    left:      50%;
+    transform: translateX(-50%);
+    z-index:   1;
+
+    /* Transición suave de opacidad (JS controla el valor) */
+    will-change: opacity;
+    transition:  opacity var(--dur-mid) var(--ease-out);
+  }
+
+  /* Contenedor de la línea — 1px de ancho, overflow hidden para el punto */
+  .hero__scroll-track {
+    width:            1px;
+    height:           52px;
+    background-color: rgba(255, 255, 255, 0.18);
+    overflow:         hidden;
+    margin-inline:    auto;
+  }
+
+  /* Punto que desciende — animación CSS infinita */
+  .hero__scroll-dot {
+    width:            1px;
+    height:           18px;
+    background-color: rgba(255, 255, 255, 0.70);
+    animation:        scrollDrop 2.4s ease-in-out infinite;
+  }
+
+  @keyframes scrollDrop {
+    0%   { transform: translateY(-18px); }
+    100% { transform: translateY(70px);  }
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════════════════════════════════════════ */
+
+  /* Tablet */
+  @media (max-width: 1023px) {
+    .hero__content {
+      gap: var(--sp-5);
+    }
+  }
+
+  /* Mobile pequeño */
+  @media (max-width: 479px) {
+    .hero__content {
+      gap: var(--sp-4);
+      padding-top:    calc(var(--header-h) + var(--sp-6));
+      padding-bottom: var(--sp-16);
+    }
+
+    .hero__desc {
+      font-size: var(--text-base);
+    }
+
+    /* En mobile, botones van a full-width si no caben en línea */
+    .hero__actions {
+      flex-direction: column;
+      align-items:    stretch;
+      gap:            var(--sp-3);
+    }
+
+    .hero__btn {
+      padding-block: var(--sp-4);
+      justify-content: center;
+    }
+
+    .hero__scroll-hint {
+      display: none;  /* Ocultar en mobile muy pequeño */
+    }
+  }
+</style>
+
+
+<script>
+  /**
+   * Transición logo hero → header — 60fps via requestAnimationFrame
+   *
+   * Mecánica:
+   *   · progress = scrollY / THRESHOLD  (clampeado entre 0 y 1)
+   *   · hero-logo:   opacity = 1 - progress
+   *                 transform = scale(1 - 0.10 × p) translateY(-12px × p)
+   *   · header-logo: opacity = progress
+   *   · scroll-hint: opacity = 1 - progress × 1.5 (desaparece más rápido)
+   *
+   * Ilusión visual:
+   *   El scroll mueve el hero hacia arriba naturalmente.
+   *   El logo se desvanece y escala sutilmente (parece encogerse hacia el header).
+   *   En sincronía, el logo pequeño del header aparece arriba-izquierda.
+   *   El cerebro completa el movimiento → efecto "viaja al header".
+   *
+   * Páginas sin hero (ej: /flota):
+   *   Si #hero-logo no existe, el header logo queda con opacity:1.
+   */
+  (function () {
+    'use strict';
+
+    const heroLogo   = /** @type {HTMLElement|null} */ (document.getElementById('hero-logo'));
+    const headerLogo = /** @type {HTMLElement|null} */ (document.getElementById('header-logo'));
+    const scrollHint = /** @type {HTMLElement|null} */ (document.getElementById('hero-scroll-hint'));
+
+    if (!headerLogo) return;
+
+    /* ── Página sin hero: header logo siempre visible ─────────────────── */
+    if (!heroLogo) {
+      headerLogo.style.opacity = '1';
+      return;
+    }
+
+    /* ── Estado inicial ─────────────────────────────────────────────────── */
+    headerLogo.style.opacity = '0';
+
+    /*
+     * THRESHOLD: scroll en px necesario para completar la transición.
+     * 38% del viewport height → transición completa antes de que el hero
+     * salga de pantalla. Ajustar según feedback visual.
+     */
+    const THRESHOLD = window.innerHeight * 0.38;
+
+    let ticking = false;
+
+    function sync() {
+      const scrollY    = window.scrollY;
+      const p          = Math.min(1, Math.max(0, scrollY / THRESHOLD));
+      const pEased     = p * p * (3 - 2 * p); /* smoothstep para easing natural */
+
+      /* Hero logo: fade out + shrink toward header (top-center origin) */
+      const scale      = 1 - pEased * 0.10;   /* Escala de 1.0 → 0.90 */
+      const translateY = pEased * -12;         /* Asciende 12px hacia el header */
+
+      heroLogo.style.opacity   = String(1 - pEased);
+      heroLogo.style.transform = `scale(${scale.toFixed(4)}) translateY(${translateY.toFixed(2)}px)`;
+
+      /* Header logo: fade in */
+      headerLogo.style.opacity = String(pEased);
+
+      /* Scroll hint: desaparece más rápido (× 1.5) */
+      if (scrollHint) {
+        scrollHint.style.opacity = String(Math.max(0, 1 - pEased * 1.8));
+      }
+
+      ticking = false;
+    }
+
+    /* Aplicar estado inmediatamente (maneja refresh con scrollY > 0) */
+    sync();
+
+    /* Listener pasivo → no bloquea el scroll nativo del browser */
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(sync);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    /*
+     * Re-calcular threshold si la ventana se redimensiona.
+     * Ej: usuario rota el teléfono.
+     */
+    window.addEventListener('resize', function () {
+      /* No necesita rAF — no es crítico a 60fps */
+      sync();
+    }, { passive: true });
+
+  })();
+</script>

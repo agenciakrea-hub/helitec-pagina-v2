@@ -1,0 +1,272 @@
+/* ==========================================================================
+   CONSORCIO HELITEC — Reset CSS Moderno
+   reset.css · v1.0
+   Basado en: Piccalilli CSS Reset + adaptaciones para proyecto premium B2B
+   ========================================================================== */
+
+
+/* ── 1. BOX-SIZING GLOBAL ─────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ── 2. RAÍZ DEL DOCUMENTO ────────────────────────────────────────────────── */
+
+html {
+  /* Previene ajuste automático de fuente en iOS al rotar pantalla */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+
+  /* Tab focus visible */
+  scroll-behavior: smooth;
+
+  /* Altura mínima garantizada */
+  block-size: 100%;
+}
+
+
+/* ── 3. BODY ──────────────────────────────────────────────────────────────── */
+
+body {
+  font-family:            var(--font-sans); /* Inter — body y UI */
+  font-size:              var(--text-base);
+  font-weight:            var(--fw-regular);
+  line-height:            var(--lh-body);
+  color:                  var(--c-text-1);
+  background-color:       var(--c-bg);
+
+  /* Renderizado de fuentes premium */
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering:          optimizeLegibility;
+
+  /* Evita desbordamiento horizontal accidental */
+  overflow-x: hidden;
+
+  /* Mínimo de altura para posicionamiento fixed */
+  min-block-size: 100%;
+}
+
+
+/* ── 4. IMÁGENES Y MEDIA (REGLA OBLIGATORIA del proyecto) ─────────────────── */
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display:    block;
+  max-width:  100%;
+
+  /* OBLIGATORIO: ninguna imagen se estira ni deforma */
+  object-fit: cover;
+}
+
+/* Las imágenes heredan object-fit pero necesitan height explícito en contexto */
+img {
+  height: auto; /* Por defecto; sobreescribir con height específico en componente */
+}
+
+/* SVG decorativos no deben tener dimensiones bloqueantes */
+svg {
+  overflow: visible;
+}
+
+
+/* ── 5. TIPOGRAFÍA BASE ───────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight:    var(--fw-light); /* Default ligero — los headlines son finos */
+  line-height:    var(--lh-heading);
+  letter-spacing: var(--ls-wide);
+  overflow-wrap:  break-word;
+}
+
+p {
+  overflow-wrap: break-word;
+  hyphens:       auto;
+  max-width:     70ch; /* Limita longitud de línea para legibilidad óptima */
+}
+
+/* Remove default margins de prose pero preservar dentro de rich-text */
+p + p {
+  margin-top: var(--sp-4);
+}
+
+
+/* ── 6. LISTAS ────────────────────────────────────────────────────────────── */
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* Restaurar estilos dentro de contenido editorial */
+.prose ul  { list-style: disc; padding-inline-start: var(--sp-6); }
+.prose ol  { list-style: decimal; padding-inline-start: var(--sp-6); }
+
+
+/* ── 7. LINKS ─────────────────────────────────────────────────────────────── */
+
+a {
+  color:           inherit;
+  text-decoration: none;
+
+  /* Transición de color suave en hover */
+  transition: color var(--dur-fast) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out);
+}
+
+a:hover {
+  opacity: 0.75;
+}
+
+
+/* ── 8. BOTONES ───────────────────────────────────────────────────────────── */
+
+button {
+  cursor:     pointer;
+  background: none;
+  border:     none;
+  padding:    0;
+  font:       inherit;
+  color:      inherit;
+
+  /* Sin border-radius por defecto; cada componente define el suyo (≤ 4px) */
+  border-radius: 0;
+}
+
+button:disabled {
+  cursor:  not-allowed;
+  opacity: 0.45;
+}
+
+
+/* ── 9. FORMULARIOS ───────────────────────────────────────────────────────── */
+
+input,
+textarea,
+select {
+  font:             inherit;
+  color:            inherit;
+  background-color: transparent;
+  border:           1px solid var(--c-line-strong);
+  border-radius:    var(--r-sharp); /* 2px — arquitectónico */
+  padding:          var(--sp-3) var(--sp-4);
+  outline:          none;
+  appearance:       none;
+  -webkit-appearance: none;
+  width:            100%;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--c-brand);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--c-text-3);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+
+/* ── 10. TABLAS ───────────────────────────────────────────────────────────── */
+
+table {
+  border-collapse: collapse;
+  border-spacing:  0;
+  width:           100%;
+}
+
+
+/* ── 11. SEPARADORES ──────────────────────────────────────────────────────── */
+
+hr {
+  border:     none;
+  border-top: 1px solid var(--c-line);
+  margin:     var(--sp-8) 0;
+}
+
+
+/* ── 12. FOCUS VISIBLE (Accesibilidad) ────────────────────────────────────── */
+
+/* Ocultar outline para mouse, mantener para teclado */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline:        2px solid var(--c-sky);
+  outline-offset: 3px;
+  border-radius:  var(--r-micro); /* 4px — límite del proyecto */
+}
+
+
+/* ── 13. SELECCIÓN DE TEXTO ───────────────────────────────────────────────── */
+
+::selection {
+  background-color: var(--c-brand-dim);
+  color:            var(--c-text-1);
+}
+
+
+/* ── 14. SCROLLBAR (Webkit — sutil y corporativo) ────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--c-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background:    var(--c-brand);
+  border-radius: var(--r-micro); /* 4px — límite absoluto */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-brand-hover);
+}
+
+
+/* ── 15. UTILIDADES DE ACCESIBILIDAD ─────────────────────────────────────── */
+
+/* Ocultar visualmente pero mantener accesible para lectores de pantalla */
+.sr-only {
+  position:   absolute;
+  width:      1px;
+  height:     1px;
+  padding:    0;
+  margin:     -1px;
+  overflow:   hidden;
+  clip:       rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border:     0;
+}
+
+/* Mostrar elemento sr-only cuando recibe focus (para skip links) */
+.sr-only:focus {
+  position:   static;
+  width:      auto;
+  height:     auto;
+  padding:    var(--sp-2) var(--sp-4);
+  margin:     0;
+  overflow:   visible;
+  clip:       auto;
+  white-space: normal;
+}

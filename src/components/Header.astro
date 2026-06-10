@@ -1,0 +1,294 @@
+---
+/**
+ * Header.astro
+ * Consorcio Helitec — Cabecera principal
+ *
+ * Filosofía: Pilatus-style — header limpio, sin navegación visible.
+ *   · Izquierda: Logo horizontal blanco
+ *   · Derecha:   Botón hamburguesa (dos líneas limpias)
+ *
+ * Comportamiento de scroll:
+ *   · Por defecto: 100% transparente — el hero se ve a través del header
+ *   · Al hacer scroll: clase `.is-scrolled` agrega fondo oscuro semi-opaco
+ *     con backdrop-filter: blur(12px) — efecto "glass" sutil
+ *
+ * Desktop (≥ 1024px):
+ *   · padding-left compensa los 72px del SidebarSocial
+ *
+ * Mobile (< 1024px):
+ *   · Logo a la izquierda, hamburguesa a la derecha
+ *   · Sin sidebar — padding estándar
+ *
+ * NOTA: El selector de idiomas NO va aquí (Pilatus-style → dentro del menú).
+ */
+
+interface Props {
+  /** Etiqueta accesible del botón hamburguesa */
+  menuLabel?: string;
+}
+
+const {
+  menuLabel = 'Abrir menú de navegación',
+} = Astro.props;
+---
+
+<header class="site-header" id="site-header" role="banner">
+  <div class="site-header__inner">
+
+    <!-- ── LOGO ─────────────────────────────────────────────────────────────── -->
+    <a
+      href="/"
+      class="site-header__logo-link"
+      aria-label="Consorcio Helitec — Ir al inicio"
+    >
+      <img
+        id="header-logo"
+        src="/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png"
+        alt="Consorcio Helitec"
+        class="site-header__logo"
+        width="160"
+        height="40"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </a>
+
+    <!-- ── HAMBURGUESA ───────────────────────────────────────────────────────── -->
+    <button
+      class="site-header__menu-btn"
+      id="menu-toggle"
+      type="button"
+      aria-label={menuLabel}
+      aria-expanded="false"
+      aria-controls="menu-modal"
+    >
+      <span class="site-header__bar site-header__bar--top"    aria-hidden="true"></span>
+      <span class="site-header__bar site-header__bar--bottom" aria-hidden="true"></span>
+    </button>
+
+  </div>
+</header>
+
+
+<style>
+  /* ── Contenedor principal ──────────────────────────────────────────────────── */
+  .site-header {
+    position:   fixed;
+    top:        0;
+    left:       0;
+    width:      100%;
+    height:     var(--header-h);   /* 68px */
+    z-index:    var(--z-header);   /* 200 */
+
+    /* Por defecto: transparente — el hero luce sin barrera */
+    background-color: transparent;
+
+    /* Transición suave al estado scrolled */
+    transition:
+      background-color var(--dur-mid)  var(--ease-out),
+      border-color      var(--dur-mid)  var(--ease-out);
+
+    /* Borde inferior invisible por defecto */
+    border-bottom: 1px solid transparent;
+  }
+
+  /* Estado: usuario ha scrolleado → fondo glass sutil */
+  .site-header.is-scrolled {
+    background-color: var(--c-bg-overlay);  /* rgba(7, 8, 12, 0.85) */
+    backdrop-filter:  blur(12px);
+    -webkit-backdrop-filter: blur(12px);    /* Safari */
+    border-bottom-color: var(--c-line);     /* rgba(255,255,255,.10) */
+  }
+
+  /* Ocultar header mientras menú esté abierto (opcional: lo tapa el modal) */
+  :global(body.menu-is-open) .site-header {
+    border-bottom-color: transparent;
+  }
+
+
+  /* ── Inner: flex row, alinea logo y hamburguesa ────────────────────────────── */
+  .site-header__inner {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    height:          100%;
+
+    /* Desktop: padding-left para no solaparse con el sidebar de 72px */
+    padding-inline-start: calc(var(--sidebar-w) + var(--gutter)); /* 72px + gutter */
+    padding-inline-end:   var(--gutter);
+  }
+
+  /* ── Logo ────────────────────────────────────────────────────────────────── */
+  .site-header__logo-link {
+    display:  flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    /* Cancelar el opacity:0.75 del reset en hover — el logo no se atenúa */
+    opacity: 1;
+  }
+
+  .site-header__logo-link:hover {
+    opacity: 1;
+  }
+
+  .site-header__logo {
+    /* Altura fija, ancho auto — proporciones conservadas */
+    height:     32px;
+    width:      auto;
+    max-width:  180px;
+
+    /* object-fit heredado del reset; explicitamos para imágenes PNG con alpha */
+    object-fit: contain;
+
+    /* Sin distorsión ni recorte */
+    object-position: left center;
+
+    /*
+     * GPU hint para la animación de opacity controlada por JS scroll.
+     * El script en Hero.astro lee este elemento via id="header-logo"
+     * y ajusta su opacity a 60fps con requestAnimationFrame.
+     * NO hay CSS transition aquí: el rAF es suficientemente fluido.
+     */
+    will-change: opacity;
+  }
+
+
+  /* ── Botón hamburguesa ───────────────────────────────────────────────────── */
+  .site-header__menu-btn {
+    /* Área de toque amplia (accesibilidad: ≥ 44×44px) */
+    display:         flex;
+    flex-direction:  column;
+    align-items:     flex-end;       /* Línea inferior más corta → alineada derecha */
+    justify-content: center;
+    gap:             6px;
+
+    width:  44px;
+    height: 44px;
+    padding: 0;
+    flex-shrink: 0;
+
+    /* Sin fondo ni borde — solo las barras */
+    background: none;
+    border:     none;
+    cursor:     pointer;
+
+    /* Transición suave */
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .site-header__menu-btn:hover {
+    opacity: 0.7;
+  }
+
+  .site-header__menu-btn:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 4px;
+    border-radius:  var(--r-micro); /* 4px — límite del proyecto */
+  }
+
+  /* ── Barras del hamburguesa ──────────────────────────────────────────────── */
+  .site-header__bar {
+    display:    block;
+    background: var(--c-white);
+    height:     1.5px;
+
+    /* Transición para animación open/close (activada por JS) */
+    transition:
+      transform var(--dur-mid) var(--ease-menu),
+      opacity   var(--dur-fast) var(--ease-out),
+      width     var(--dur-mid) var(--ease-out);
+  }
+
+  /* Línea superior: ancho completo (24px) */
+  .site-header__bar--top {
+    width: 24px;
+    transform-origin: center;
+  }
+
+  /* Línea inferior: más corta (18px) — detalle de refinamiento visual */
+  .site-header__bar--bottom {
+    width: 18px;
+    transform-origin: center;
+  }
+
+  /* ── Estado menú abierto: las barras se transforman en ✕ ──────────────────── */
+  :global(body.menu-is-open) .site-header__bar--top {
+    width:     24px;
+    transform: translateY(7.5px) rotate(45deg);
+  }
+
+  :global(body.menu-is-open) .site-header__bar--bottom {
+    width:     24px;
+    transform: translateY(-7.5px) rotate(-45deg);
+  }
+
+
+  /* ── MOBILE (< 1024px): sin sidebar — padding estándar ─────────────────── */
+  @media (max-width: 1023px) {
+    .site-header__inner {
+      /* Sin el desplazamiento del sidebar */
+      padding-inline-start: var(--gutter);
+    }
+
+    .site-header__logo {
+      height:    28px;
+      max-width: 150px;
+    }
+  }
+</style>
+
+
+<script>
+  /**
+   * Scroll detection — agrega/remueve la clase `.is-scrolled` al header.
+   * Umbral: 40px para evitar activación accidental con scroll mínimo.
+   *
+   * Usa requestAnimationFrame para evitar thrashing del layout.
+   */
+  (function () {
+    const header    = document.getElementById('site-header');
+    const menuBtn   = document.getElementById('menu-toggle');
+    const THRESHOLD = 40;
+
+    if (!header) return;
+
+    let ticking = false;
+
+    function updateScrollState() {
+      if (window.scrollY > THRESHOLD) {
+        header.classList.add('is-scrolled');
+      } else {
+        header.classList.remove('is-scrolled');
+      }
+      ticking = false;
+    }
+
+    // Aplicar estado inicial (por si la página carga con scroll > 0)
+    updateScrollState();
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(updateScrollState);
+        ticking = true;
+      }
+    }, { passive: true });
+
+
+    /**
+     * Hamburguesa — toggle del menú.
+     * Agrega/remueve `menu-is-open` en <body> y actualiza aria-expanded.
+     * El MenuModal.astro escucha este estado para su animación.
+     */
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function () {
+        const isOpen = document.body.classList.toggle('menu-is-open');
+        menuBtn.setAttribute('aria-expanded', String(isOpen));
+        menuBtn.setAttribute(
+          'aria-label',
+          isOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'
+        );
+      });
+    }
+  })();
+</script>

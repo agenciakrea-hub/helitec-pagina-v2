@@ -1,0 +1,175 @@
+/* ==========================================================================
+   CONSORCIO HELITEC — Sistema de Tokens CSS
+   variables.css · v1.0
+   Fuente de verdad: Manual de Marca Helitec v4.0 (Mayo 2026)
+   ========================================================================== */
+
+:root {
+
+  /* ── 1. PALETA PRIMARIA (exacta del Manual de Marca) ─────────────────── */
+
+  --c-brand:        #023a78;   /* Azul Helitec — uso con extrema moderación  */
+  --c-brand-hover:  #0a4d9e;   /* Hover / estado activo sobre --c-brand       */
+  --c-brand-dim:    rgba(2, 58, 120, 0.18); /* Tint sutil para fondos/bordes  */
+
+  --c-sky:          #58b5f0;   /* Azul Cielo — solo para detalles finos       */
+  --c-sky-dim:      rgba(88, 181, 240, 0.15);
+
+  --c-white:        #ffffff;
+
+  /* Rojo Helitec — SOLO para alertas o 1 detalle de extrema urgencia        */
+  --c-red:          #e53b1c;
+  --c-red-dim:      rgba(229, 59, 28, 0.15);
+
+
+  /* ── 2. FONDOS (Near-black con subtono azul frío) ─────────────────────── */
+
+  --c-bg:           #07080C;   /* Fondo global de página                      */
+  --c-bg-raised:    #0D1117;   /* Superficies elevadas: cards, paneles        */
+  --c-bg-overlay:   rgba(7, 8, 12, 0.85); /* Overlay sobre fotos hero         */
+
+  /* Estado del menú abierto — transiciona desde --c-bg a este valor         */
+  --c-menu-open:    #061D3C;   /* Dark navy corporativo (derivado de #023a78) */
+
+
+  /* ── 3. TEXTO ──────────────────────────────────────────────────────────── */
+
+  --c-text-1:       #ffffff;               /* Titulares, texto principal      */
+  --c-text-2:       rgba(255,255,255,.60); /* Subtítulos, body copy           */
+  --c-text-3:       rgba(255,255,255,.35); /* Metadatos, placeholders         */
+  --c-text-inv:     #07080C;               /* Texto oscuro sobre fondos claros */
+
+
+  /* ── 4. LÍNEAS Y BORDES ────────────────────────────────────────────────── */
+
+  --c-line:         rgba(255,255,255,.10); /* Separadores, dividers           */
+  --c-line-strong:  rgba(255,255,255,.20); /* Bordes de inputs, cards         */
+  --c-line-brand:   rgba(2,58,120,.40);    /* Borde con acento de marca       */
+
+
+  /* ── 5. TIPOGRAFÍA ─────────────────────────────────────────────────────── */
+
+  /*
+   * Decisión Tech Lead v2 (Fase 2):
+   * Playfair Display eliminada por no alinearse al entorno corporativo/aeronáutico.
+   * Sistema dual 100% sans-serif:
+   *   · Montserrat → Titulares (H1–H3), tracking amplio, pesos finos (200–300)
+   *   · Inter       → Body, etiquetas, UI, datos técnicos, navegación
+   */
+  --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans:    'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Pesos */
+  --fw-thin:      200;  /* Headlines H1/H2 — "Exclusividad Silenciosa"       */
+  --fw-light:     300;  /* Subtítulos                                        */
+  --fw-regular:   400;  /* Body, copy                                        */
+  --fw-medium:    500;  /* Etiquetas, navegación                             */
+  --fw-semibold:  600;  /* CTAs, datos técnicos destacados                   */
+
+  /* Escalas (fluid, base = 16px) */
+  --text-xs:    clamp(0.70rem, 0.65rem + 0.2vw,  0.75rem);  /* 11–12px */
+  --text-sm:    clamp(0.80rem, 0.75rem + 0.25vw, 0.875rem); /* 13–14px */
+  --text-base:  clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);     /* 15–16px */
+  --text-md:    clamp(1rem, 0.95rem + 0.3vw,  1.125rem);    /* 16–18px */
+  --text-lg:    clamp(1.125rem, 1rem + 0.6vw, 1.375rem);    /* 18–22px */
+  --text-xl:    clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);     /* 24–36px */
+  --text-2xl:   clamp(2rem,   1.5rem + 2.5vw, 3.5rem);      /* 32–56px */
+  --text-3xl:   clamp(2.75rem, 2rem + 4vw,   5.5rem);       /* 44–88px */
+
+  /* Letter-spacing (para titulares finos, OBLIGATORIO per anti-slop rules) */
+  --ls-tight:   -0.01em;
+  --ls-normal:   0;
+  --ls-wide:     0.06em;   /* H1/H2 con font-weight: 200/300                */
+  --ls-wider:    0.12em;   /* Overlines, etiquetas de categoría              */
+  --ls-widest:   0.20em;   /* Labels de servicios en mayúsculas              */
+
+  /* Line-heights */
+  --lh-tight:    1.1;
+  --lh-heading:  1.2;
+  --lh-body:     1.6;
+  --lh-relaxed:  1.75;
+
+
+  /* ── 6. ESPACIADO Y LAYOUT ─────────────────────────────────────────────── */
+
+  --sidebar-w:    72px;    /* Columna social izquierda fija (Aerukart-style)  */
+  --header-h:     68px;    /* Altura del header fijo                         */
+  --content-max:  1320px;  /* Ancho máximo del contenido                     */
+  --gutter:       clamp(24px, 5vw, 80px); /* Márgenes laterales fluidos      */
+
+  /* Espaciado base (escala 4px) */
+  --sp-1:   4px;
+  --sp-2:   8px;
+  --sp-3:   12px;
+  --sp-4:   16px;
+  --sp-5:   20px;
+  --sp-6:   24px;
+  --sp-8:   32px;
+  --sp-10:  40px;
+  --sp-12:  48px;
+  --sp-16:  64px;
+  --sp-20:  80px;
+  --sp-24:  96px;
+  --sp-32:  128px;
+
+
+  /* ── 7. BORDES (REGLA INQUEBRANTABLE: máximo 4px) ──────────────────────── */
+
+  --r-none:   0px;  /* Sin radio — preferido para botones principales       */
+  --r-sharp:  2px;  /* Inputs, cards                                        */
+  --r-micro:  4px;  /* Tags, badges, chips — LÍMITE ABSOLUTO                */
+
+  /* PROHIBIDO: ningún valor de border-radius mayor a --r-micro (4px)        */
+  /* PROHIBIDO: "pill" / rounded-full / border-radius > 4px en ningún caso   */
+
+
+  /* ── 8. ANIMACIONES ────────────────────────────────────────────────────── */
+
+  /* Curvas de easing */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);     /* Salidas suaves       */
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);    /* Transiciones neutras */
+  --ease-menu:   cubic-bezier(0.76, 0, 0.24, 1);    /* Apertura del menú    */
+  --ease-snap:   cubic-bezier(0.34, 1.56, 0.64, 1); /* Snappy, con overshoot*/
+
+  /* Duraciones */
+  --dur-instant:  100ms;
+  --dur-fast:     200ms;
+  --dur-mid:      450ms;
+  --dur-slow:     700ms;
+  --dur-scene:    1000ms;  /* Loader cinemático de idioma                   */
+
+
+  /* ── 9. Z-INDEX (Stack completo) ────────────────────────────────────────── */
+
+  --z-base:          1;
+  --z-raised:        10;
+  --z-fleet-card:    10;   /* Base fleet cards — JS suma var(--card-index)   */
+  --z-sidebar:       100;  /* Sidebar social izquierda                       */
+  --z-header:        200;  /* Header fijo                                    */
+  --z-menu:          800;  /* Modal de navegación fullscreen                 */
+  --z-cta-float:     850;  /* Botón flotante WhatsApp/CTA lateral            */
+  --z-bottom-sheet:  900;  /* Panel de contacto mobile (bottom sheet)        */
+  --z-lang-loader:   1000; /* Loader cinemático de cambio de idioma          */
+  --z-top:           9999; /* Reservado para emergencias                     */
+
+
+  /* ── 10. SOMBRAS (solo blur ambiental sutil — SIN box-shadow decorativo) ─ */
+  /* PROHIBIDO: box-shadow para elevar cards o botones estilo "neón/glow"     */
+  /* Permitido únicamente: sombra de texto muy sutil sobre fotos               */
+
+  --text-shadow-hero: 0 2px 20px rgba(0,0,0,0.5);  /* Legibilidad en hero   */
+
+
+  /* ── 11. DATOS DEL PROYECTO (referencias del flota.json) ────────────────── */
+
+  /* Logo paths (fuente: flota.json _meta.logos) */
+  --logo-horiz-blanco: url('/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png');
+  --logo-vert-color:   url('/assets/Logo-Helitec-Vert-no-bkg-1.png');
+  --logo-vert-blanco:  url('/assets/Logo-Helitec-Vert-no-bkg-1-blanco.png');
+
+  /* Hero image por defecto */
+  --hero-default:      url('/assets/PHOTO-2024-10-30-15-40-52.jpg');
+
+  /* WhatsApp B2B */
+  --whatsapp-number:   '+584166235254';
+}

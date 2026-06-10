@@ -1,0 +1,704 @@
+---
+/**
+ * FleetSection.astro
+ * Consorcio Helitec — Sección "Nuestra Flota" (Fase 6)
+ *
+ * Datos: importados desde /flota.json (raíz del proyecto)
+ * Filtra aeronaves con activo: true (8 en total: 5 ala fija + 3 ala rotatoria)
+ *
+ * Layout:
+ *   Mobile (< 1024px): Carrusel horizontal táctil nativo
+ *     · overflow-x: scroll + scroll-snap-type: x mandatory
+ *     · -webkit-overflow-scrolling: touch (iOS momentum)
+ *     · scrollbar-width: none (ocultar scrollbar nativo)
+ *   Desktop (≥ 1024px): CSS Grid 3 columnas
+ *
+ * Tarjeta:
+ *   · Foto: aspect-ratio 4/3, object-fit: cover (OBLIGATORIO)
+ *   · Placeholder para aeronaves sin thumbnail (MD 600, MD 902)
+ *   · Overline: Fabricante · Tipo
+ *   · H3: Modelo (font-weight: 300, letter-spacing)
+ *   · 3 Specs con íconos SVG: Pasajeros · Velocidad crucero · Autonomía
+ *
+ * Íconos SVG (inline, sin dependencias externas):
+ *   · Pasajeros: silueta persona
+ *   · Velocidad:  flecha diagonal / airspeed
+ *   · Autonomía: reloj / clock
+ *
+ * NOTA: Los paths de imágenes con espacios (ej: "Helicoptero 5.jpg")
+ * se pasan por encodeURI() para evitar URLs rotas en HTML.
+ *
+ * Reglas anti-slop:
+ *   PROHIBIDO box-shadow       — ✓
+ *   PROHIBIDO linear-gradient  — ✓
+ *   border-radius ≤ 4px        — ✓ (var(--r-micro) en todo)
+ *   object-fit: cover en fotos — ✓
+ */
+
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+/* ── Importar datos de flota ─────────────────────────────────────────────── */
+/*
+ * flota.json está en src/data/ (no en la raíz del proyecto).
+ * Ruta relativa desde src/components/sections/: ../../data/flota.json
+ * Astro permite importar JSON estático en el frontmatter.
+ */
+import flotaData from '../../data/flota.json';
+
+const activeFleet = flotaData.flota.filter((a: any) => a.activo === true);
+
+/* ── Helper: codificar paths con espacios ───────────────────────────────── */
+/*
+ * Algunos filenames tienen espacios (ej: "Helicoptero 5.jpg").
+ * encodeURI convierte el espacio a %20 para URLs válidas.
+ * null → null (manejado en el template como placeholder).
+ */
+function safeImgPath(path: string | null): string | null {
+  if (!path) return null;
+  return encodeURI(path);
+}
+
+/* ── Specs por aeronave: los 3 valores a mostrar ─────────────────────────── */
+/*
+ * Para cada aeronave extraemos:
+ *   1. capacidad_pasajeros
+ *   2. especificaciones.tecnicas.velocidad_crucero_kts
+ *   3. especificaciones.tecnicas.autonomia_horas
+ *
+ * Todos los registros en flota.json tienen estos campos definidos.
+ */
+function getSpecs(aircraft: any) {
+  const tec = aircraft.especificaciones?.tecnicas ?? {};
+  return {
+    pax:       aircraft.capacidad_pasajeros ?? '—',
+    velocidad: tec.velocidad_crucero_kts    ?? '—',
+    autonomia: tec.autonomia_horas          ?? '—',
+  };
+}
+
+/* ── Tipo de aeronave para el overline ───────────────────────────────────── */
+function getTipoLabel(aircraft: any, lang: string): string {
+  const cat = aircraft.categoria as string;
+  if (cat === 'ala-fija')      return lang === 'es' ? 'Ala Fija'      : 'Fixed Wing';
+  if (cat === 'ala-rotatoria') return lang === 'es' ? 'Ala Rotatoria' : 'Rotary Wing';
+  return cat;
+}
+---
+
+
+<section class="fleet" id="flota" aria-labelledby="fleet-heading">
+
+  <!-- ── Encabezado de sección ───────────────────────────────────────────── -->
+  <div class="fleet__inner">
+
+    <header class="fleet__header">
+
+      <p class="fleet__overline">
+        {lang === 'es' ? 'Nuestra Flota' : 'Our Fleet'}
+      </p>
+
+      <h2 class="fleet__title" id="fleet-heading">
+        {lang === 'es'
+          ? <>{activeFleet.length} aeronaves<br/>certificadas INAC</>
+          : <>{activeFleet.length} INAC-certified<br/>aircraft</>
+        }
+      </h2>
+
+      <!-- Contador de categorías (dato factual del JSON) -->
+      <div class="fleet__cats">
+        <span class="fleet__cat-tag">
+          <!-- Ícono ala fija: forma estilizada de ala -->
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M1 7L7 2L13 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+            <path d="M4 9L7 7L10 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+          </svg>
+          {lang === 'es' ? '5 Ala Fija' : '5 Fixed Wing'}
+        </span>
+        <span class="fleet__cat-tag">
+          <!-- Ícono ala rotatoria: aspas de rotor simplificadas -->
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
+            <path d="M7 1v3M7 10v3M1 7h3M10 7h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+          </svg>
+          {lang === 'es' ? '3 Ala Rotatoria' : '3 Rotary Wing'}
+        </span>
+      </div>
+
+    </header>
+
+  </div>
+
+  <!-- ── Carrusel / Grid de tarjetas ──────────────────────────────────────── -->
+  <!--
+    .fleet__track actúa como:
+      Mobile  → flex container con overflow-x scroll + scroll-snap
+      Desktop → CSS grid 3 columnas (via @media en <style>)
+  -->
+  <div
+    class="fleet__track"
+    role="list"
+    aria-label={lang === 'es' ? 'Aeronaves de la flota Helitec' : 'Helitec fleet aircraft'}
+  >
+
+    {activeFleet.map((aircraft: any) => {
+      const specs    = getSpecs(aircraft);
+      const thumb    = safeImgPath(aircraft.rutas_imagenes?.thumbnail ?? null);
+      const tipoLabel = getTipoLabel(aircraft, lang);
+
+      return (
+        <article
+          class="fleet__card"
+          role="listitem"
+          aria-label={`${aircraft.fabricante} ${aircraft.modelo}`}
+        >
+
+          <!-- ── Foto de la aeronave ─────────────────────────────────────── -->
+          <div class="fleet__card-media">
+
+            {thumb ? (
+              <img
+                class="fleet__card-img"
+                src={thumb}
+                alt={`${aircraft.modelo} — ${aircraft.fabricante}`}
+                loading="lazy"
+                decoding="async"
+                width="400"
+                height="300"
+              />
+            ) : (
+              /*
+               * Placeholder para aeronaves sin fotografía (MD 600, MD 902 Explorer).
+               * Diseño sobrio: fondo oscuro + ícono SVG centrado + modelo como texto.
+               * Sin colores de llamada — mantiene la paleta de marca.
+               */
+              <div class="fleet__card-placeholder" aria-hidden="true">
+                <!-- Ícono genérico de aeronave (vista lateral simplificada) -->
+                <svg
+                  class="fleet__placeholder-icon"
+                  width="48"
+                  height="48"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  {aircraft.categoria === 'ala-rotatoria' ? (
+                    /* Helicóptero — silueta lateral simplificada */
+                    <>
+                      <path d="M8 30 Q16 22 28 24 L40 26 L36 32 Z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="square"/>
+                      <path d="M16 24 L16 18" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                      <path d="M8 18 L24 18" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                      <path d="M36 28 L44 26" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                    </>
+                  ) : (
+                    /* Avión — silueta vista de planta simplificada */
+                    <>
+                      <path d="M24 8 L26 28 L24 32 L22 28 Z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="square"/>
+                      <path d="M10 22 L24 20 L38 22" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                      <path d="M18 30 L24 28 L30 30" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                    </>
+                  )}
+                </svg>
+                <p class="fleet__placeholder-label">{aircraft.modelo}</p>
+                <p class="fleet__placeholder-note">
+                  {lang === 'es' ? 'Fotografía no disponible' : 'Photo unavailable'}
+                </p>
+              </div>
+            )}
+
+            <!-- Badge de categoría sobre la foto -->
+            <span class={`fleet__cat-badge fleet__cat-badge--${aircraft.categoria}`}>
+              {tipoLabel}
+            </span>
+
+            <!-- Badge aeromédico si aplica -->
+            {aircraft.aeromedico && (
+              <span class="fleet__aero-badge">
+                {lang === 'es' ? 'Aeromédico' : 'Aeromedical'}
+              </span>
+            )}
+
+          </div>
+
+          <!-- ── Cuerpo de la tarjeta ───────────────────────────────────── -->
+          <div class="fleet__card-body">
+
+            <!-- Fabricante + tipo (overline) -->
+            <p class="fleet__card-overline">
+              {aircraft.fabricante} · {tipoLabel}
+            </p>
+
+            <!-- Nombre del modelo -->
+            <h3 class="fleet__card-model">{aircraft.modelo}</h3>
+
+            <!-- 3 Specs con íconos SVG -->
+            <ul class="fleet__specs" aria-label={lang === 'es' ? 'Especificaciones' : 'Specifications'}>
+
+              <!-- Spec 1: Pasajeros -->
+              <li class="fleet__spec">
+                <span class="fleet__spec-icon" aria-hidden="true">
+                  <!-- Ícono persona / silueta pasajero -->
+                  <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6" cy="4" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M1 13C1 10.24 3.24 8 6 8C8.76 8 11 10.24 11 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                  </svg>
+                </span>
+                <span class="fleet__spec-text">
+                  {specs.pax} {lang === 'es' ? 'pax' : 'pax'}
+                </span>
+              </li>
+
+              <!-- Spec 2: Velocidad crucero -->
+              <li class="fleet__spec">
+                <span class="fleet__spec-icon" aria-hidden="true">
+                  <!-- Ícono velocidad: flecha diagonal ascendente -->
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 11L11 2M11 2H6M11 2V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                  </svg>
+                </span>
+                <span class="fleet__spec-text">
+                  {specs.velocidad} kts
+                </span>
+              </li>
+
+              <!-- Spec 3: Autonomía -->
+              <li class="fleet__spec">
+                <span class="fleet__spec-icon" aria-hidden="true">
+                  <!-- Ícono reloj / autonomía -->
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M6.5 3.5V6.5L8.5 8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+                  </svg>
+                </span>
+                <span class="fleet__spec-text">
+                  {specs.autonomia} h
+                </span>
+              </li>
+
+            </ul>
+
+          </div>
+
+        </article>
+      );
+    })}
+
+  </div>
+
+  <!-- ── Indicador de scroll (móvil) ─────────────────────────────────────── -->
+  <!--
+    Barra de progreso CSS pura: no requiere JS.
+    Se muestra solo en mobile y sirve de affordance visual
+    para indicar que hay contenido deslizable.
+  -->
+  <div class="fleet__inner fleet__scroll-hint" aria-hidden="true">
+    <span class="fleet__scroll-hint-text">
+      {lang === 'es' ? 'Deslizar para ver toda la flota' : 'Swipe to see the full fleet'}
+    </span>
+  </div>
+
+</section>
+
+
+<style>
+  /* ════════════════════════════════════════════════════════════════════════
+     SECCIÓN
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet {
+    background-color: var(--c-bg);
+    border-top:       1px solid var(--c-line);
+    padding-block:    clamp(56px, 9vh, 104px);
+    overflow:         hidden; /* Evita scrollbar horizontal en el body */
+  }
+
+  .fleet__inner {
+    max-width:      var(--content-max);
+    margin-inline:  auto;
+    padding-inline: calc(var(--sidebar-w) + var(--gutter));
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     ENCABEZADO
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__header {
+    margin-bottom: clamp(36px, 5vh, 52px);
+  }
+
+  .fleet__overline {
+    display:     flex;
+    align-items: center;
+    gap:         12px;
+
+    font-family:    var(--font-sans);
+    font-size:      var(--text-xs);
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-sky);
+
+    margin-bottom: 14px;
+  }
+
+  .fleet__overline::before {
+    content:          '';
+    display:          block;
+    flex-shrink:      0;
+    width:            32px;
+    height:           1px;
+    background-color: var(--c-sky);
+  }
+
+  .fleet__title {
+    font-family:    var(--font-display);
+    font-size:      var(--text-2xl);
+    font-weight:    var(--fw-thin); /* 200 — OBLIGATORIO */
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    line-height:    1.1;
+    color:          var(--c-text-1);
+    margin-bottom:  20px;
+  }
+
+  /* Tags de categoría en el header */
+  .fleet__cats {
+    display:  flex;
+    gap:      12px;
+    flex-wrap: wrap;
+  }
+
+  .fleet__cat-tag {
+    display:     inline-flex;
+    align-items: center;
+    gap:         6px;
+
+    font-family:    var(--font-sans);
+    font-size:      0.6875rem; /* 11px */
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+    color:          var(--c-text-3);
+
+    padding:       4px 8px;
+    border:        1px solid var(--c-line);
+    border-radius: var(--r-micro); /* 4px */
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     TRACK — comportamiento base: CARRUSEL HORIZONTAL (mobile)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__track {
+    display:                    flex;
+    gap:                        clamp(12px, 2vw, 16px);
+
+    /* Scroll horizontal nativo con snap */
+    overflow-x:                  scroll;
+    overflow-y:                  hidden;
+    scroll-snap-type:            x mandatory;
+    -webkit-overflow-scrolling:  touch; /* iOS momentum scroll */
+
+    /* Ocultar scrollbar nativo sin eliminar la funcionalidad */
+    scrollbar-width:             none; /* Firefox */
+    -ms-overflow-style:          none; /* IE/Edge legacy */
+
+    /*
+     * padding-inline: el padding izquierdo incluye el offset del sidebar
+     * para alinear el primer card con el resto del contenido.
+     * padding-right extra para que se vea el borde del último card.
+     */
+    padding-inline:              calc(var(--sidebar-w) + var(--gutter)) clamp(24px, 5vw, 80px);
+
+    /* Evitar que los cards se compriman */
+    align-items:                 stretch;
+  }
+
+  /* Ocultar scrollbar en Chrome/Safari */
+  .fleet__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     TARJETA — base (mobile-first)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__card {
+    /*
+     * Ancho de la tarjeta en carrusel:
+     * Casi el ancho completo del viewport con un "peek" de la siguiente.
+     * clamp asegura un mínimo razonable y un máximo para pantallas medianas.
+     */
+    flex-shrink: 0;
+    width:       clamp(280px, 78vw, 340px);
+
+    /* Snap point: el card se ancla al inicio del área de scroll */
+    scroll-snap-align: start;
+
+    background-color: var(--c-bg-raised);
+    border:           1px solid var(--c-line);
+    border-radius:    var(--r-micro); /* 4px — límite sagrado */
+    overflow:         hidden;
+
+    display:        flex;
+    flex-direction: column;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     MEDIA DE LA TARJETA (foto)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__card-media {
+    position:     relative;
+    aspect-ratio: 4 / 3; /* Proporción fija para todas las fotos */
+    overflow:     hidden;
+    flex-shrink:  0;
+  }
+
+  .fleet__card-img {
+    width:      100%;
+    height:     100%;
+    object-fit: cover; /* OBLIGATORIO — nunca deformar */
+
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  /* Zoom sutil al hover — sin box-shadow */
+  .fleet__card:hover .fleet__card-img {
+    transform: scale(1.04);
+  }
+
+  /* ── PLACEHOLDER para aeronaves sin foto ─────────────────────────────── */
+
+  .fleet__card-placeholder {
+    width:  100%;
+    height: 100%;
+
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    gap:             10px;
+
+    background-color: var(--c-bg);
+    border-bottom:    1px solid var(--c-line);
+  }
+
+  .fleet__placeholder-icon {
+    color:   var(--c-text-3);
+    opacity: 0.5;
+  }
+
+  .fleet__placeholder-label {
+    font-family:    var(--font-display);
+    font-size:      clamp(0.85rem, 2vw, 1rem);
+    font-weight:    var(--fw-light);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+    color:          var(--c-text-2);
+    text-align:     center;
+    padding-inline: 16px;
+  }
+
+  .fleet__placeholder-note {
+    font-family: var(--font-sans);
+    font-size:   0.65rem;
+    color:       var(--c-text-3);
+    text-align:  center;
+  }
+
+  /* ── Badges sobre la foto ──────────────────────────────────────────── */
+
+  .fleet__cat-badge,
+  .fleet__aero-badge {
+    position: absolute;
+    top:      12px;
+
+    font-family:    var(--font-sans);
+    font-size:      0.5625rem; /* 9px */
+    font-weight:    var(--fw-semibold);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+
+    padding:       3px 7px;
+    border-radius: var(--r-micro); /* 4px */
+  }
+
+  .fleet__cat-badge {
+    left: 12px;
+  }
+
+  .fleet__cat-badge--ala-fija {
+    background-color: rgba(2, 58, 120, 0.85); /* --c-brand semitransparente */
+    color:            var(--c-text-1);
+    border:           1px solid rgba(88, 181, 240, 0.25);
+  }
+
+  .fleet__cat-badge--ala-rotatoria {
+    background-color: rgba(7, 8, 12, 0.80); /* --c-bg semitransparente */
+    color:            var(--c-text-2);
+    border:           1px solid var(--c-line-strong);
+  }
+
+  .fleet__aero-badge {
+    right:            12px;
+    background-color: rgba(229, 59, 28, 0.85); /* --c-red aeromédico */
+    color:            var(--c-white);
+    border:           none;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     CUERPO DE LA TARJETA
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__card-body {
+    padding:        20px 18px;
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+    flex:           1; /* Ocupa el espacio restante tras la foto */
+  }
+
+  .fleet__card-overline {
+    font-family:    var(--font-sans);
+    font-size:      0.6rem; /* 9.6px — muy pequeño, sobrio */
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-text-3);
+    margin-bottom:  2px;
+  }
+
+  .fleet__card-model {
+    font-family:    var(--font-display);
+    font-size:      clamp(1rem, 2vw, 1.15rem);
+    font-weight:    var(--fw-light); /* 300 — tipografía delgada en H3 */
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    line-height:    1.2;
+    color:          var(--c-text-1);
+    margin-bottom:  10px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     SPECS — 3 items con ícono SVG
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__specs {
+    list-style: none;
+    padding:    0;
+    margin:     0;
+
+    display: flex;
+    gap:     clamp(10px, 2vw, 16px);
+
+    /* Línea divisora superior antes de los specs */
+    padding-top:  12px;
+    border-top:   1px solid var(--c-line);
+    margin-top:   auto; /* Empuja los specs al fondo de la tarjeta */
+  }
+
+  .fleet__spec {
+    display:     flex;
+    align-items: center;
+    gap:         5px;
+
+    flex: 1;
+    min-width: 0;
+  }
+
+  .fleet__spec-icon {
+    display:     flex;
+    align-items: center;
+    flex-shrink: 0;
+    color:       var(--c-text-3);
+  }
+
+  .fleet__spec-text {
+    font-family:    var(--font-sans);
+    font-size:      0.6875rem; /* 11px */
+    font-weight:    var(--fw-regular);
+    letter-spacing: var(--ls-wide);
+    color:          var(--c-text-2);
+    white-space:    nowrap;
+    overflow:       hidden;
+    text-overflow:  ellipsis;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     INDICADOR DE SCROLL (solo mobile)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .fleet__scroll-hint {
+    margin-top: 20px;
+    display:    flex;
+    align-items: center;
+    gap:         8px;
+  }
+
+  .fleet__scroll-hint-text {
+    font-family:    var(--font-sans);
+    font-size:      0.6rem;
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-text-3);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     DESKTOP (≥ 1024px) — PASAR DE CARRUSEL A CSS GRID
+  ════════════════════════════════════════════════════════════════════════ */
+
+  @media (min-width: 1024px) {
+
+    .fleet__track {
+      /* Reemplazar flex-carousel por CSS grid */
+      display:          grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:              clamp(12px, 1.5vw, 16px);
+
+      /* Eliminar comportamiento de scroll */
+      overflow-x:       visible;
+      scroll-snap-type: none;
+
+      /* Usar el mismo padding que el resto de secciones */
+      padding-inline:   calc(var(--sidebar-w) + var(--gutter));
+    }
+
+    .fleet__card {
+      /* En grid no hay flex-shrink: el card toma el ancho de la celda */
+      width:             auto;
+      scroll-snap-align: none;
+    }
+
+    /* Ocultar hint de scroll en desktop */
+    .fleet__scroll-hint {
+      display: none;
+    }
+
+  }
+
+  /* Tablet (640–1023px): 2 columnas en el carrusel (tarjetas más anchas) */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .fleet__card {
+      width: clamp(300px, 44vw, 380px);
+    }
+
+    .fleet__scroll-hint {
+      display: none;
+    }
+  }
+
+  /* Mobile muy pequeño (< 380px): tarjeta casi full-width */
+  @media (max-width: 379px) {
+    .fleet__card {
+      width: calc(100vw - clamp(24px, 5vw, 48px) - 16px);
+    }
+  }
+</style>
