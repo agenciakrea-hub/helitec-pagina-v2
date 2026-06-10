@@ -160,34 +160,57 @@ const { lang = 'es' } = Astro.props;
 
 </div>
 
-<!-- ── FABs AGRUPADOS: Contacto + Linktree (Fase 7.1) ────────────────────── -->
+<!-- ── FABs AGRUPADOS: Cotización + Contacto + Linktree ──────────────────── -->
 <!--
-  Dos botones 44×44px apilados verticalmente.
-  El wrapper se posiciona con offset derecho igual al ancho del strip
-  de SideLeadCTA (40px desktop / 36px mobile) + gap de separación.
-  z-index: 895 — visible por encima del strip (850) y su backdrop (847).
+  Tres FABs 44×44px en fila horizontal — esquina inferior derecha.
+  Orden izq→der: Cotización (primario) · Contacto (secundario) · Linktree (terciario).
+  El trigger #slcta-trigger vive aquí; SideLeadCTA.astro lo encuentra por ID.
+  z-index: 895 — encima del panel SideLeadCTA (848) y su backdrop (847).
 -->
 <div class="csheet__fabs">
 
-  <!-- FAB 1: Contacto — abre el bottom sheet -->
+  <!-- FAB 1: Cotización — abre panel SideLeadCTA (CTA primario) -->
   <button
-    class="csheet__trigger"
+    class="csheet__fab csheet__fab--cotizar"
+    id="slcta-trigger"
+    type="button"
+    aria-expanded="false"
+    aria-controls="slcta-panel"
+    aria-label="Solicitar cotización de vuelo privado"
+  >
+    <span class="csheet__fab-icon" aria-hidden="true">
+      <!-- Avión de papel — solicitar vuelo / cotización -->
+      <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L17 8L1 15V9.5L11 8L1 6.5V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+      </svg>
+    </span>
+    <span class="csheet__fab-close" aria-hidden="true">
+      <!-- ✕ — cerrar panel cotizador (visible cuando aria-expanded="true") -->
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+      </svg>
+    </span>
+  </button>
+
+  <!-- FAB 2: Contacto — abre bottom sheet de información -->
+  <button
+    class="csheet__fab csheet__trigger"
     id="csheet-trigger"
     type="button"
     aria-expanded="false"
     aria-controls="csheet-sheet"
     aria-label="Abrir información de contacto"
   >
-    <!-- Ícono: burbuja de mensaje minimalista (reemplaza auricular) -->
+    <!-- Burbuja de mensaje minimalista -->
     <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M1 1h16v10H4.5L1 15V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
     </svg>
   </button>
 
-  <!-- FAB 2: Linktree — ver todas las redes sociales de Helitec -->
+  <!-- FAB 3: Linktree — redes sociales de Helitec -->
   <!-- [DATO: reemplazar href con la URL real del Linktree de Consorcio Helitec] -->
   <a
-    class="csheet__linktree-btn"
+    class="csheet__fab csheet__linktree-btn"
     href="https://linktr.ee/helitec"
     target="_blank"
     rel="noopener noreferrer"
@@ -464,33 +487,35 @@ const { lang = 'es' } = Astro.props;
     line-height: 1.6;
   }
 
-  /* ── FABs AGRUPADOS — Wrapper (Fase 7.1) ────────────────────────────────── */
+  /* ── FABs WRAPPER — Fila horizontal, esquina inferior derecha ───────────── */
   /*
-   * Posición: fixed, esquina inferior derecha.
-   * right: offset exacto = ancho strip SideLeadCTA (40px) + gap visual (12px).
-   * Los FABs se apilan verticalmente con flex-direction: column.
-   * z-index: 895 — por encima del strip de SideLeadCTA (850) y su backdrop (847),
-   *               por debajo del backdrop del ContactSheet (898).
+   * Tres FABs 44×44px en row horizontal.
+   * right: 12px — ya no hay strip SideLeadCTA que desplazar (fue eliminado).
+   * z-index: 895 — encima del panel SideLeadCTA (848), debajo del backdrop de
+   *               ContactSheet (898) para que el backdrop cubra los FABs al abrir.
    */
   .csheet__fabs {
     position: fixed;
     bottom:   clamp(16px, 3vh, 24px);
-    right:    calc(40px + 12px); /* 52px: strip 40px + gap 12px */
+    right:    12px;
     z-index:  895;
 
-    display:        flex;
-    flex-direction: column;
-    gap:            8px;
+    display:     flex;
+    flex-direction: row;
+    align-items: center;
+    gap:         8px;
   }
 
-  /* ── Estilos base compartidos por ambos FABs ─────────────────────────────── */
+  /* ── Base compartida — Efecto Cristal (todos los FABs) ──────────────────── */
   /*
-   * Tamaño: 44×44px — cumple WCAG 2.5.5 (mínimo touch target 44×44 CSS px).
-   * border-radius: var(--r-micro) = 4px — límite máximo del proyecto.
-   * Ambos botones idénticos en forma — diferenciados solo en hover de borde.
+   * CUMPLE reglas anti-slop:
+   *   ✓ Sin box-shadow
+   *   ✓ Sin linear-gradient (fondo es rgba puro)
+   *   ✓ border-radius: var(--r-micro) = 4px
+   *   ✓ backdrop-filter: blur() — no prohibido
    */
-  .csheet__trigger,
-  .csheet__linktree-btn {
+  .csheet__fab {
+    position:    relative; /* necesario para span hijos con position:absolute */
     width:       44px;
     height:      44px;
     flex-shrink: 0;
@@ -499,46 +524,79 @@ const { lang = 'es' } = Astro.props;
     align-items:     center;
     justify-content: center;
 
-    background-color: var(--c-bg-raised);
-    border:           1px solid var(--c-line-strong);
-    border-radius:    var(--r-micro); /* 4px — límite sagrado */
-    cursor:           pointer;
-    color:            var(--c-text-2);
-    text-decoration:  none; /* reset para el <a> de Linktree */
+    backdrop-filter:         blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+    border-radius: var(--r-micro); /* 4px — límite sagrado */
+    cursor:        pointer;
+    text-decoration: none; /* reset para <a> */
 
     transition:
-      background-color var(--dur-fast) var(--ease-out),
-      border-color     var(--dur-fast) var(--ease-out),
-      color            var(--dur-fast) var(--ease-out);
+      background   var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color        var(--dur-fast) var(--ease-out);
+  }
+
+  /* ── FAB 1: Cotización (CTA primario — azul marca) ───────────────────────── */
+  .csheet__fab--cotizar {
+    background:  rgba(2, 58, 120, 0.50);    /* --c-brand tinted glass */
+    border:      1px solid rgba(88, 181, 240, 0.22);
+    color:       rgba(255, 255, 255, 0.88);
+  }
+
+  .csheet__fab--cotizar:hover {
+    background:   rgba(10, 77, 158, 0.70);  /* --c-brand-hover al 70% */
+    border-color: rgba(88, 181, 240, 0.45);
+    color:        var(--c-white);
+  }
+
+  .csheet__fab--cotizar:focus-visible {
+    outline: 2px solid var(--c-sky);
+    outline-offset: 2px;
+  }
+
+  /* Estado activo: panel cotizador abierto */
+  .csheet__fab--cotizar[aria-expanded="true"] {
+    background:   rgba(10, 77, 158, 0.80);
+    border-color: rgba(88, 181, 240, 0.55);
+  }
+
+  /* Swap icono avión ↔ ✕ según aria-expanded */
+  .csheet__fab-icon,
+  .csheet__fab-close {
+    position:  absolute;
+    display:   flex;
+    align-items:     center;
+    justify-content: center;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .csheet__fab-icon  { opacity: 1; }
+  .csheet__fab-close { opacity: 0; }
+
+  .csheet__fab--cotizar[aria-expanded="true"] .csheet__fab-icon  { opacity: 0; }
+  .csheet__fab--cotizar[aria-expanded="true"] .csheet__fab-close { opacity: 1; }
+
+  /* ── FABs 2 y 3: Contacto + Linktree (cristal blanco translúcido) ─────── */
+  .csheet__trigger,
+  .csheet__linktree-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border:     1px solid rgba(255, 255, 255, 0.14);
+    color:      rgba(255, 255, 255, 0.75);
   }
 
   .csheet__trigger:hover,
   .csheet__linktree-btn:hover {
-    background-color: var(--c-bg);
-    color:            var(--c-text-1);
+    background: rgba(255, 255, 255, 0.16);
+    color:      rgba(255, 255, 255, 1);
   }
 
-  /* Hover ContactSheet — acento azul cielo */
-  .csheet__trigger:hover {
-    border-color: var(--c-sky);
-  }
-
-  /* Hover Linktree — acento verde sutil (color de marca Linktree) */
-  .csheet__linktree-btn:hover {
-    border-color: rgba(68, 195, 92, 0.55);
-  }
+  .csheet__trigger:hover     { border-color: rgba(88, 181, 240, 0.50); }
+  .csheet__linktree-btn:hover { border-color: rgba(68, 195, 92,  0.45); }
 
   .csheet__trigger:focus-visible,
   .csheet__linktree-btn:focus-visible {
     outline:        2px solid var(--c-sky);
     outline-offset: 2px;
-  }
-
-  /* Mobile (< 1024px): ajustar offset al strip más angosto (36px) */
-  @media (max-width: 1023px) {
-    .csheet__fabs {
-      right: calc(36px + 10px); /* 46px en mobile */
-    }
   }
 </style>
 

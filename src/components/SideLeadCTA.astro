@@ -297,25 +297,11 @@
   </form>
 </div>
 
-<!-- ── TRIGGER: STRIP VERTICAL ──────────────────────────────────────────── -->
-<button
-  class="slcta__trigger"
-  id="slcta-trigger"
-  type="button"
-  aria-expanded="false"
-  aria-controls="slcta-panel"
-  aria-label="Abrir cotizador de vuelo privado"
->
-  <!-- Estado cerrado: texto vertical -->
-  <span class="slcta__trigger-text" aria-hidden="true">SOLICITAR COTIZACIÓN</span>
-
-  <!-- Estado abierto: icono ✕ -->
-  <span class="slcta__trigger-close" aria-hidden="true">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-    </svg>
-  </span>
-</button>
+<!--
+  TRIGGER MOVIDO — el botón #slcta-trigger ahora vive en ContactSheet.astro
+  junto al grupo de FABs (ContactSheet + Linktree + Cotización).
+  El controller JS de este archivo sigue encontrándolo por document.getElementById('slcta-trigger').
+-->
 
 
 <style>
@@ -869,105 +855,10 @@
     padding-bottom: 8px;
   }
 
-  /* ════════════════════════════════════════════════════════════════════════
-     TRIGGER — strip vertical derecho
-  ════════════════════════════════════════════════════════════════════════ */
-
-  .slcta__trigger {
-    position:  fixed;
-    right:     0;
-    top:       50%;
-
-    /*
-     * Fase 7.1 — Estado inicial: strip oculto fuera de pantalla.
-     * translateY(-50%) centra verticalmente sobre top:50%.
-     * translateX(100%) empuja el strip 100% de su propio ancho hacia la derecha
-     * (queda completamente fuera del viewport).
-     * JS añade .is-visible cuando scrollY supera el 80% de la altura del Hero.
-     */
-    transform: translateY(-50%) translateX(100%);
-
-    z-index: var(--z-cta-float); /* 850 */
-
-    width:         40px;
-    padding-block: 20px;
-
-    display:         flex;
-    align-items:     center;
-    justify-content: center;
-
-    /* El strip queda pegado al borde derecho — sin border-radius derecho */
-    background-color: var(--c-brand);
-    border-radius:    var(--r-micro) 0 0 var(--r-micro); /* 4px solo izquierda */
-    border:           none;
-    cursor:           pointer;
-
-    /* Transición de aparición (transform) + hover de color (background) */
-    transition:
-      transform        var(--dur-mid)  var(--ease-menu),
-      background-color var(--dur-fast) var(--ease-out);
-  }
-
-  /* Visible: JS activa esta clase cuando scrollY > 80% del viewport height */
-  .slcta__trigger.is-visible {
-    transform: translateY(-50%) translateX(0);
-  }
-
-  .slcta__trigger:hover {
-    background-color: #0a4d9e;
-  }
-
-  .slcta__trigger:focus-visible {
-    outline:        2px solid var(--c-sky);
-    outline-offset: 3px;
-  }
-
-  /* Texto vertical "SOLICITAR COTIZACIÓN" */
-  .slcta__trigger-text {
-    writing-mode:     vertical-lr;
-    text-orientation: mixed;
-    transform:        rotate(180deg); /* Lectura de abajo hacia arriba */
-
-    font-family:    var(--font-sans);
-    font-size:      0.5625rem; /* 9px */
-    font-weight:    var(--fw-semibold);
-    letter-spacing: var(--ls-widest);
-    text-transform: uppercase;
-    color:          var(--c-white);
-    user-select:    none;
-
-    opacity:    1;
-    transition: opacity var(--dur-fast) var(--ease-out);
-  }
-
-  /* Ícono ✕ para cuando el panel está abierto */
-  .slcta__trigger-close {
-    position: absolute;
-    color:    var(--c-white);
-
-    display:         flex;
-    align-items:     center;
-    justify-content: center;
-
-    opacity:    0;
-    transition: opacity var(--dur-fast) var(--ease-out);
-  }
-
-  /* Intercambio texto ↔ ✕ según aria-expanded */
-  .slcta__trigger[aria-expanded="true"] .slcta__trigger-text  { opacity: 0; }
-  .slcta__trigger[aria-expanded="true"] .slcta__trigger-close { opacity: 1; }
-
-  /* ── MOBILE (< 1024px) ─────────────────────────────────────────────── */
-  @media (max-width: 1023px) {
-    .slcta__trigger {
-      width:         36px;
-      padding-block: 16px;
-    }
-
-    .slcta__trigger-text {
-      font-size: 0.5rem; /* 8px en mobile */
-    }
-  }
+  /*
+   * TRIGGER CSS MOVIDO — ver ContactSheet.astro (.csheet__fab--cotizar).
+   * El estilo del botón #slcta-trigger ahora vive donde el HTML.
+   */
 </style>
 
 
@@ -1329,33 +1220,20 @@
   })();
 
   /* ════════════════════════════════════════════════════════════════════════
-     SCROLL REVEAL — Strip visible solo después del Hero (Fase 7.1)
-     Threshold: scrollY > 80% de la altura visible del viewport.
-     Lógica independiente del controller principal — IIFE separado.
+     DELEGACIÓN — Hero CTA "Solicitar Cotización" abre el mismo panel
+     Cualquier elemento con [data-open-slcta] simula click en #slcta-trigger.
+     Permite conectar el hero CTA con el panel sin cambiar el controller.
   ════════════════════════════════════════════════════════════════════════ */
   (function () {
-    const strip = document.getElementById('slcta-trigger');
-    if (!strip) return;
+    const mainTrigger = document.getElementById('slcta-trigger');
+    if (!mainTrigger) return;
 
-    let threshold = window.innerHeight * 0.8;
-
-    function updateVisibility() {
-      if (window.scrollY > threshold) {
-        strip.classList.add('is-visible');
-      } else {
-        strip.classList.remove('is-visible');
-      }
-    }
-
-    /* Estado inicial — maneja el caso de refresh con scroll ya desplazado */
-    updateVisibility();
-
-    window.addEventListener('scroll', updateVisibility, { passive: true });
-
-    /* Recalcular threshold al rotar pantalla o redimensionar ventana */
-    window.addEventListener('resize', function () {
-      threshold = window.innerHeight * 0.8;
-      updateVisibility();
-    }, { passive: true });
+    const delegates = document.querySelectorAll('[data-open-slcta]');
+    delegates.forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        mainTrigger.click(); /* Dispara el handler del controller principal */
+      });
+    });
   })();
 </script>

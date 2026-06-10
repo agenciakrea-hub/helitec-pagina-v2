@@ -223,24 +223,39 @@ hr {
 }
 
 
-/* ── 14. SCROLLBAR (Webkit — sutil y corporativo) ────────────────────────── */
+/* ── 14. SCROLLBAR — Azul Helitec (Fase 7.1) ─────────────────────────────── */
 
+/*
+ * --c-sky (#58b5f0) en lugar de --c-brand (#023a78).
+ * Razón: el fondo --c-bg es casi negro. El navy #023a78 sería invisible.
+ * El azul cielo es parte de la identidad Helitec y es legible sobre el fondo.
+ * Firefox: scrollbar-color en el html raíz.
+ * Webkit (Chrome, Safari, Edge): ::-webkit-scrollbar-* API.
+ */
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-sky) transparent;
+}
+
+/* Webkit */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width:  5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--c-bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background:    var(--c-brand);
-  border-radius: var(--r-micro); /* 4px — límite absoluto */
+  background:    var(--c-sky);   /* #58b5f0 — azul cielo Helitec */
+  border-radius: 2px;            /* ≤ 4px — límite del proyecto */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--c-brand-hover);
+  background: var(--c-white);   /* Blanco en hover — máximo contraste */
 }
 
 
