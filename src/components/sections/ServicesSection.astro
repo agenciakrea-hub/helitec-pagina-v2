@@ -49,8 +49,8 @@ const services = [
       : 'Fixed-wing Metro and Merlin fleet for high-efficiency corporate transport. Direct connections between Caracas, the interior, and the Caribbean.',
     cta:   lang === 'es' ? 'Solicitar vuelo ejecutivo' : 'Request executive flight',
     href:  '/#contacto',
-    img:   '/assets/YV1923_1.jpg',                                      /* Interior ejecutivo Metro 23 Merlin 300 */
-    alt:   lang === 'es' ? 'Interior ejecutivo Metro 23 Merlin 300 — Consorcio Helitec' : 'Metro 23 Merlin 300 executive cabin interior — Consorcio Helitec',
+    img:   '/assets/IMG_0968.jpg',                                       /* Cabina ejecutiva — interior del avión */
+    alt:   lang === 'es' ? 'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium' : 'Helitec executive cabin — premium leather seating',
     accent: 'var(--c-sky)',
   },
   {
@@ -62,8 +62,8 @@ const services = [
       : 'MD helicopters with 24/7 availability for aerial support on offshore platforms and onshore energy sector facilities.',
     cta:   lang === 'es' ? 'Consultar operaciones' : 'Inquire about operations',
     href:  '/#contacto',
-    img:   encodeURI('/assets/Helicoptero en pantano.jpg'),              /* MD Helitec operando en zona pantanosa / offshore */
-    alt:   lang === 'es' ? 'Helicóptero MD Helitec en operación en zona pantanosa' : 'Helitec MD helicopter operating in swamp/offshore zone',
+    img:   '/assets/opepetroleras.png',                                  /* Operaciones petroleras — imagen dedicada */
+    alt:   lang === 'es' ? 'Helicóptero Helitec en operación petrolera' : 'Helitec helicopter on petroleum operations',
     accent: 'rgba(255,255,255,0.5)',
   },
   {
@@ -89,8 +89,8 @@ const services = [
       : 'MD helicopters equipped for external sling load operations. Industrial equipment transport to hard-to-reach zones. Up to 650 kg external capacity.',
     cta:   lang === 'es' ? 'Consultar operaciones de carga' : 'Inquire about cargo ops',
     href:  '/#contacto',
-    img:   encodeURI('/assets/Helicoptero Eslinga 1.jpg'),               /* MD Helitec en operación con eslinga de carga externa */
-    alt:   lang === 'es' ? 'Helicóptero MD Helitec en operación con eslinga de carga externa' : 'Helitec MD helicopter performing external sling load operation',
+    img:   encodeURI('/assets/Helicoptero Eslinga 2.jpg'),               /* MD Helitec — eslinga de carga externa (toma 2) */
+    alt:   lang === 'es' ? 'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación' : 'Helitec MD helicopter with external sling load over vegetation',
     accent: 'rgba(255,255,255,0.5)',
   },
 ];
@@ -199,15 +199,14 @@ const NUM_CARDS = services.length; // 4
   /* ── Sección: altura total del recorrido de scroll ──────────────────────── */
   .sstack {
     /*
-     * Fase 7.1 — Aumentado a 700vh (desde 500vh):
-     *   scrollableH = 700vh - 100vh (stage) = 600vh
-     *   600vh / 4 tarjetas = 150vh por tarjeta
-     *   El JS divide cada slot en 50% hold + 50% transición:
-     *     · 75vh sin movimiento → tiempo de lectura por tarjeta
-     *     · 75vh animación entrada/salida
-     *   Elimina el "saltar tarjetas" al hacer scroll rápido.
+     * Fase 7.1 rev.2 — 560vh (equilibrio entre resistencia y fluidez):
+     *   scrollableH = 560vh - 100vh (stage) = 460vh
+     *   460vh / 4 tarjetas = 115vh por tarjeta
+     *   JS: HOLD_FRAC=0.08 → ~9vh dead zone + ~106vh de transición real.
+     *   Un swipe normal (40-60vh + momentum) cambia una tarjeta.
+     *   Un swipe muy rápido puede saltar 1-2, pero no las 4.
      */
-    height:   700vh;
+    height:   560vh;
     position: relative;
   }
 
@@ -293,7 +292,12 @@ const NUM_CARDS = services.length; // 4
 
     padding-inline-start: calc(var(--sidebar-w) + var(--gutter));
     padding-inline-end:   var(--gutter);
-    padding-bottom:       clamp(48px, 8vh, 80px);
+    /*
+     * Fase 7.1 — Aumentado para separar el CTA del grupo de FABs flotantes.
+     * Los FABs viven a bottom ~25px y tienen 44px de alto → top ~69px.
+     * Con 90-120px de padding-bottom el botón queda ~30-50px sobre los FABs.
+     */
+    padding-bottom:       clamp(90px, 14vh, 120px);
 
     max-width: 640px;
   }
@@ -487,24 +491,25 @@ const NUM_CARDS = services.length; // 4
        MODO NORMAL — animación scroll-driven con zonas de hold
     ───────────────────────────────────────────────────────────────────── */
     function updateStack() {
+      /* Race condition fix: si compact mode está activo, ignorar este frame */
+      if (inCompact) { ticking = false; return; }
+
       var rect      = section.getBoundingClientRect();
-      var sectionH  = section.offsetHeight;   /* 700vh */
+      var sectionH  = section.offsetHeight;   /* 560vh */
       var viewH     = window.innerHeight;
-      var scrollableH = sectionH - viewH;     /* 600vh */
+      var scrollableH = sectionH - viewH;     /* 460vh → ~115vh por tarjeta */
 
       var scrolled = clamp(-rect.top, 0, scrollableH);
 
       /*
-       * Zonas de hold:
-       *   HOLD_FRAC  = primeros 50% del slot → cardP congelado (tarjeta activa, quieta)
-       *   ENTER_FRAC = últimos 50% del slot  → siguiente tarjeta entra / actual retrocede
-       *
-       * rawPos ∈ [0, N]:  posición normalizada en el espacio de N tarjetas.
-       * slotIdx:          índice de la tarjeta cuyo slot estamos recorriendo (0..N-1).
-       * slotFrac:         posición dentro del slot actual [0, 1).
+       * HOLD_FRAC = 0.08 (mínimo):
+       *   · Solo 9vh de "zona muerta" antes de que empiece la transición.
+       *   · Suficiente para evitar micro-skips accidentales.
+       *   · Un swipe normal cubre los ~9vh de hold y entra en los ~106vh de transición.
+       *   · El usuario NO tiene que "darle fuerte" para cambiar de tarjeta.
        */
-      var HOLD_FRAC  = 0.50;
-      var ENTER_FRAC = 0.50;
+      var HOLD_FRAC  = 0.08;
+      var ENTER_FRAC = 0.92;
 
       var rawPos   = (scrolled / scrollableH) * N;
       var slotIdx  = clamp(Math.floor(rawPos), 0, N - 1);
