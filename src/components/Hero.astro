@@ -34,8 +34,13 @@ const { lang = 'es' } = Astro.props;
   aria-labelledby="hero-title"
 >
 
-  <!-- ── FONDO FOTOGRÁFICO ─────────────────────────────────────────────────── -->
+  <!-- ── FONDO FOTOGRÁFICO / VIDEO ──────────────────────────────────────────── -->
   <div class="hero__bg" aria-hidden="true">
+
+    <!--
+      Desktop: foto estática.
+      Se oculta en mobile (≤ 767px) cuando hay video disponible.
+    -->
     <img
       src="/assets/PHOTO-2024-10-30-15-40-52.JPG"
       alt=""
@@ -47,9 +52,32 @@ const { lang = 'es' } = Astro.props;
     />
 
     <!--
+      Mobile: vídeo de fondo en loop.
+      Visible solo en ≤ 767px — reemplaza la foto estática.
+      Atributos obligatorios para autoplay en mobile:
+        · muted: navegadores bloquean autoplay con sonido
+        · playsinline: iOS requiere este atributo para reproducir inline
+        · loop: reproducción continua sin controles
+      Formato: .mov con codec H.264 (grabación iPhone) →
+        · Safari/iOS: soporte nativo completo
+        · Chrome Android: decodifica como video/mp4
+    -->
+    <video
+      class="hero__bg-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      aria-hidden="true"
+    >
+      <source src="/assets/videohelitec.mov" type="video/mp4" />
+    </video>
+
+    <!--
       Overlay rgba oscuro — ANTI-SLOP COMPLIANCE:
       · No es linear-gradient decorativo (PROHIBIDO)
-      · Es background-color rgba sobre fotografía real para legibilidad
+      · Es background-color rgba sobre fotografía/video real para legibilidad
       · Autorizado: "overlays oscuros sutiles (rgba) sobre fotografías reales"
     -->
     <div class="hero__bg-overlay" aria-hidden="true"></div>
@@ -166,6 +194,32 @@ const { lang = 'es' } = Astro.props;
     height:          100%;
     object-fit:      cover;           /* OBLIGATORIO — jamás distorsionar */
     object-position: center 25%;      /* Muestra el cielo / zona superior */
+  }
+
+  /* ── Vídeo de fondo (visible solo en mobile ≤ 767px) ─────────────────── */
+
+  .hero__bg-video {
+    /* Oculto en desktop por defecto */
+    display: none;
+
+    position:         absolute;
+    inset:            0;
+    width:            100%;
+    height:           100%;
+    object-fit:       cover;
+    object-position:  center;
+  }
+
+  @media (max-width: 767px) {
+    /* Mostrar el video en mobile */
+    .hero__bg-video {
+      display: block;
+    }
+
+    /* Ocultar la foto estática cuando hay video */
+    .hero__bg-img {
+      display: none;
+    }
   }
 
   /*

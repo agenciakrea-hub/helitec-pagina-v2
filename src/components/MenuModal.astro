@@ -24,7 +24,7 @@
  * el menú está abierto, para mantener el botón ✕ siempre accesible.
  *
  * Stagger:
- *   · Links nav:     --i (0-4) × 80ms + base 120ms
+ *   · Links nav:     --i (0-5) × 80ms + base 120ms
  *   · Cards servicio: --j (0-3) × 60ms + base 200ms
  *   · Cierre: delay invertido (menor en los últimos) → salida fluida
  *
@@ -40,11 +40,12 @@ interface Props {
 const { lang = 'es' } = Astro.props;
 
 const navLinks = [
-  { label: 'La Empresa',           href: '/#empresa'   },
+  { label: 'La Empresa',           href: '/#empresa'    },
   { label: 'Seguridad & Calidad',  href: '/#seguridad'  },
-  { label: 'Flota',                href: '/flota'       },
+  { label: 'Flota',                href: '/flota'        },
   { label: 'Servicios',            href: '/#servicios'  },
   { label: 'Contacto',             href: '/#contacto'   },
+  { label: 'Legal',                href: '/#legal'      },
 ];
 
 /*
@@ -55,14 +56,14 @@ const services = [
   {
     label: 'Aviación Ejecutiva',
     href:  '/#servicios',
-    img:   '/assets/YV1923_1.jpg',
-    alt:   'Interior ejecutivo Metro 23 Merlin 300 — Consorcio Helitec',
+    img:   '/assets/IMG_0968.jpg',
+    alt:   'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium',
   },
   {
     label: 'Operaciones Petroleras',
     href:  '/#servicios',
-    img:   encodeURI('/assets/Helicoptero en pantano.jpg'),
-    alt:   'Helicóptero MD Helitec en operación en zona pantanosa',
+    img:   '/assets/opepetroleras.png',
+    alt:   'Helicóptero Helitec en operación petrolera',
   },
   {
     label: 'Traslados Aeromédicos',
@@ -73,8 +74,8 @@ const services = [
   {
     label: 'Carga y Eslinga',
     href:  '/#servicios',
-    img:   encodeURI('/assets/Helicoptero Eslinga 1.jpg'),
-    alt:   'Helicóptero MD Helitec en operación con eslinga de carga externa',
+    img:   encodeURI('/assets/Helicoptero Eslinga 2.jpg'),
+    alt:   'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación',
   },
 ];
 ---
@@ -610,6 +611,32 @@ const services = [
 
     .menu-modal__lang {
       padding-top: var(--sp-5);
+    }
+  }
+
+  /* ── Desktop: nav links en grilla 2 × 3 ─────────────────────────────────── */
+  @media (min-width: 1024px) {
+    .menu-modal__links {
+      /* Reemplaza el flex column por una grilla 2 columnas × 3 filas */
+      display:               grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows:    repeat(3, auto);
+      flex:                  unset;     /* Override del flex:1 heredado */
+      justify-content:       unset;
+    }
+
+    .menu-modal__link {
+      font-size:    var(--text-xl);    /* Reducido vs --text-2xl: celdas más angostas */
+      padding-block: var(--sp-4);
+    }
+
+    /*
+     * En la grilla 2-col, la primera FILA contiene los ítems 1 y 2.
+     * El ítem 1 ya tiene border-top via :first-child.
+     * El ítem 2 (primera fila, col derecha) también necesita border-top.
+     */
+    .menu-modal__link-item:nth-child(2) .menu-modal__link {
+      border-top: 1px solid var(--c-line);
     }
   }
 </style>
