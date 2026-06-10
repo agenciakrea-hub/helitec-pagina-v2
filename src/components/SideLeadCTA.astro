@@ -877,7 +877,15 @@
     position:  fixed;
     right:     0;
     top:       50%;
-    transform: translateY(-50%);
+
+    /*
+     * Fase 7.1 — Estado inicial: strip oculto fuera de pantalla.
+     * translateY(-50%) centra verticalmente sobre top:50%.
+     * translateX(100%) empuja el strip 100% de su propio ancho hacia la derecha
+     * (queda completamente fuera del viewport).
+     * JS añade .is-visible cuando scrollY supera el 80% de la altura del Hero.
+     */
+    transform: translateY(-50%) translateX(100%);
 
     z-index: var(--z-cta-float); /* 850 */
 
@@ -894,7 +902,15 @@
     border:           none;
     cursor:           pointer;
 
-    transition: background-color var(--dur-fast) var(--ease-out);
+    /* Transición de aparición (transform) + hover de color (background) */
+    transition:
+      transform        var(--dur-mid)  var(--ease-menu),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* Visible: JS activa esta clase cuando scrollY > 80% del viewport height */
+  .slcta__trigger.is-visible {
+    transform: translateY(-50%) translateX(0);
   }
 
   .slcta__trigger:hover {
@@ -1310,5 +1326,36 @@
       }
     });
 
+  })();
+
+  /* ════════════════════════════════════════════════════════════════════════
+     SCROLL REVEAL — Strip visible solo después del Hero (Fase 7.1)
+     Threshold: scrollY > 80% de la altura visible del viewport.
+     Lógica independiente del controller principal — IIFE separado.
+  ════════════════════════════════════════════════════════════════════════ */
+  (function () {
+    const strip = document.getElementById('slcta-trigger');
+    if (!strip) return;
+
+    let threshold = window.innerHeight * 0.8;
+
+    function updateVisibility() {
+      if (window.scrollY > threshold) {
+        strip.classList.add('is-visible');
+      } else {
+        strip.classList.remove('is-visible');
+      }
+    }
+
+    /* Estado inicial — maneja el caso de refresh con scroll ya desplazado */
+    updateVisibility();
+
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+
+    /* Recalcular threshold al rotar pantalla o redimensionar ventana */
+    window.addEventListener('resize', function () {
+      threshold = window.innerHeight * 0.8;
+      updateVisibility();
+    }, { passive: true });
   })();
 </script>

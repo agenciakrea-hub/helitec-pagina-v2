@@ -160,22 +160,50 @@ const { lang = 'es' } = Astro.props;
 
 </div>
 
-<!-- ── TRIGGER BUTTON ────────────────────────────────────────────────────── -->
-<button
-  class="csheet__trigger"
-  id="csheet-trigger"
-  type="button"
-  aria-expanded="false"
-  aria-controls="csheet-sheet"
-  aria-label="Abrir información de contacto"
->
-  <!-- Ícono: auricular de teléfono -->
-  <svg class="csheet__trigger-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21L8.5 10.5a11.042 11.042 0 0 0 4.998 5l1.113-1.724a1 1 0 0 1 1.21-.502l4.493 1.498A1 1 0 0 1 21 15.72V19a2 2 0 0 1-2 2h-1C9.163 21 3 14.837 3 7V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-  </svg>
-  <!-- Label texto (visible en desktop) -->
-  <span class="csheet__trigger-label">Contacto</span>
-</button>
+<!-- ── FABs AGRUPADOS: Contacto + Linktree (Fase 7.1) ────────────────────── -->
+<!--
+  Dos botones 44×44px apilados verticalmente.
+  El wrapper se posiciona con offset derecho igual al ancho del strip
+  de SideLeadCTA (40px desktop / 36px mobile) + gap de separación.
+  z-index: 895 — visible por encima del strip (850) y su backdrop (847).
+-->
+<div class="csheet__fabs">
+
+  <!-- FAB 1: Contacto — abre el bottom sheet -->
+  <button
+    class="csheet__trigger"
+    id="csheet-trigger"
+    type="button"
+    aria-expanded="false"
+    aria-controls="csheet-sheet"
+    aria-label="Abrir información de contacto"
+  >
+    <!-- Ícono: burbuja de mensaje minimalista (reemplaza auricular) -->
+    <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M1 1h16v10H4.5L1 15V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+    </svg>
+  </button>
+
+  <!-- FAB 2: Linktree — ver todas las redes sociales de Helitec -->
+  <!-- [DATO: reemplazar href con la URL real del Linktree de Consorcio Helitec] -->
+  <a
+    class="csheet__linktree-btn"
+    href="https://linktr.ee/helitec"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Ver redes sociales de Consorcio Helitec en Linktree"
+  >
+    <!-- Linktree minimal icon: tronco + 2 pares de ramas diagonales -->
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M7 2V16"    stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+      <path d="M7 6L3 2"   stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+      <path d="M7 6L11 2"  stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+      <path d="M7 10L3 6"  stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+      <path d="M7 10L11 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+    </svg>
+  </a>
+
+</div>
 
 
 <style>
@@ -436,31 +464,47 @@ const { lang = 'es' } = Astro.props;
     line-height: 1.6;
   }
 
-  /* ── TRIGGER BUTTON ─────────────────────────────────────────────────────── */
-  .csheet__trigger {
+  /* ── FABs AGRUPADOS — Wrapper (Fase 7.1) ────────────────────────────────── */
+  /*
+   * Posición: fixed, esquina inferior derecha.
+   * right: offset exacto = ancho strip SideLeadCTA (40px) + gap visual (12px).
+   * Los FABs se apilan verticalmente con flex-direction: column.
+   * z-index: 895 — por encima del strip de SideLeadCTA (850) y su backdrop (847),
+   *               por debajo del backdrop del ContactSheet (898).
+   */
+  .csheet__fabs {
     position: fixed;
-    bottom:   clamp(16px, 3vw, 24px);
-    right:    clamp(16px, 3vw, 24px);
+    bottom:   clamp(16px, 3vh, 24px);
+    right:    calc(40px + 12px); /* 52px: strip 40px + gap 12px */
+    z-index:  895;
 
-    /*
-     * Si el SideLeadCTA strip ocupa right: 0 con 40px de ancho,
-     * el trigger del ContactSheet queda inset para no solaparse.
-     */
-    right: calc(40px + clamp(12px, 2vw, 20px));
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+  }
 
-    z-index: 895; /* Debajo del SideLeadCTA (850 strip) pero visible */
+  /* ── Estilos base compartidos por ambos FABs ─────────────────────────────── */
+  /*
+   * Tamaño: 44×44px — cumple WCAG 2.5.5 (mínimo touch target 44×44 CSS px).
+   * border-radius: var(--r-micro) = 4px — límite máximo del proyecto.
+   * Ambos botones idénticos en forma — diferenciados solo en hover de borde.
+   */
+  .csheet__trigger,
+  .csheet__linktree-btn {
+    width:       44px;
+    height:      44px;
+    flex-shrink: 0;
 
-    display:     flex;
-    align-items: center;
-    gap:         8px;
-
-    padding: 10px 14px;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
 
     background-color: var(--c-bg-raised);
     border:           1px solid var(--c-line-strong);
-    border-radius:    var(--r-micro);
+    border-radius:    var(--r-micro); /* 4px — límite sagrado */
     cursor:           pointer;
     color:            var(--c-text-2);
+    text-decoration:  none; /* reset para el <a> de Linktree */
 
     transition:
       background-color var(--dur-fast) var(--ease-out),
@@ -468,38 +512,32 @@ const { lang = 'es' } = Astro.props;
       color            var(--dur-fast) var(--ease-out);
   }
 
-  .csheet__trigger:hover {
+  .csheet__trigger:hover,
+  .csheet__linktree-btn:hover {
     background-color: var(--c-bg);
-    border-color:     var(--c-sky);
     color:            var(--c-text-1);
   }
 
-  .csheet__trigger:focus-visible {
+  /* Hover ContactSheet — acento azul cielo */
+  .csheet__trigger:hover {
+    border-color: var(--c-sky);
+  }
+
+  /* Hover Linktree — acento verde sutil (color de marca Linktree) */
+  .csheet__linktree-btn:hover {
+    border-color: rgba(68, 195, 92, 0.55);
+  }
+
+  .csheet__trigger:focus-visible,
+  .csheet__linktree-btn:focus-visible {
     outline:        2px solid var(--c-sky);
-    outline-offset: 3px;
+    outline-offset: 2px;
   }
 
-  .csheet__trigger-icon {
-    flex-shrink: 0;
-  }
-
-  .csheet__trigger-label {
-    font-family:    var(--font-sans);
-    font-size:      0.625rem; /* 10px */
-    font-weight:    var(--fw-semibold);
-    letter-spacing: var(--ls-widest);
-    text-transform: uppercase;
-  }
-
-  /* En móvil: ocultar label, solo ícono */
-  @media (max-width: 639px) {
-    .csheet__trigger {
-      right:   clamp(16px, 3vw, 24px); /* Mobile: right sin offset del SideLeadCTA */
-      padding: 12px;
-    }
-
-    .csheet__trigger-label {
-      display: none;
+  /* Mobile (< 1024px): ajustar offset al strip más angosto (36px) */
+  @media (max-width: 1023px) {
+    .csheet__fabs {
+      right: calc(36px + 10px); /* 46px en mobile */
     }
   }
 </style>

@@ -37,7 +37,7 @@ const { lang = 'es' } = Astro.props;
   <!-- ── FONDO FOTOGRÁFICO ─────────────────────────────────────────────────── -->
   <div class="hero__bg" aria-hidden="true">
     <img
-      src="/assets/atardecer.jpg"
+      src="/assets/PHOTO-2024-10-30-15-40-52.JPG"
       alt=""
       class="hero__bg-img"
       loading="eager"
@@ -386,6 +386,18 @@ const { lang = 'es' } = Astro.props;
   /* ══════════════════════════════════════════════════════════════════════════
      RESPONSIVE
   ══════════════════════════════════════════════════════════════════════════ */
+
+  /* Mobile portrait — encuadre fotográfico (Fase 7.1)
+   * PHOTO-2024-10-30-15-40-52.JPG: la aeronave está encuadrada a la derecha.
+   * En landscape/desktop, center 25% es correcto.
+   * En portrait (≤768px) el crop por defecto corta la nariz del avión.
+   * 75% desplaza el foco hacia la derecha → nariz visible en pantalla.
+   */
+  @media (max-width: 768px) {
+    .hero__bg-img {
+      object-position: 75% center;
+    }
+  }
 
   /* Tablet */
   @media (max-width: 1023px) {
