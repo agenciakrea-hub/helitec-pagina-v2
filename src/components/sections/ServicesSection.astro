@@ -1,0 +1,578 @@
+---
+/**
+ * ServicesSection.astro
+ * Consorcio Helitec — Sección Servicios con scroll-stack Licorn-style
+ *
+ * Patrón visual: Licorn Publishing — tarjetas fotográficas que se apilan
+ * progresivamente mientras el usuario hace scroll.
+ *
+ * Arquitectura:
+ *   · Sección contenedora: height = 100vh × (N + 1) = 500vh
+ *   · Stage sticky: position sticky, top 0, height 100vh, overflow hidden
+ *   · N tarjetas: position absolute, inset 0, animadas por JS scroll-driver
+ *
+ * Animación (rAF a 60fps — mismo patrón que Hero.astro):
+ *   · Cada tarjeta "entra" desde abajo con smoothstep easing
+ *   · La tarjeta anterior se "aleja" sutilmente (scale 0.96, opacity 0.75)
+ *   · Sin JS: las tarjetas siguen visibles en orden correcto (fallback CSS)
+ *
+ * Reglas anti-slop:
+ *   PROHIBIDO box-shadow    — ✓
+ *   PROHIBIDO gradientes    — overlay rgba() sobre foto real ✓
+ *   border-radius ≤ 4px     — ✓
+ *   object-fit: cover       — ✓ en todas las imágenes
+ *   Tipografía: weight 200  — ✓ en h3
+ *
+ * IMÁGENES: Requieren /assets/servicio-1.jpg a servicio-4.jpg
+ * Si no existen, el overlay sobre color sólido es el fallback visual.
+ */
+
+interface Props {
+  lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+/* ── Datos de servicios ─────────────────────────────────────────────────── */
+const services = [
+  {
+    num:   '01',
+    slug:  'ejecutiva',
+    title: lang === 'es' ? 'Aviación Ejecutiva' : 'Executive Aviation',
+    desc:  lang === 'es'
+      ? 'Flota Metro y Merlin de ala fija para transporte corporativo de alta eficiencia. Conexión directa entre Caracas, el interior y el Caribe.'
+      : 'Fixed-wing Metro and Merlin fleet for high-efficiency corporate transport. Direct connections between Caracas, the interior, and the Caribbean.',
+    cta:   lang === 'es' ? 'Solicitar vuelo ejecutivo' : 'Request executive flight',
+    href:  '/#contacto',
+    img:   '/assets/servicio-1.jpg',
+    alt:   lang === 'es' ? 'Cabina ejecutiva de aeronave Helitec' : 'Helitec executive aircraft cabin',
+    /* Color accent para el número decorativo */
+    accent: 'var(--c-sky)',
+  },
+  {
+    num:   '02',
+    slug:  'petroleras',
+    title: lang === 'es' ? 'Operaciones Petroleras' : 'Petroleum Operations',
+    desc:  lang === 'es'
+      ? 'Helicópteros MD con disponibilidad 24/7 para soporte aéreo en plataformas marítimas e instalaciones en tierra del sector energético.'
+      : 'MD helicopters with 24/7 availability for aerial support on offshore platforms and onshore energy sector facilities.',
+    cta:   lang === 'es' ? 'Consultar operaciones' : 'Inquire about operations',
+    href:  '/#contacto',
+    img:   '/assets/servicio-2.jpg',
+    alt:   lang === 'es' ? 'Helicóptero Helitec en operación petrolera' : 'Helitec helicopter in petroleum operation',
+    accent: 'rgba(255,255,255,0.5)',
+  },
+  {
+    num:   '03',
+    slug:  'aeromedico',
+    title: lang === 'es' ? 'Traslados Aeromédicos' : 'Aeromedical Transfers',
+    desc:  lang === 'es'
+      ? 'MD 902 Explorer NOTAR® sin torque de cola para evacuaciones médicas de emergencia. Equipado para UCI aérea. Respuesta inmediata.'
+      : 'MD 902 Explorer NOTAR® tail-rotor-less for emergency medical evacuations. Equipped for airborne ICU. Immediate response.',
+    cta:   lang === 'es' ? 'Activar emergencia médica' : 'Activate medical emergency',
+    href:  'https://wa.me/584166235254?text=EMERGENCIA+AEROM%C3%89DICA',
+    img:   '/assets/servicio-3.jpg',
+    alt:   lang === 'es' ? 'MD 902 Explorer aeromédico Helitec' : 'Helitec aeromedical MD 902 Explorer',
+    accent: 'var(--c-red)',
+    isExternal: true,
+  },
+  {
+    num:   '04',
+    slug:  'mantenimiento',
+    title: lang === 'es' ? 'Mantenimiento Certificado' : 'Certified Maintenance',
+    desc:  lang === 'es'
+      ? 'Hangar y taller aeronáutico con técnicos certificados INAC. Mantenimiento programado, inspecciones AOC y soporte técnico para operadores externos.'
+      : 'Hangar and aeronautical workshop with INAC-certified technicians. Scheduled maintenance, AOC inspections and technical support for external operators.',
+    cta:   lang === 'es' ? 'Consultar mantenimiento' : 'Inquire about maintenance',
+    href:  '/#contacto',
+    img:   '/assets/servicio-4.jpg',
+    alt:   lang === 'es' ? 'Hangar de mantenimiento Helitec' : 'Helitec maintenance hangar',
+    accent: 'rgba(255,255,255,0.5)',
+  },
+];
+
+const NUM_CARDS = services.length; // 4
+---
+
+<section
+  class="sstack"
+  id="servicios"
+  data-num-cards={NUM_CARDS}
+  aria-labelledby="sstack-heading"
+>
+
+  <!-- Heading accesible oculto visualmente -->
+  <h2 class="sr-only" id="sstack-heading">
+    {lang === 'es' ? 'Nuestros servicios' : 'Our services'}
+  </h2>
+
+  <!-- ── Stage sticky: las tarjetas viven aquí ──────────────────────────── -->
+  <div class="sstack__stage" aria-hidden="false">
+
+    {services.map((svc, i) => (
+      <article
+        class="sstack__card"
+        data-card-index={i}
+        aria-label={svc.title}
+      >
+
+        <!-- Foto de fondo -->
+        <img
+          src={svc.img}
+          alt={svc.alt}
+          class="sstack__bg"
+          loading={i === 0 ? 'eager' : 'lazy'}
+          fetchpriority={i === 0 ? 'high' : 'auto'}
+        />
+
+        <!-- Overlay oscuro: rgba fijo sobre la foto — NO gradiente -->
+        <div class="sstack__overlay" aria-hidden="true"></div>
+
+        <!-- Número decorativo de fondo -->
+        <span
+          class="sstack__deco-num"
+          aria-hidden="true"
+          style={`color: ${svc.accent}`}
+        >
+          {svc.num}
+        </span>
+
+        <!-- Contenido de la tarjeta -->
+        <div class="sstack__content">
+
+          <!-- Número de servicio -->
+          <span class="sstack__num">{svc.num}</span>
+
+          <!-- Overline: categoría -->
+          <p class="sstack__category">
+            {lang === 'es' ? 'Servicio' : 'Service'}
+          </p>
+
+          <!-- Título principal -->
+          <h3 class="sstack__title">{svc.title}</h3>
+
+          <!-- Descripción -->
+          <p class="sstack__desc">{svc.desc}</p>
+
+          <!-- CTA -->
+          <a
+            href={svc.href}
+            class="sstack__cta"
+            {...(svc.isExternal
+              ? { target: '_blank', rel: 'noopener noreferrer' }
+              : {}
+            )}
+          >
+            <span>{svc.cta}</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+          </a>
+
+        </div>
+
+        <!-- Indicador de progreso (barra inferior) -->
+        <div class="sstack__progress" aria-hidden="true">
+          {services.map((_, j) => (
+            <span
+              class={`sstack__progress-dot${j === i ? ' is-active' : ''}`}
+            ></span>
+          ))}
+        </div>
+
+      </article>
+    ))}
+
+  </div>
+
+  <!-- Spacer: scroll adicional para que la última tarjeta sea cómoda de leer -->
+  <div class="sstack__spacer" aria-hidden="true"></div>
+
+</section>
+
+
+<style>
+  /* ── Sección: altura total del recorrido de scroll ──────────────────────── */
+  .sstack {
+    /*
+     * height = (N + 1) × 100vh
+     * Con N=4: 500vh — cada tarjeta tiene ~100vh de "tiempo" en pantalla.
+     * El +1 da espacio extra para que la última tarjeta repose antes de salir.
+     */
+    height:   500vh;
+    position: relative;
+  }
+
+  /* ── Stage: el viewport sticky que contiene las tarjetas ───────────────── */
+  .sstack__stage {
+    position: sticky;
+    top:      0;
+    height:   100vh;
+    overflow: hidden;
+
+    /* Contexto para absolute children */
+    isolation: isolate;
+  }
+
+  /* ── Tarjeta base ─────────────────────────────────────────────────────── */
+  .sstack__card {
+    position: absolute;
+    inset:    0;
+
+    display:  flex;
+    align-items: flex-end; /* Contenido en la parte inferior */
+
+    /* Tarjeta 0: visible desde el inicio (sin JS) */
+    /* Tarjetas 1–3: ocultas debajo hasta que JS las anime */
+    transform: translateY(100%);
+    opacity:   0;
+
+    will-change: transform, opacity;
+  }
+
+  /* Primera tarjeta: visible por defecto (sin JS, fallback) */
+  .sstack__card[data-card-index="0"] {
+    transform: translateY(0);
+    opacity:   1;
+  }
+
+  /* ── Foto de fondo ───────────────────────────────────────────────────── */
+  .sstack__bg {
+    position:        absolute;
+    inset:           0;
+    width:           100%;
+    height:          100%;
+    object-fit:      cover;         /* OBLIGATORIO — nunca deformar */
+    object-position: center center;
+
+    /* Fondo de color mientras la imagen carga */
+    background-color: var(--c-bg);
+  }
+
+  /* ── Overlay: oscurece la foto para legibilidad del texto ────────────── */
+  .sstack__overlay {
+    position:         absolute;
+    inset:            0;
+    /* rgba PURO — PROHIBIDO linear-gradient decorativo */
+    background-color: rgba(7, 8, 12, 0.58);
+    pointer-events:   none;
+  }
+
+  /* ── Número decorativo de fondo ─────────────────────────────────────── */
+  .sstack__deco-num {
+    position: absolute;
+    right:    var(--gutter);
+    top:      50%;
+    transform: translateY(-50%);
+
+    font-family:    var(--font-display);
+    font-size:      clamp(10rem, 20vw, 22rem);
+    font-weight:    var(--fw-thin); /* 200 */
+    letter-spacing: -0.04em;
+    line-height:    1;
+
+    /* Color viene del --accent del servicio via inline style */
+    opacity:        0.07; /* Muy sutil — solo textura */
+    user-select:    none;
+    pointer-events: none;
+    white-space:    nowrap;
+  }
+
+  /* ── Contenido ───────────────────────────────────────────────────────── */
+  .sstack__content {
+    position:      relative; /* Over overlay + deco-num */
+    z-index:       1;
+
+    padding-inline-start: calc(var(--sidebar-w) + var(--gutter));
+    padding-inline-end:   var(--gutter);
+    padding-bottom:       clamp(48px, 8vh, 80px);
+
+    max-width: 640px;
+  }
+
+  .sstack__num {
+    display:        block;
+    font-family:    var(--font-sans);
+    font-size:      var(--text-xs);
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-widest);
+    color:          var(--c-text-3);
+    margin-bottom:  8px;
+  }
+
+  .sstack__category {
+    font-family:    var(--font-sans);
+    font-size:      var(--text-xs);
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-sky);
+    margin-bottom:  12px;
+  }
+
+  .sstack__title {
+    font-family:    var(--font-display);
+    font-size:      var(--text-2xl); /* clamp(2rem → 3.5rem) */
+    font-weight:    var(--fw-thin);  /* 200 — OBLIGATORIO */
+    letter-spacing: var(--ls-wide);
+    text-transform: uppercase;
+    line-height:    1.05;
+    color:          var(--c-text-1);
+
+    margin-bottom: 16px;
+  }
+
+  .sstack__desc {
+    font-family: var(--font-sans);
+    font-size:   clamp(0.875rem, 1.5vw, 1rem);
+    font-weight: var(--fw-light);
+    color:       rgba(255, 255, 255, 0.72);
+    line-height: 1.65;
+    max-width:   48ch;
+
+    margin-bottom: 28px;
+  }
+
+  /* ── CTA ghost button ────────────────────────────────────────────────── */
+  .sstack__cta {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             10px;
+
+    padding:      10px 20px;
+
+    font-family:    var(--font-sans);
+    font-size:      var(--text-xs);
+    font-weight:    var(--fw-semibold);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+    text-decoration: none;
+    color:          var(--c-white);
+
+    /* Ghost button — OBLIGATORIO según design system */
+    background:    transparent;
+    border:        1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--r-micro); /* 4px — límite absoluto */
+
+    transition:
+      border-color     var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .sstack__cta:hover {
+    border-color:     rgba(255, 255, 255, 0.85);
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .sstack__cta svg {
+    flex-shrink: 0;
+    transition:  transform var(--dur-fast) var(--ease-out);
+  }
+
+  .sstack__cta:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* ── Barra de progreso (indicadores de tarjeta) ──────────────────────── */
+  .sstack__progress {
+    position: absolute;
+    bottom:   clamp(24px, 4vh, 40px);
+    right:    var(--gutter);
+
+    display: flex;
+    gap:     6px;
+    align-items: center;
+  }
+
+  .sstack__progress-dot {
+    display:          block;
+    width:            20px;
+    height:           1.5px;
+    background-color: rgba(255, 255, 255, 0.25);
+
+    transition: background-color var(--dur-mid) var(--ease-out),
+                width var(--dur-mid) var(--ease-out);
+  }
+
+  .sstack__progress-dot.is-active {
+    background-color: var(--c-white);
+    width:            32px;
+  }
+
+  /* ── Spacer final ────────────────────────────────────────────────────── */
+  .sstack__spacer {
+    /* No necesita estilos extra — es simplemente un bloque vacío
+       para que la sección tenga la altura correcta (500vh).
+       El spacer está incluido en el height: 500vh de .sstack. */
+    display: none; /* El spacer de scroll está dado por height en .sstack */
+  }
+
+  /* ── MOBILE ─────────────────────────────────────────────────────────── */
+  @media (max-width: 1023px) {
+    .sstack__content {
+      padding-inline-start: var(--gutter);
+      max-width: none;
+    }
+
+    .sstack__deco-num {
+      display: none; /* Sin número decorativo en mobile — demasiado ruido */
+    }
+  }
+
+  @media (max-width: 639px) {
+    .sstack__title {
+      font-size: clamp(1.5rem, 7vw, 2rem);
+    }
+
+    .sstack__desc {
+      display: none; /* En mobile muy pequeño: solo número + título + CTA */
+    }
+  }
+</style>
+
+
+<script>
+  /**
+   * ServicesSection — Scroll-driven stack animation
+   *
+   * Arquitectura:
+   *   · 1 sticky stage (100vh) que nunca se mueve
+   *   · N tarjetas absolutely positioned dentro del stage
+   *   · JS calcula la posición de scroll RELATIVA a la sección
+   *   · Cada tarjeta anima entre 3 estados:
+   *       WAITING  (antes de su turno):   translateY(100%), opacity 0
+   *       ENTERING (llegando desde abajo): translateY eased 100→0, opacity 0→1
+   *       ACTIVE   (visible):             translateY(0), opacity 1
+   *       BEHIND   (cubierta por siguiente): scale 0.96→0.93, opacity 0.9→0.7
+   *
+   * Misma técnica que Hero.astro: requestAnimationFrame + passive scroll listener.
+   * Smoothstep easing para la entrada: p * p * (3 - 2 * p)
+   */
+  (function () {
+    const section = document.getElementById('servicios');
+    if (!section) return;
+
+    const stage = section.querySelector('.sstack__stage');
+    const cards = Array.from(section.querySelectorAll('.sstack__card'));
+    const dots  = Array.from(section.querySelectorAll('.sstack__progress-dot'));
+    const N     = cards.length; // 4
+
+    if (!stage || !cards.length) return;
+
+    /* ── Helpers ──────────────────────────────────────────────────────── */
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    /* Smoothstep: misma función que en Hero.astro */
+    function smoothstep(t) {
+      const p = clamp(t, 0, 1);
+      return p * p * (3 - 2 * p);
+    }
+
+    /* Lerp: interpolación lineal */
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    /* ── Estado global ────────────────────────────────────────────────── */
+    let ticking = false;
+
+    /* ── Función de animación ─────────────────────────────────────────── */
+    function updateStack() {
+      /*
+       * Calcular el progreso de scroll DENTRO de la sección.
+       *
+       * rect.top es la distancia del top de la sección al top del viewport.
+       * Cuando el usuario llega al top de la sección: rect.top = 0
+       * Cuando la sección se ha scrolleado completa: rect.top = -scrollableHeight
+       */
+      const rect            = section.getBoundingClientRect();
+      const sectionH        = section.offsetHeight;         /* 500vh */
+      const viewH           = window.innerHeight;
+      const scrollableH     = sectionH - viewH;             /* 400vh */
+
+      /* Cuánto se ha scrolleado dentro de la sección (0 to scrollableH) */
+      const scrolled = clamp(-rect.top, 0, scrollableH);
+
+      /*
+       * Mapeo: 0..scrollableH → 1..(N+1)
+       * De esta forma:
+       *   scrolled = 0         → cardP = 1  (tarjeta 0 ya visible)
+       *   scrolled = 1×100vh   → cardP = 2  (tarjeta 1 entra)
+       *   scrolled = 2×100vh   → cardP = 3  (tarjeta 2 entra)
+       *   scrolled = 3×100vh   → cardP = 4  (tarjeta 3 entra y es la última)
+       */
+      const cardP = 1 + (scrolled / scrollableH) * N;
+
+      /* Actualizar cada tarjeta */
+      cards.forEach((card, i) => {
+        /*
+         * local:
+         *   < 0 → tarjeta aún no visible (esperando debajo)
+         *   0→1 → tarjeta ENTRANDO desde abajo
+         *   1   → tarjeta completamente visible (ACTIVA)
+         *   >1  → tarjeta DETRÁS (cubierta por la siguiente)
+         */
+        const local = cardP - i;
+
+        let ty      = 0;    /* translateY en % */
+        let scale   = 1;
+        let opacity = 1;
+
+        if (local <= 0) {
+          /* Esperando — debajo del viewport */
+          ty      = 100;
+          opacity = 0;
+
+        } else if (local < 1) {
+          /* Entrando: deslizamiento hacia arriba con smoothstep */
+          const enterP = smoothstep(local); /* 0 → 1 con ease */
+          ty      = (1 - enterP) * 100;
+          opacity = clamp(enterP * 1.5, 0, 1); /* Fade más rápido que el slide */
+
+        } else {
+          /* Activa o Detrás */
+          ty = 0;
+
+          const behindProgress = clamp(local - 1, 0, 1); /* 0 (activa) → 1 (cubierta) */
+
+          scale   = lerp(1,    0.93, smoothstep(behindProgress));
+          opacity = lerp(1,    0.65, smoothstep(behindProgress));
+        }
+
+        /* Aplicar transformación — usar template literal para precisión */
+        if (ty !== 0) {
+          card.style.transform = `translateY(${ty.toFixed(3)}%)`;
+        } else {
+          card.style.transform = `scale(${scale.toFixed(4)})`;
+        }
+
+        card.style.opacity = String(opacity.toFixed(3));
+      });
+
+      /* Actualizar dots de progreso */
+      const activeIdx = clamp(Math.floor(cardP) - 1, 0, N - 1);
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('is-active', i === activeIdx);
+      });
+
+      ticking = false;
+    }
+
+    /* ── Inicializar ────────────────────────────────────────────────────── */
+    updateStack();
+
+    /* ── Listener de scroll ─────────────────────────────────────────────── */
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(updateStack);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    /* ── ResizeObserver: recalcular en cambio de viewport ─────────────── */
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(updateStack).observe(section);
+    }
+
+  })();
+</script>

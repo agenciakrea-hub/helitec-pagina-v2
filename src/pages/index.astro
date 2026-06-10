@@ -3,24 +3,32 @@
  * index.astro
  * Consorcio Helitec — Homepage principal (ES)
  *
- * Ensamblaje de componentes Fase 2–4:
- *   [sidebar-social] SidebarSocial  → columna social fija izquierda (desktop)
- *   [header]         Header         → logo + hamburguesa, scroll glass effect
- *   [menu-modal]     MenuModal      → overlay grid asimétrico Konpo-style
- *   [default/main]   Hero           → hero fullscreen, transición logo scroll
+ * Ensamblaje de componentes Fase 2–5:
  *
- * View Transitions:
- *   Inyectadas desde BaseLayout via <ViewTransitions />.
- *   Permite navegación suave entre esta página y /flota sin recarga visible.
+ *   SLOTS EN BASELAYOUT:
+ *   [sidebar-social]  SidebarSocial  → columna social fija izquierda (desktop)
+ *   [header]          Header         → logo + hamburguesa, scroll glass effect
+ *   [menu-modal]      MenuModal      → overlay grid asimétrico Konpo-style
+ *   [cta-float]       SideLeadCTA    → strip vertical derecho + panel WhatsApp
+ *   [bottom-sheet]    ContactSheet   → bottom sheet con 3 tarjetas de contacto
  *
- * Idioma: 'es' (ruta por defecto — /en/ se construirá en fase de i18n)
+ *   CONTENIDO PRINCIPAL (slot default → <main>):
+ *   Hero             → fullscreen hero, transición logo scroll (rAF)
+ *   StatsSection     → "Por qué Helitec" — estadísticas + certificación INAC
+ *   ServicesSection  → sticky scroll stack Licorn-style — 4 servicios (500vh)
+ *
+ * View Transitions: inyectadas desde BaseLayout via <ViewTransitions />.
  */
 
-import BaseLayout    from '../layouts/BaseLayout.astro';
-import SidebarSocial from '../components/SidebarSocial.astro';
-import Header        from '../components/Header.astro';
-import MenuModal     from '../components/MenuModal.astro';
-import Hero          from '../components/Hero.astro';
+import BaseLayout      from '../layouts/BaseLayout.astro';
+import SidebarSocial   from '../components/SidebarSocial.astro';
+import Header          from '../components/Header.astro';
+import MenuModal       from '../components/MenuModal.astro';
+import Hero            from '../components/Hero.astro';
+import SideLeadCTA     from '../components/SideLeadCTA.astro';
+import ContactSheet    from '../components/ContactSheet.astro';
+import StatsSection    from '../components/sections/StatsSection.astro';
+import ServicesSection from '../components/sections/ServicesSection.astro';
 ---
 
 <BaseLayout
@@ -29,6 +37,8 @@ import Hero          from '../components/Hero.astro';
   ogImage     = "/assets/PHOTO-2024-10-30-15-40-52.jpg"
   lang        = "es"
 >
+
+  <!-- ── COMPONENTES FIJOS (slots del BaseLayout) ─────────────────────────── -->
 
   <!-- Sidebar social fijo izquierda — visible solo en desktop (≥ 1024px) -->
   <SidebarSocial slot="sidebar-social" />
@@ -48,22 +58,58 @@ import Hero          from '../components/Hero.astro';
   <MenuModal slot="menu-modal" lang="es" />
 
   <!--
-    Hero fullscreen:
+    CTA lateral derecho (Falcon Aviation-style):
+    Strip vertical 40px → expande panel con form → WhatsApp API.
+    z-index: var(--z-cta-float) = 850
+  -->
+  <SideLeadCTA slot="cta-float" />
+
+  <!--
+    Bottom sheet de contacto (Aventura Dental-style):
+    Trigger fijo bottom-right → panel deslizante con 3 tarjetas.
+    z-index: var(--z-bottom-sheet) = 900
+  -->
+  <ContactSheet slot="bottom-sheet" lang="es" />
+
+  <!-- ── CONTENIDO PRINCIPAL (slot default → <main>) ──────────────────────── -->
+
+  <!--
+    SECCIÓN 1 — Hero fullscreen (100dvh):
     · Fondo: /assets/PHOTO-2024-10-30-15-40-52.jpg
     · Logo grande → desaparece en scroll → header logo aparece
     · H1: "AVIACIÓN CORPORATIVA DE PRECISIÓN"
     · Ghost CTAs: Solicitar Cotización + Conocer la Flota
+    · Scroll hint animado
   -->
   <Hero lang="es" />
 
   <!--
+    SECCIÓN 2 — Por qué Helitec (estadísticas + INAC):
+    · Overline + título fino "Tres décadas de excelencia operativa"
+    · Grid 4 celdas: +25 años / 8 aeronaves / +30K hrs / INAC
+    · Badge de certificación AOC.png
+    · bg: var(--c-bg-raised) — contraste con hero oscuro
+  -->
+  <StatsSection lang="es" />
+
+  <!--
+    SECCIÓN 3 — Servicios (Licorn sticky scroll stack, 500vh):
+    · 1 sticky stage + 4 tarjetas full-bleed foto + overlay rgba
+    · Scroll-driven con rAF a 60fps (misma técnica que Hero)
+    · Cards: Aviación Ejecutiva / Operaciones Petroleras /
+             Traslados Aeromédicos / Mantenimiento Certificado
+    · Indicadores de progreso (4 ticks horizontales)
+  -->
+  <ServicesSection lang="es" />
+
+  <!--
     ═══════════════════════════════════════════════════════════════
     PRÓXIMAS SECCIONES (pendientes de light-verde del Tech Lead):
-      · #empresa    → About / La Empresa
-      · #servicios  → Cards de servicios (sticky scroll Licorn-style)
       · #flota      → Fleet preview (desde flota.json)
-      · #seguridad  → Certificaciones + INAC
-      · #contacto   → Formulario B2B + mapa
+      · #empresa    → About / La Empresa — historia y equipo
+      · #seguridad  → Certificaciones detalladas + normativas INAC
+      · #contacto   → Formulario B2B completo + mapa Caracas
+      · footer      → Datos legales, links, redes, copyright
     ═══════════════════════════════════════════════════════════════
   -->
 
