@@ -199,9 +199,9 @@ const currentYear = new Date().getFullYear();
           rel="noopener noreferrer"
           aria-label={lang === 'es' ? 'Solicitar cotización de vuelo vía WhatsApp' : 'Request flight quote via WhatsApp'}
         >
-          {lang === 'es' ? 'Solicitar cotización' : 'Request a quote'}
-          <!-- Flecha derecha -->
-          <svg width="12" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <span>{lang === 'es' ? 'Solicitar cotización' : 'Request a quote'}</span>
+          <!-- Flecha derecha — animada en hover (estilo Licorn) -->
+          <svg class="footer__cta-arrow" width="12" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
           </svg>
         </a>
@@ -457,7 +457,7 @@ const currentYear = new Date().getFullYear();
     line-height: 1.5;
   }
 
-  /* CTA ghost button */
+  /* CTA ghost button — acento azul Helitec + flecha animada (estilo Licorn) */
   .footer__cta {
     display:         inline-flex;
     align-items:     center;
@@ -474,12 +474,9 @@ const currentYear = new Date().getFullYear();
     color:          var(--c-text-1);
     text-decoration: none;
 
-    /*
-     * Ghost button: fondo transparente + borde fino blanco.
-     * El color de marca (--c-brand) se reserva para CTAs primarios.
-     */
+    /* Ghost: borde azul Helitec sutil en lugar de blanco */
     background:    transparent;
-    border:        1px solid var(--c-line-strong);
+    border:        1px solid rgba(88, 181, 240, 0.35);
     border-radius: var(--r-micro); /* 4px */
 
     transition:
@@ -489,14 +486,25 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer__cta:hover {
-    border-color:     var(--c-text-2);
-    background-color: rgba(255, 255, 255, 0.04);
-    color:            var(--c-text-1);
+    border-color:     rgba(88, 181, 240, 0.65);
+    background-color: rgba(88, 181, 240, 0.06);
+    color:            var(--c-white);
   }
 
   .footer__cta:focus-visible {
     outline:        2px solid var(--c-sky);
     outline-offset: 3px;
+  }
+
+  /* Flecha animada — desliza a la derecha en hover */
+  .footer__cta-arrow {
+    flex-shrink: 0;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .footer__cta:hover .footer__cta-arrow,
+  .footer__cta:focus-visible .footer__cta-arrow {
+    transform: translateX(5px);
   }
 
   /* ════════════════════════════════════════════════════════════════════════

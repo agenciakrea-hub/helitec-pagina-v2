@@ -300,12 +300,16 @@ const {
           document.body.style.top      = `-${scrollY}px`;
           document.body.style.overflow = 'hidden';
           document.body.style.width    = '100%';
+          /* Pausar Lenis: evita que procese eventos de wheel durante el menú */
+          if (window.lenisInstance) window.lenisInstance.stop();
         } else {
           const scrollY = Math.abs(parseInt(document.body.style.top || '0', 10));
           document.body.style.overflow = '';
           document.body.style.top      = '';
           document.body.style.width    = '';
           window.scrollTo({ top: scrollY, behavior: 'instant' });
+          /* Reanudar Lenis al cerrar el menú */
+          if (window.lenisInstance) window.lenisInstance.start();
         }
       });
     }

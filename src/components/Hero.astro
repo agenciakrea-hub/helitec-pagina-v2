@@ -133,7 +133,10 @@ const { lang = 'es' } = Astro.props;
         click en #slcta-trigger → abre el cotizador. href="#" como fallback.
       -->
       <a href="#" data-open-slcta class="hero__btn hero__btn--primary">
-        {lang === 'es' ? 'Solicitar Cotización' : 'Request a Quote'}
+        <span>{lang === 'es' ? 'Solicitar Cotización' : 'Request a Quote'}</span>
+        <svg class="hero__btn-arrow" width="14" height="12" viewBox="0 0 14 12" fill="none" aria-hidden="true">
+          <path d="M1 6h12M8 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+        </svg>
       </a>
 
       <!--
@@ -141,7 +144,10 @@ const { lang = 'es' } = Astro.props;
         Igual estructura — sin relleno, sin sombra.
       -->
       <a href="/flota" class="hero__btn hero__btn--outline">
-        {lang === 'es' ? 'Conocer la Flota' : 'View the Fleet'}
+        <span>{lang === 'es' ? 'Conocer la Flota' : 'View the Fleet'}</span>
+        <svg class="hero__btn-arrow" width="14" height="12" viewBox="0 0 14 12" fill="none" aria-hidden="true">
+          <path d="M1 6h12M8 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+        </svg>
       </a>
 
     </div>
@@ -173,8 +179,8 @@ const { lang = 'es' } = Astro.props;
     min-height: 580px;         /* Safety mínimo en pantallas muy bajas */
 
     display:         flex;
-    align-items:     center;
-    justify-content: center;
+    align-items:     flex-start;
+    justify-content: flex-start;
 
     overflow: hidden;
   }
@@ -245,30 +251,24 @@ const { lang = 'es' } = Astro.props;
 
     display:        flex;
     flex-direction: column;
-    align-items:    center;
-    text-align:     center;
+    align-items:    flex-start;
+    text-align:     left;
 
-    /*
-     * gap unificado entre todos los elementos del hero.
-     * Cada elemento tiene su propio ritmo visual gracias a margin adicional
-     * en los botones (.hero__actions) cuando sea necesario.
-     */
     gap: var(--sp-6);
 
     /*
-     * Padding top: clearance del header fijo (68px) + espacio de respiro.
-     * Padding sides: gutter fluido.
+     * Padding top: clearance del header fijo (68px) + espacio de respiro amplio.
+     * Padding left: offset del sidebar fijo (72px) + gutter — contenido empieza
+     *   alineado con el header (Licorn-style: esquina superior izquierda).
      * Padding bottom: espacio para el scroll hint.
      */
-    padding-top:    calc(var(--header-h) + var(--sp-8));
+    padding-top:    calc(var(--header-h) + var(--sp-16));
     padding-bottom: var(--sp-20);
-    padding-inline: var(--gutter);
+    padding-left:   calc(var(--sidebar-w) + var(--gutter));
+    padding-right:  var(--gutter);
 
     width:     100%;
-    max-width: var(--content-max);
-
-    /* Desplaza el bloque de contenido un poco hacia arriba del centro */
-    transform: translateY(-6vh);
+    max-width: 700px;   /* Columna izquierda estrecha — foto visible a la derecha */
   }
 
 
@@ -276,23 +276,23 @@ const { lang = 'es' } = Astro.props;
 
   .hero__logo-wrap {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .hero__logo {
-    height:    clamp(36px, 4.5vw, 54px);
+    height:    clamp(44px, 6vw, 72px);
     width:     auto;
-    max-width: clamp(220px, 28vw, 340px);
+    max-width: clamp(240px, 32vw, 420px);
 
     object-fit:      contain;
-    object-position: center;
+    object-position: left center;
 
     /*
-     * transform-origin: top center
-     * Al escalar (en el JS de scroll), el logo parece "subir y encogerse"
-     * hacia la posición del header — ilusión de viaje al header.
+     * transform-origin: top left
+     * Logo posicionado a la izquierda — la animación de scroll escala desde
+     * la esquina superior izquierda, sincronizando con el header logo.
      */
-    transform-origin: top center;
+    transform-origin: top left;
 
     /* GPU hint para animación JS a 60fps */
     will-change: opacity, transform;
@@ -303,14 +303,14 @@ const { lang = 'es' } = Astro.props;
 
   .hero__title {
     font-family:    var(--font-display);    /* Montserrat */
-    font-size:      clamp(1.75rem, 1rem + 3vw, 3.75rem);
-    font-weight:    var(--fw-thin);          /* 200 — "Exclusividad Silenciosa" */
-    letter-spacing: var(--ls-wide);          /* 0.06em — OBLIGATORIO para thin */
+    font-size:      clamp(2.2rem, 1.4rem + 4vw, 4.5rem);
+    font-weight:    var(--fw-light);          /* 300 — máximo anti-slop, "gordito" */
+    letter-spacing: var(--ls-wide);           /* 0.06em — OBLIGATORIO para headlines */
     text-transform: uppercase;
-    line-height:    var(--lh-tight);         /* 1.1 */
+    line-height:    var(--lh-tight);          /* 1.1 */
     color:          var(--c-text-1);
 
-    max-width: 24ch;
+    max-width: 22ch;
 
     /*
      * text-shadow: ÚNICA instancia permitida — para legibilidad sobre foto.
@@ -329,8 +329,8 @@ const { lang = 'es' } = Astro.props;
     line-height: var(--lh-relaxed);    /* 1.75 */
     color:       var(--c-text-2);      /* rgba(255,255,255,.60) */
 
-    max-width: 48ch;
-    margin-inline: auto;
+    max-width: 44ch;
+    margin-inline: 0;
   }
 
 
@@ -378,7 +378,7 @@ const { lang = 'es' } = Astro.props;
     display:         flex;
     flex-wrap:       wrap;
     gap:             var(--sp-4);
-    justify-content: center;
+    justify-content: flex-start;
     margin-top:      var(--sp-2);
   }
 
@@ -394,6 +394,7 @@ const { lang = 'es' } = Astro.props;
     display:         inline-flex;
     align-items:     center;
     justify-content: center;
+    gap:             var(--sp-3);
 
     font-family:    var(--font-sans);    /* Inter */
     font-size:      var(--text-sm);      /* 13–14px */
@@ -416,17 +417,28 @@ const { lang = 'es' } = Astro.props;
       background   var(--dur-fast) var(--ease-out);
   }
 
-  /* Cristal primario — acción principal "Solicitar Cotización" */
+  /* Flecha animada — desliza a la derecha en hover (estilo Licorn "Contactez-nous →") */
+  .hero__btn-arrow {
+    flex-shrink: 0;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hero__btn:hover .hero__btn-arrow,
+  .hero__btn:focus-visible .hero__btn-arrow {
+    transform: translateX(5px);
+  }
+
+  /* Cristal primario — acción principal "Solicitar Cotización" — acento azul Helitec */
   .hero__btn--primary {
-    background: rgba(255, 255, 255, 0.10);
-    border:     1px solid rgba(255, 255, 255, 0.30);
+    background: rgba(88, 181, 240, 0.10);
+    border:     1px solid rgba(88, 181, 240, 0.45);
     color:      var(--c-white);
   }
 
   .hero__btn--primary:hover,
   .hero__btn--primary:focus-visible {
-    background:   rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.55);
+    background:   rgba(88, 181, 240, 0.18);
+    border-color: rgba(88, 181, 240, 0.75);
     color:        var(--c-white);
   }
 
@@ -504,10 +516,13 @@ const { lang = 'es' } = Astro.props;
     }
   }
 
-  /* Tablet */
+  /* Tablet / mobile: sin sidebar — padding lateral estándar */
   @media (max-width: 1023px) {
     .hero__content {
-      gap: var(--sp-5);
+      gap:           var(--sp-5);
+      padding-left:  var(--gutter);
+      padding-right: var(--gutter);
+      max-width:     100%;
     }
   }
 

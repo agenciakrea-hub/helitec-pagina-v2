@@ -1,26 +1,24 @@
 ---
 /**
- * ServicesSection.astro  v3 — Grid 2×2 + Parallax Licorn-style
+ * ServicesSection.astro  v4 — Grid 2×2, texto superpuesto sobre foto
  * Consorcio Helitec
  *
- * Reemplaza el sticky scroll-stack por una grilla estática 2×2.
- * Efecto visual: imagen dentro de cada tarjeta se desplaza a velocidad
- * diferente al marco (parallax de ventana, idéntico al de "Nos réalisations"
- * en licornpublishing.com).
+ * v4 vs v3:
+ *   · Texto ahora flota sobre la fotografía (overlay) — como "Nos réalisations"
+ *     en licornpublishing.com.
+ *   · Elimina el .sgrid__body separado bajo la imagen.
+ *   · Gradiente oscuro inferior para legibilidad (anti-slop compliant).
+ *   · Acentos azul Helitec: tag "— Servicios", número de servicio, flecha CTA,
+ *     y la palabra "misión" en el titular.
+ *   · Flecha CTA animada: deslizamiento horizontal en hover.
+ *   · Parallax JS idéntico a v3 (usa .sgrid__frame y .sgrid__photo).
  *
- * Arquitectura:
- *   .sgrid__frame  → overflow: hidden, ventana fija
- *   .sgrid__photo  → height: 130%, top: -15%, will-change: transform
- *   JS rAF driver  → translateY basado en posición del frame vs viewport
- *
- * STRENGTH = 0.20 → máx desplazamiento ≈ 30px (< 45px de margen) → sin clipping.
- *
- * Anti-slop:
- *   PROHIBIDO box-shadow      ✓
- *   PROHIBIDO linear-gradient ✓  (solo overlay rgba sobre foto)
- *   border-radius ≤ 4px       ✓
- *   object-fit: cover         ✓
- *   H3 font-weight: 200       ✓
+ * ANTI-SLOP compliance:
+ *   PROHIBIDO box-shadow            ✓
+ *   linear-gradient SOLO como overlay sobre foto para legibilidad del texto ✓
+ *   border-radius ≤ 4px             ✓
+ *   object-fit: cover               ✓
+ *   H3 font-weight: 200             ✓
  */
 
 interface Props { lang?: 'es' | 'en'; }
@@ -29,48 +27,56 @@ const { lang = 'es' } = Astro.props;
 const services = [
   {
     num:   '01',
-    title: lang === 'es' ? 'Aviación Ejecutiva'          : 'Executive Aviation',
+    title: lang === 'es' ? 'Aviación Ejecutiva'            : 'Executive Aviation',
     desc:  lang === 'es'
       ? 'Flota Metro y Merlin de ala fija para transporte corporativo de alta eficiencia. Conexión directa entre Caracas, el interior y el Caribe.'
       : 'Fixed-wing Metro and Merlin fleet for high-efficiency corporate transport. Direct connections between Caracas, interior, and the Caribbean.',
-    cta:       lang === 'es' ? 'Solicitar vuelo ejecutivo'  : 'Request executive flight',
+    cta:       lang === 'es' ? 'Solicitar vuelo ejecutivo'     : 'Request executive flight',
     href:      '/#contacto',
     img:       '/assets/IMG_0968.jpg',
-    alt:       lang === 'es' ? 'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium' : 'Helitec executive cabin — premium leather seating',
+    alt:       lang === 'es'
+      ? 'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium'
+      : 'Helitec executive cabin — premium leather seating',
   },
   {
     num:   '02',
-    title: lang === 'es' ? 'Operaciones Petroleras'       : 'Petroleum Operations',
+    title: lang === 'es' ? 'Operaciones Petroleras'          : 'Petroleum Operations',
     desc:  lang === 'es'
       ? 'Helicópteros MD con disponibilidad 24/7 para soporte aéreo en plataformas marítimas e instalaciones del sector energético.'
       : 'MD helicopters with 24/7 availability for aerial support on offshore platforms and onshore energy sector facilities.',
-    cta:       lang === 'es' ? 'Consultar operaciones'      : 'Inquire about operations',
+    cta:       lang === 'es' ? 'Consultar operaciones'         : 'Inquire about operations',
     href:      '/#contacto',
     img:       '/assets/opepetroleras.png',
-    alt:       lang === 'es' ? 'Helicóptero Helitec en operación petrolera' : 'Helitec helicopter on petroleum operations',
+    alt:       lang === 'es'
+      ? 'Helicóptero Helitec en operación petrolera'
+      : 'Helitec helicopter on petroleum operations',
   },
   {
     num:   '03',
-    title: lang === 'es' ? 'Traslados Aeromédicos'        : 'Aeromedical Transfers',
+    title: lang === 'es' ? 'Traslados Aeromédicos'           : 'Aeromedical Transfers',
     desc:  lang === 'es'
       ? 'Metro III con configuración aeromédica certificada y camilla Spectrum Aeromed. Coordinación inmediata con ambulancias en tierra. Respuesta 24/7.'
       : 'Metro III with certified aeromedical configuration and Spectrum Aeromed stretcher. Immediate coordination with ground ambulances. 24/7 response.',
-    cta:       lang === 'es' ? 'Activar emergencia médica'  : 'Activate medical emergency',
+    cta:       lang === 'es' ? 'Activar emergencia médica'     : 'Activate medical emergency',
     href:      'https://wa.me/584166235254?text=EMERGENCIA+AEROM%C3%89DICA',
     img:       encodeURI('/assets/Avion y Ambulancia1.jpg'),
-    alt:       lang === 'es' ? 'Metro III Helitec junto a ambulancia — servicio aeromédico' : 'Helitec Metro III alongside ambulance — aeromedical service',
+    alt:       lang === 'es'
+      ? 'Metro III Helitec junto a ambulancia — servicio aeromédico'
+      : 'Helitec Metro III alongside ambulance — aeromedical service',
     isExternal: true,
   },
   {
     num:   '04',
-    title: lang === 'es' ? 'Operaciones de Carga y Eslinga' : 'Cargo & Sling Operations',
+    title: lang === 'es' ? 'Operaciones de Carga y Eslinga'  : 'Cargo & Sling Operations',
     desc:  lang === 'es'
       ? 'Helicópteros MD equipados para carga externa con eslinga certificada. Transporte de equipos industriales a zonas de difícil acceso. Hasta 650 kg externos.'
       : 'MD helicopters equipped for external sling load operations. Industrial equipment transport to hard-to-reach zones. Up to 650 kg external capacity.',
-    cta:       lang === 'es' ? 'Consultar operaciones de carga' : 'Inquire about cargo ops',
+    cta:       lang === 'es' ? 'Consultar operaciones de carga': 'Inquire about cargo ops',
     href:      '/#contacto',
     img:       encodeURI('/assets/Helicoptero Eslinga 2.jpg'),
-    alt:       lang === 'es' ? 'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación' : 'Helitec MD helicopter with external sling load over vegetation',
+    alt:       lang === 'es'
+      ? 'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación'
+      : 'Helitec MD helicopter with external sling load over vegetation',
   },
 ];
 ---
@@ -87,11 +93,13 @@ const services = [
     <span class="sgrid__tag" aria-hidden="true">
       {lang === 'es' ? '— Servicios' : '— Services'}
     </span>
-    <h2 class="sgrid__heading" id="sgrid-heading">
-      {lang === 'es'
-        ? 'Soluciones aéreas\npara cada misión'
-        : 'Aerial solutions\nfor every mission'}
-    </h2>
+    <h2
+      class="sgrid__heading"
+      id="sgrid-heading"
+      set:html={lang === 'es'
+        ? 'Soluciones aéreas<br>para cada <em class="sgrid__accent">misión</em>'
+        : 'Aerial solutions<br>for every <em class="sgrid__accent">mission</em>'}
+    />
   </div>
 
 
@@ -99,20 +107,20 @@ const services = [
   <div class="sgrid__grid">
 
     {services.map((svc, i) => (
-      <article class="sgrid__card" style={`--i:${i}`} aria-label={svc.title}>
+      <article class="sgrid__card" style={`--i:${i}`}>
 
         <!--
-          Frame de imagen: actúa como ventana fija (overflow: hidden).
-          La imagen (.sgrid__photo) tiene height: 130% y se desplaza
-          verticalmente mediante JS para crear el efecto parallax.
+          .sgrid__frame es el <a> y también el contenedor de toda la tarjeta:
+          imagen de fondo + gradiente de legibilidad + texto superpuesto.
+          El parallax JS controla translateY en .sgrid__photo.
         -->
         <a
           href={svc.href}
           class="sgrid__frame"
-          tabindex="-1"
-          aria-hidden="true"
           {...(svc.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         >
+
+          <!-- Imagen con parallax -->
           <img
             class="sgrid__photo"
             src={svc.img}
@@ -120,39 +128,40 @@ const services = [
             loading={i < 2 ? 'eager' : 'lazy'}
             decoding="async"
           />
-        </a>
 
-        <!-- Cuerpo de texto -->
-        <div class="sgrid__body">
+          <!--
+            Gradiente oscuro inferior para legibilidad del texto.
+            ANTI-SLOP COMPLIANT:
+            · PROHIBIDO: linear-gradient como fondo decorativo.
+            · PERMITIDO: overlay rgba oscuro sobre fotografía real
+              "para mejorar la lectura" — regla explícita del proyecto.
+          -->
+          <div class="sgrid__veil" aria-hidden="true"></div>
 
-          <div class="sgrid__body-top">
+          <!-- Texto superpuesto sobre la foto -->
+          <div class="sgrid__info">
             <span class="sgrid__num">{svc.num}</span>
             <h3 class="sgrid__title">{svc.title}</h3>
             <p class="sgrid__desc">{svc.desc}</p>
+            <span class="sgrid__cta">
+              <span class="sgrid__cta-label">{svc.cta}</span>
+              <svg
+                width="15" height="15" viewBox="0 0 16 16"
+                fill="none" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                class="sgrid__arrow"
+              >
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="square"
+                />
+              </svg>
+            </span>
           </div>
 
-          <a
-            href={svc.href}
-            class="sgrid__cta"
-            {...(svc.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          >
-            <span>{svc.cta}</span>
-            <svg
-              width="16" height="16" viewBox="0 0 16 16"
-              fill="none" xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="square"
-              />
-            </svg>
-          </a>
-
-        </div>
-
+        </a>
       </article>
     ))}
 
@@ -162,7 +171,7 @@ const services = [
 
 
 <style>
-  /* ── Sección contenedora ───────────────────────────────────────────────── */
+  /* ── Sección ────────────────────────────────────────────────────────────── */
 
   .sgrid {
     background-color: var(--c-bg);
@@ -184,13 +193,17 @@ const services = [
     border-bottom:   1px solid var(--c-line);
   }
 
+  /*
+   * Etiqueta "— Servicios" en azul Helitec.
+   * Acento cromático sutil que introduce la paleta de las tarjetas.
+   */
   .sgrid__tag {
     font-family:    var(--font-sans);
     font-size:      0.72rem;
     font-weight:    var(--fw-medium);
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
-    color:          var(--c-text-3);
+    color:          var(--c-sky);   /* Azul Helitec */
   }
 
   .sgrid__heading {
@@ -200,161 +213,203 @@ const services = [
     letter-spacing: var(--ls-wide);
     color:          var(--c-text-1);
     line-height:    1.05;
-    white-space:    pre-line;            /* Respeta \n en el texto Astro */
+  }
+
+  /*
+   * Palabra acento en el titular — "misión" / "mission".
+   * Acento cromático minimalista: solo cambio de color, sin subrayado ni caja.
+   * <em> se usa semánticamente; font-style: normal cancela la cursiva.
+   */
+  .sgrid__accent {
+    font-style: normal;
+    color:      var(--c-sky);
   }
 
 
   /* ── Grid 2×2 ───────────────────────────────────────────────────────────── */
 
   .sgrid__grid {
-    display:                grid;
-    grid-template-columns:  1fr 1fr;
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
 
-    /*
-     * Separadores de 1px entre celdas: el gap expone el background-color
-     * del grid (= --c-line) como líneas entre tarjetas.
-     * Más limpio que borders por celda.
-     */
     gap:              1px;
-    background-color: var(--c-line);
+    background-color: var(--c-line);   /* Separadores de 1px */
   }
 
 
   /* ── Tarjeta ────────────────────────────────────────────────────────────── */
 
   .sgrid__card {
-    background-color: var(--c-bg);
-    display:          flex;
-    flex-direction:   column;
+    /* El .sgrid__frame ocupa toda la altura — sin background en el article */
   }
 
 
-  /* ── Frame de imagen: la "ventana" con overflow hidden ──────────────────── */
+  /* ── Frame: link + contenedor completo de la tarjeta ─────────────────────── */
 
   .sgrid__frame {
-    /*
-     * Ventana de visualización: tamaño fijo, overflow hidden.
-     * La imagen (.sgrid__photo) es más alta que este frame;
-     * el JS la desplaza verticalmente dentro sin salirse.
-     */
     position:         relative;
+    display:          block;
     overflow:         hidden;
-    display:          block;   /* <a> necesita block para ocupar espacio */
 
-    height:           clamp(200px, 36vh, 400px);
-    background-color: #09090f;  /* Placeholder mientras carga la imagen */
+    /*
+     * Altura completa de la tarjeta — incluye foto + texto superpuesto.
+     * Más alta que v3 al no haber un body separado debajo.
+     */
+    height:           clamp(280px, 48vh, 520px);
+    background-color: #09090f;     /* Placeholder mientras carga la imagen */
+
+    /* Cancelar opacity:0.75 del reset en hover */
+    opacity:     1;
+    color:       var(--c-text-1);
+    text-decoration: none;
   }
+
+  .sgrid__frame:hover { opacity: 1; }
 
 
   /* ── Imagen con parallax ─────────────────────────────────────────────────── */
 
   .sgrid__photo {
     /*
-     * Imagen con exceso de altura para margen de desplazamiento:
-     *   height: 130% → excedente = 30% del frame en cada lado = ~15% arriba/abajo
-     *   top: -15%    → centra la imagen inicialmente dentro del frame
-     *
-     * JS calcula offset = progress × STRENGTH × frameHeight
-     * Con STRENGTH=0.20 y frame=300px → maxOffset ≈ 30px < 45px de margen → sin clipping.
+     * height: 150%, top: -25% → margen de 25% por lado para STRENGTH=0.40.
+     * maxOffset = 0.5 × 0.40 × frameH → < 25% × frameH → sin clipping.
+     * El parallax JS aplica translateY; la CSS scale actúa por separado
+     * (propiedad CSS `scale` es independiente de `transform`).
      */
-    position:         absolute;
-    left:             0;
-    top:              -25%;
-    width:            100%;
-    height:           150%;   /* 150%: margen de 25% en cada lado para STRENGTH=0.40 */
+    position:        absolute;
+    left:            0;
+    top:             -25%;
+    width:           100%;
+    height:          150%;
 
-    object-fit:       cover;    /* ANTI-SLOP OBLIGATORIO */
-    object-position:  center;
+    object-fit:      cover;
+    object-position: center;
+    will-change:     transform;
 
-    will-change:      transform;    /* Hint GPU: compositor layer */
-    /* Sin transition CSS — rAF en JS controla el movimiento */
+    /*
+     * CSS `scale` es una propiedad separada de `transform` (CSS Transforms L2).
+     * El JS del parallax escribe `style.transform = 'translateY(Xpx)'`.
+     * CSS controla `scale`; JS controla `transform` — sin interferencia.
+     */
+    scale:      1;
+    transition: scale var(--dur-slow) var(--ease-out);
+  }
+
+  /* Zoom suave en hover — no conflictúa con el translateY del parallax */
+  .sgrid__frame:hover .sgrid__photo {
+    scale: 1.04;
   }
 
 
-  /* ── Cuerpo de texto ─────────────────────────────────────────────────────── */
+  /* ── Gradiente de legibilidad ────────────────────────────────────────────── */
+  /*
+   * Overlay en la mitad inferior de la tarjeta para que el texto blanco
+   * sea legible sobre cualquier fotografía.
+   *
+   * ANTI-SLOP: "Solo se permiten como overlays oscuros sutiles (rgba)
+   * sobre fotografías reales para mejorar la lectura." ✓
+   */
 
-  .sgrid__body {
-    padding:        var(--sp-5) var(--sp-6) var(--sp-7);
+  .sgrid__veil {
+    position: absolute;
+    inset:    0;
+
+    background: linear-gradient(
+      to top,
+      rgba(7, 8, 12, 0.92)  0%,
+      rgba(7, 8, 12, 0.62)  28%,
+      rgba(7, 8, 12, 0.16)  58%,
+      transparent           100%
+    );
+
+    transition: opacity var(--dur-mid) var(--ease-out);
+  }
+
+  /* Hover: velo levemente más claro → más foto visible */
+  .sgrid__frame:hover .sgrid__veil {
+    opacity: 0.86;
+  }
+
+
+  /* ── Texto superpuesto (absolute, pegado al fondo) ───────────────────────── */
+
+  .sgrid__info {
+    position:       absolute;
+    bottom:         0;
+    left:           0;
+    right:          0;
+    z-index:        2;
+
     display:        flex;
     flex-direction: column;
-    gap:            var(--sp-4);
-    flex:           1;          /* Hace que todas las cards tengan igual altura en la fila */
+    gap:            var(--sp-1);
+
+    padding: var(--sp-5) var(--sp-5) var(--sp-6);
   }
 
-  .sgrid__body-top {
-    display:        flex;
-    flex-direction: column;
-    gap:            var(--sp-2);
-    flex:           1;
-  }
-
+  /* Número de servicio — acento azul Helitec */
   .sgrid__num {
     font-family:    var(--font-sans);
-    font-size:      0.68rem;
+    font-size:      0.65rem;
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-widest);  /* 0.20em */
+    text-transform: uppercase;
+    color:          var(--c-sky);
+    margin-bottom:  var(--sp-1);
+  }
+
+  /* Título del servicio */
+  .sgrid__title {
+    font-family:    var(--font-display);
+    font-size:      clamp(var(--text-lg), 1.8vw, var(--text-2xl));
+    font-weight:    var(--fw-thin);   /* 200 — ANTI-SLOP */
+    letter-spacing: var(--ls-wide);
+    color:          var(--c-text-1);
+    line-height:    1.1;
+    margin-bottom:  var(--sp-2);
+  }
+
+  /* Descripción — texto secundario muted */
+  .sgrid__desc {
+    font-family:   var(--font-sans);
+    font-size:     var(--text-sm);
+    color:         rgba(255, 255, 255, 0.58);
+    line-height:   1.55;
+    margin-bottom: var(--sp-3);
+  }
+
+
+  /* ── CTA inline con flecha animada ──────────────────────────────────────── */
+
+  .sgrid__cta {
+    display:        inline-flex;
+    align-items:    center;
+    gap:            var(--sp-2);
+
+    font-family:    var(--font-sans);
+    font-size:      0.63rem;
     font-weight:    var(--fw-medium);
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
     color:          var(--c-sky);
   }
 
-  .sgrid__title {
-    font-family:    var(--font-display);
-    font-size:      var(--text-xl);
-    font-weight:    var(--fw-thin);   /* 200 — ANTI-SLOP */
-    letter-spacing: var(--ls-wide);
-    color:          var(--c-text-1);
-    line-height:    1.1;
-  }
-
-  .sgrid__desc {
-    font-family: var(--font-sans);
-    font-size:   var(--text-sm);
-    color:       var(--c-text-3);
-    line-height: 1.65;
-    flex:        1;
-  }
-
-
-  /* ── CTA — Ghost button ──────────────────────────────────────────────────── */
-
-  .sgrid__cta {
-    display:     inline-flex;
-    align-items: center;
-    gap:         var(--sp-2);
-
-    padding:         9px var(--sp-4);
-    border:          1px solid rgba(255, 255, 255, 0.22);
-    border-radius:   var(--r-micro);   /* 4px — límite absoluto anti-slop */
-
-    font-family:    var(--font-sans);
-    font-size:      0.68rem;
-    font-weight:    var(--fw-medium);
-    letter-spacing: var(--ls-wider);
-    text-transform: uppercase;
-    color:          var(--c-text-2);
-
-    align-self: flex-start;
-
-    transition:
-      border-color var(--dur-fast) var(--ease-out),
-      color        var(--dur-fast) var(--ease-out);
-  }
-
-  .sgrid__cta:hover {
-    border-color: var(--c-sky);
-    color:        var(--c-sky);
-    opacity:      1;
-  }
-
-  .sgrid__cta svg {
-    opacity:    0.55;
+  /*
+   * Flecha SVG:
+   *   · Estado base:  opacity 0.65, en posición neutra.
+   *   · Hover:        desliza 6px a la derecha + opacity 1.
+   *   · Easing spring (0.16,1,0.3,1) — mismo que las celdas del menú.
+   */
+  .sgrid__arrow {
     flex-shrink: 0;
-    transition: transform var(--dur-fast) var(--ease-out),
-                opacity   var(--dur-fast) var(--ease-out);
+    opacity:     0.65;
+    transition:
+      transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity   0.22s var(--ease-out);
   }
 
-  .sgrid__cta:hover svg {
-    transform: translateX(4px);
+  .sgrid__frame:hover .sgrid__arrow {
+    transform: translateX(6px);
     opacity:   1;
   }
 
@@ -370,9 +425,29 @@ const services = [
       font-size: var(--text-2xl);
     }
 
-    /* Grid 2×2 conservado en móvil — celdas más compactas */
     .sgrid__frame {
-      height: clamp(130px, 32vw, 200px);
+      /* Tarjetas más compactas en móvil (la mitad del ancho = ~50vw) */
+      height: clamp(220px, 48vw, 320px);
+    }
+
+    .sgrid__info {
+      padding: var(--sp-3) var(--sp-3) var(--sp-4);
+      gap: 0;
+    }
+
+    .sgrid__title {
+      font-size:     var(--text-base);
+      margin-bottom: var(--sp-1);
+    }
+
+    /* Máximo 2 líneas de descripción en móvil */
+    .sgrid__desc {
+      display:            -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow:           hidden;
+      font-size:          0.70rem;
+      margin-bottom:      var(--sp-2);
     }
   }
 
@@ -382,11 +457,12 @@ const services = [
     }
 
     .sgrid__frame {
-      height: clamp(180px, 58vw, 260px);
+      height: clamp(230px, 60vw, 290px);
     }
 
-    .sgrid__body {
-      padding: var(--sp-4) var(--sp-4) var(--sp-5);
+    /* Pantallas muy pequeñas: ocultar descripción — solo número, título, CTA */
+    .sgrid__desc {
+      display: none;
     }
   }
 </style>
@@ -397,22 +473,16 @@ const services = [
   'use strict';
 
   /*
-   * ServicesSection v3 — Parallax de imágenes (Licorn-style)
+   * ServicesSection v4 — Parallax de imágenes (idéntico a v3)
    *
-   * Efecto: la imagen (.sgrid__photo) se desplaza verticalmente a una fracción
-   * de la velocidad del scroll relativa al frame (.sgrid__frame).
-   * Resultado: ilusión de profundidad — la imagen "flota" detrás de la ventana.
-   *
-   * STRENGTH = 0.20:
-   *   progress = (frameCenterY - viewportCenterY) / viewportHeight → [-0.5, +0.5]
+   * STRENGTH = 0.40:
+   *   progress = (frameCenterY − vpCenterY) / vpH  →  clamped a [-0.5, +0.5]
    *   offset   = progress × STRENGTH × frameHeight
-   *   Con frame 300px → maxOffset ≈ 30px < 45px margen → nunca se clipea.
+   *   maxOffset = 0.5 × 0.40 × frameH < 25% × frameH → sin clipping.
    *
-   * Performance:
-   *   · requestAnimationFrame: max 1 frame en cola (flag ticking)
-   *   · passive scroll listener: nunca bloquea el scroll del browser
-   *   · will-change: transform en CSS: compositor layer en GPU
-   *   · Skip frames fuera del viewport: ahorra cálculos innecesarios
+   * Nota: el JS aplica `style.transform = 'translateY(Xpx)'`.
+   * El CSS hover usa la propiedad `scale` (independiente de `transform`).
+   * Ambas coexisten sin conflicto en navegadores modernos.
    */
 
   var STRENGTH = 0.40;
@@ -435,12 +505,6 @@ const services = [
       /* Saltar frames completamente fuera del viewport */
       if (rect.bottom < -120 || rect.top > vh + 120) return;
 
-      /*
-       * progress: posición relativa del centro del frame vs centro del viewport.
-       *   +0.5 → frame justo entrando por abajo (imagen muestra su parte superior)
-       *    0   → frame centrado (imagen centrada)
-       *   -0.5 → frame justo saliendo por arriba (imagen muestra su parte inferior)
-       */
       var frameCenter = rect.top + rect.height * 0.5;
       var progress    = (frameCenter - vh * 0.5) / vh;
       progress        = clamp(progress, -0.5, 0.5);
@@ -459,12 +523,9 @@ const services = [
     }
   }
 
-  /* Calcular posición inicial antes del primer scroll */
   updateParallax();
-
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  /* Re-calcular al cambiar el tamaño de la ventana o rotar el dispositivo */
   if (typeof ResizeObserver !== 'undefined') {
     new ResizeObserver(function () { updateParallax(); })
       .observe(document.documentElement);

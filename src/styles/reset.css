@@ -28,6 +28,14 @@ html {
 
   /* Altura mínima garantizada */
   block-size: 100%;
+
+  /*
+   * Elimina scroll horizontal en cualquier resolución.
+   * `clip` (no `hidden`) no crea nuevo BFC → no rompe position:fixed/sticky.
+   * Body ya tiene overflow-x:hidden pero html necesitarlo también
+   * evita el quirk donde el navegador propaga el overflow al viewport.
+   */
+  overflow-x: clip;
 }
 
 

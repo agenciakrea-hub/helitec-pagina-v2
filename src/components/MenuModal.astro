@@ -203,34 +203,40 @@ const services = [
     z-index:    var(--z-menu);       /* 800 */
     overflow:   hidden;
 
-    background-color: var(--c-bg);   /* #07080C — igual al fondo de página */
+    /*
+     * PREMIUM REVEAL:
+     * Fondo transparente → las celdas se deslizan sobre el índice visible.
+     * El fondo del modal se oscurece progresivamente mientras las celdas llegan.
+     */
+    background-color: transparent;
 
     /* Estado CERRADO */
-    opacity:        0;
     visibility:     hidden;
     pointer-events: none;
 
     /*
-     * Cierre: opacity + bg se animan; visibility se retrasa hasta que
-     * opacity llegue a 0 (+ 10ms de margen de seguridad).
+     * Cierre: fondo se aclara (300ms), luego visibility oculta
+     * después de que todas las celdas hayan salido (~600ms total).
      */
     transition:
-      opacity          var(--dur-mid)  var(--ease-out),
-      background-color var(--dur-slow) var(--ease-out),
-      visibility       0s   linear     calc(var(--dur-mid) + 10ms);
+      background-color 300ms          var(--ease-out),
+      visibility       0s   linear     700ms;
   }
 
   /* Estado ABIERTO */
   :global(body.menu-is-open) .menu-modal {
-    opacity:          1;
     visibility:       visible;
     pointer-events:   auto;
-    background-color: var(--c-menu-open);  /* #061D3C — azul corporativo oscuro */
+
+    /*
+     * Fondo oscuro se construye mientras las celdas cubren la pantalla.
+     * 700ms: tiempo suficiente para que las celdas lleguen antes que el fondo.
+     */
+    background-color: var(--c-bg);   /* #07080C */
 
     transition:
-      opacity          var(--dur-mid)  var(--ease-out),
-      background-color var(--dur-slow) var(--ease-out),
-      visibility       0s   linear     0s;
+      background-color 700ms var(--ease-out),
+      visibility       0s    linear     0s;
   }
 
   /*
@@ -295,6 +301,29 @@ const services = [
     padding-bottom: var(--sp-8);
     padding-left:   calc(var(--sidebar-w) + var(--gutter));
     padding-right:  var(--gutter);
+
+    /*
+     * PREMIUM REVEAL — estado CERRADO:
+     * Celda oculta completamente debajo del viewport.
+     * El overflow:hidden del .menu-modal la recorta → invisible.
+     * Sale con delay 160ms (con la wave 1), curva de salida rápida.
+     */
+    transform: translateY(100vh);
+    transition:
+      transform 400ms cubic-bezier(0.4, 0, 1, 1);
+    transition-delay: 160ms;
+  }
+
+  /* Estado ABIERTO — nav card */
+  :global(body.menu-is-open) .menu-modal__nav {
+    transform: translateY(0);
+
+    /*
+     * Wave 1 (0ms): nav card + service 0 suben primero.
+     * cubic-bezier(0.16,1,0.3,1) = spring suave: rápido al inicio, deceleración premium.
+     */
+    transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0ms;
   }
 
 
@@ -332,10 +361,11 @@ const services = [
     transform: translateY(0);
 
     /*
-     * Base 120ms: espera que el fondo ya esté en transición
-     * + 80ms × --i: stagger natural de arriba a abajo
+     * Base 320ms: la nav card está ~90% en posición (spring 620ms)
+     * antes de que los links empiecen a aparecer → coherencia visual.
+     * + 70ms × --i: cascade de arriba a abajo.
      */
-    transition-delay: calc(var(--i, 0) * 80ms + 120ms);
+    transition-delay: calc(var(--i, 0) * 70ms + 320ms);
   }
 
 
@@ -455,30 +485,36 @@ const services = [
 
     background-color: var(--c-bg-raised);  /* Fallback mientras carga la foto */
 
-    /* Estado CERRADO: invisible + desplazada */
-    opacity:   0;
-    transform: translateY(14px);
-
     /*
-     * Delay de SALIDA: menor cuanto mayor el índice
-     * → las cards más alejadas salen casi simultáneamente
+     * PREMIUM REVEAL — estado CERRADO:
+     * Cada celda empieza completamente fuera del viewport por abajo.
+     * El overflow:hidden del .menu-modal la recorta → invisible.
+     *
+     * Delay de SALIDA (cierre) — orden inverso al de entrada:
+     *   j=2 y j=3 salen primero (wave 3) → delay 0ms   (fila inferior)
+     *   j=1 sale después (wave 2)         → delay 80ms
+     *   j=0 sale al final (wave 1)        → delay 160ms (igual que nav card)
+     * Fórmula: (2 - min(j, 2)) × 80ms
      */
-    transition:
-      opacity   var(--dur-mid) var(--ease-out),
-      transform var(--dur-mid) var(--ease-out);
-    transition-delay: calc(var(--j, 0) * 25ms);
+    transform: translateY(100vh);
+    transition: transform 400ms cubic-bezier(0.4, 0, 1, 1);
+    transition-delay: calc((2 - min(var(--j, 0), 2)) * 80ms);
   }
 
-  /* Estado ABIERTO: stagger ligeramente más tardío que los nav links */
+  /* Estado ABIERTO — stagger wave escalonado */
   :global(body.menu-is-open) .menu-modal__card {
-    opacity:   1;
     transform: translateY(0);
 
     /*
-     * Base 200ms: las cards entran después de los primeros 2-3 links
-     * + 60ms × --j: cascade visual top-right → middle-right → bottom
+     * WAVE STAGGER (entrada):
+     *   j=0 → wave 1 (0ms):   Aviación Ejecutiva (col derecha, fila 1)
+     *   j=1 → wave 2 (100ms): Operaciones Petroleras (col derecha, fila 2)
+     *   j=2 → wave 3 (200ms): Traslados Aeromédicos (fila 3 izquierda)
+     *   j=3 → wave 3 (200ms): Carga y Eslinga (fila 3 derecha)
+     * Fórmula: min(j, 2) × 100ms
      */
-    transition-delay: calc(var(--j, 0) * 60ms + 200ms);
+    transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(min(var(--j, 0), 2) * 100ms);
   }
 
   /* Hover: no atenuar — cancelar el opacity:0.75 del reset */

@@ -212,6 +212,38 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
   -->
   <slot name="bottom-sheet" />
 
+  <!--
+    ── LENIS SMOOTH SCROLL ────────────────────────────────────────────────────
+    Referencia: licornpublishing.com, konpo.studio — inercia suave en el scroll.
+    · ES module — deferred por defecto, no bloquea el renderizado.
+    · smoothTouch: false → móvil usa scroll nativo iOS/Android (ya tiene inercia).
+    · smoothWheel: true → escritorio obtiene el deslizamiento fluido Lenis.
+    · window.lenisInstance expuesto globalmente para que Header.astro
+      pueda pausar/reanudar Lenis cuando el menú modal esté abierto.
+  ──────────────────────────────────────────────────────────────────────────── -->
+  <script is:inline type="module">
+    import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs';
+
+    const lenis = new Lenis({
+      duration:        1.35,
+      easing:          t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel:     true,
+      smoothTouch:     false,   /* Nativo en iOS/Android */
+      touchMultiplier: 2,
+      infinite:        false,
+    });
+
+    /* Exponer globalmente — Header.astro llama stop()/start() al toggle del menú */
+    window.lenisInstance = lenis;
+
+    /* RAF loop */
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  </script>
+
 </body>
 </html>
 
