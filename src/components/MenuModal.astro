@@ -264,13 +264,16 @@ const services = [
     display:               grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows:    1fr 1fr 1fr;   /* 3 filas iguales */
-    height:                100%;
 
     /*
-     * Separadores de 1px entre celdas:
-     * El gap expone el background del grid → líneas sutiles sin borders.
-     * Más semántico y limpio que border-right/bottom por celda.
+     * El grid empieza justo debajo del header fijo (68px) para que
+     * los textos de las celdas no colisionen con el logo y la ✕.
+     * height se reduce en la misma cantidad para que el grid llene
+     * el área visible restante (calc evita desbordamiento).
      */
+    margin-top: var(--header-h);
+    height:     calc(100% - var(--header-h));
+
     gap:              1px;
     background-color: var(--c-line);      /* rgba(255,255,255,.10) */
   }
@@ -293,11 +296,12 @@ const services = [
     background-color: var(--c-bg-raised);  /* #0D1117 — superficie elevada */
 
     /*
-     * Padding top: clearance del header fijo (68px) + gutter
+     * Padding top: solo --gutter porque el grid ya tiene margin-top: var(--header-h)
+     * — el nav no necesita compensar el header de nuevo.
      * Padding left desktop: clearance del sidebar (72px) + gutter
      * → en mobile (<1024px) solo --gutter (sidebar no existe)
      */
-    padding-top:    calc(var(--header-h) + var(--gutter));
+    padding-top:    var(--gutter);
     padding-bottom: var(--sp-8);
     padding-left:   calc(var(--sidebar-w) + var(--gutter));
     padding-right:  var(--gutter);
@@ -621,7 +625,7 @@ const services = [
   /* ── Mobile pequeño ──────────────────────────────────────────────────────── */
   @media (max-width: 479px) {
     .menu-modal__nav {
-      padding-top:   calc(var(--header-h) + var(--sp-4));
+      padding-top:   var(--sp-4);
       padding-left:  var(--sp-5);
       padding-right: var(--sp-4);
       padding-bottom: var(--sp-5);

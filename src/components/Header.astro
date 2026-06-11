@@ -302,6 +302,18 @@ const {
           document.body.style.width    = '100%';
           /* Pausar Lenis: evita que procese eventos de wheel durante el menú */
           if (window.lenisInstance) window.lenisInstance.stop();
+
+          /*
+           * Comportamiento hero: si el usuario abre el menú antes de scrollear,
+           * el header estaba invisible (opacity:0, sin is-scrolled).
+           * Forzamos que sea visible simultáneamente con el menú.
+           */
+          if (scrollY <= THRESHOLD) {
+            var headerLogo = document.getElementById('header-logo');
+            if (headerLogo) headerLogo.style.opacity = '1';
+            header.classList.add('is-scrolled');
+            header.dataset.menuForcedVisible = 'true';
+          }
         } else {
           const scrollY = Math.abs(parseInt(document.body.style.top || '0', 10));
           document.body.style.overflow = '';
@@ -310,6 +322,17 @@ const {
           window.scrollTo({ top: scrollY, behavior: 'instant' });
           /* Reanudar Lenis al cerrar el menú */
           if (window.lenisInstance) window.lenisInstance.start();
+
+          /*
+           * Si el header se forzó visible por apertura de menú en el tope,
+           * restaurarlo a su estado transparente al cerrar (y si seguimos en tope).
+           */
+          if (header.dataset.menuForcedVisible && scrollY <= THRESHOLD) {
+            var headerLogo = document.getElementById('header-logo');
+            if (headerLogo) headerLogo.style.opacity = '0';
+            header.classList.remove('is-scrolled');
+          }
+          delete header.dataset.menuForcedVisible;
         }
       });
     }

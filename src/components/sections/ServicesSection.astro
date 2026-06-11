@@ -37,6 +37,13 @@ const services = [
     alt:       lang === 'es'
       ? 'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium'
       : 'Helitec executive cabin — premium leather seating',
+    /*
+     * Menos zoom: scale reduce el tamaño visible de la imagen dentro del frame
+     * sin afectar el translateY del parallax (usa la propiedad CSS `scale`,
+     * independiente de `transform` — Transforms Level 2).
+     * object-position: center 35% — se ve el techo de la cabina y los asientos.
+     */
+    imgStyle: 'object-position: center 35%; scale: 0.86',
   },
   {
     num:   '02',
@@ -50,6 +57,11 @@ const services = [
     alt:       lang === 'es'
       ? 'Helicóptero Helitec en operación petrolera'
       : 'Helitec helicopter on petroleum operations',
+    /*
+     * Foco hacia la izquierda: el helicóptero está en el lado derecho de la foto
+     * pero se recorta. Moviendo object-position hacia 15% el sujeto entra en cuadro.
+     */
+    imgStyle: 'object-position: 15% center',
   },
   {
     num:   '03',
@@ -64,6 +76,12 @@ const services = [
       ? 'Metro III Helitec junto a ambulancia — servicio aeromédico'
       : 'Helitec Metro III alongside ambulance — aeromedical service',
     isExternal: true,
+    /*
+     * Reduce zoom para que entren en cuadro avión + ambulancia.
+     * scale 0.82 = imagen encoge dentro del frame → más contexto visible.
+     * object-position centrada verticalmente para no cortar ninguno de los dos.
+     */
+    imgStyle: 'object-position: center 55%; scale: 0.82',
   },
   {
     num:   '04',
@@ -77,6 +95,7 @@ const services = [
     alt:       lang === 'es'
       ? 'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación'
       : 'Helitec MD helicopter with external sling load over vegetation',
+    /* Sin ajuste — encuadre por defecto está bien */
   },
 ];
 ---
@@ -120,11 +139,12 @@ const services = [
           {...(svc.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         >
 
-          <!-- Imagen con parallax -->
+          <!-- Imagen con parallax + encuadre per-card vía imgStyle inline -->
           <img
             class="sgrid__photo"
             src={svc.img}
             alt={svc.alt}
+            style={svc.imgStyle ?? ''}
             loading={i < 2 ? 'eager' : 'lazy'}
             decoding="async"
           />
