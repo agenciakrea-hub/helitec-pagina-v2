@@ -98,12 +98,12 @@ const stats: StatCell[] = [
         {lang === 'es' ? 'Por qué Helitec' : 'Why Helitec'}
       </p>
 
-      <h2 class="stats__title" id="stats-heading">
-        {lang === 'es'
-          ? <>Tres décadas de<br/>excelencia operativa</>
-          : <>Three decades of<br/>operational excellence</>
+      <h2 class="stats__title" id="stats-heading"
+        set:html={lang === 'es'
+          ? '<span class="stats__title-accent">Tres décadas</span> de<br/>excelencia operativa'
+          : '<span class="stats__title-accent">Three decades</span> of<br/>operational excellence'
         }
-      </h2>
+      />
 
     </header>
 
@@ -146,14 +146,22 @@ const stats: StatCell[] = [
               >
                 {stat.prefix ?? ''}{stat.value.toLocaleString('de-DE')}
               </span>
+            ) : stat.display === 'INAC · OACI' ? (
+              /*
+               * Celda INAC: imagen del sello oficial, sin borde ni contorno.
+               * Archivo esperado: /public/assets/INAC-badge.png
+               */
+              <img
+                src="/assets/INAC-badge.png"
+                alt="INAC — Instituto Nacional de Aeronáutica Civil de Venezuela"
+                class="stats__cert-logo"
+                width="72"
+                height="72"
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
-              <span
-                class={
-                  stat.display === 'INAC · OACI'
-                    ? 'stats__value stats__value--text stats__value--cert'
-                    : 'stats__value stats__value--text'
-                }
-              >
+              <span class="stats__value stats__value--text">
                 {stat.display}
               </span>
             )}
@@ -167,24 +175,7 @@ const stats: StatCell[] = [
     </div>
 
     <!-- ── Bloque de certificación AOC ──────────────────────────────────── -->
-    <!--
-      Sello oficial del Certificado de Operador Aéreo emitido por el INAC.
-      Posicionado debajo del grid de estadísticas como cierre de la sección.
-      object-fit: contain — la imagen tiene fondo transparente (PNG).
-    -->
     <div class="stats__cert">
-
-      <div class="stats__cert-badge">
-        <img
-          src="/assets/AOC.png"
-          alt="Certificado de Operador Aéreo — Instituto Nacional de Aeronáutica Civil de Venezuela (INAC)"
-          class="stats__cert-img"
-          width="80"
-          height="80"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
 
       <div class="stats__cert-info">
         <p class="stats__cert-title">
@@ -196,9 +187,50 @@ const stats: StatCell[] = [
             : 'Consorcio Helitec operates under an AOC Certificate granted by Venezuela\'s Instituto Nacional de Aeronáutica Civil (INAC), ensuring compliance with all national and international operational safety regulations.'
           }
         </p>
+
+        <!-- Botón: abre el mini popup con la imagen del documento AOC -->
+        <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
+          <span>{lang === 'es' ? 'Ver documento AOC' : 'View AOC Document'}</span>
+          <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
+            <path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+          </svg>
+        </button>
       </div>
 
     </div>
+
+    <!-- ── Lightbox AOC — <dialog> nativo ────────────────────────────── -->
+    <!--
+      Se abre con .showModal() → backdrop oscuro nativo del browser.
+      Se cierra: botón ✕, clic en el backdrop, o tecla Escape.
+    -->
+    <dialog
+      class="stats__aoc-dialog"
+      id="aoc-dialog"
+      aria-label={lang === 'es' ? 'Certificado de Operador Aéreo' : 'Air Operator Certificate'}
+    >
+      <div class="stats__aoc-inner">
+        <button
+          class="stats__aoc-close"
+          id="aoc-close-btn"
+          type="button"
+          aria-label={lang === 'es' ? 'Cerrar' : 'Close'}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </button>
+        <img
+          src="/assets/AOC.png"
+          alt="Certificado de Operador Aéreo — INAC Venezuela"
+          class="stats__aoc-img"
+          width="600"
+          height="800"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </dialog>
 
   </div>
 
@@ -265,6 +297,41 @@ const stats: StatCell[] = [
     line-height:    1.1;
     color:          var(--c-text-1);
   }
+
+  /* ── "Tres décadas" / "Three decades" — subrayado bicolor animado ──────── */
+
+  .stats__title-accent {
+    position: relative;
+    display:  inline;
+  }
+
+  /*
+   * Línea bicolor: rojo (--c-red) → azul (--c-sky), coherente con hero.
+   * Animación scaleX(0→1) con transform-origin: left → "se dibuja" de izq. a derecha.
+   * La clase .is-underlined la agrega el IntersectionObserver al entrar en pantalla.
+   */
+  .stats__title-accent::after {
+    content:          '';
+    position:         absolute;
+    bottom:           -4px;
+    left:             0;
+    right:            0;
+    height:           2px;
+    background: linear-gradient(
+      to right,
+      var(--c-red)  50%,
+      var(--c-sky)  50%
+    );
+    transform:        scaleX(0);
+    transform-origin: left center;
+    transition:       transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events:   none;
+  }
+
+  .stats__title-accent.is-underlined::after {
+    transform: scaleX(1);
+  }
+
 
   /* ════════════════════════════════════════════════════════════════════════
      GRID — truco gap + background-color para divisores sin border
@@ -378,6 +445,15 @@ const stats: StatCell[] = [
     color:          var(--c-sky);
   }
 
+  /* Imagen del sello INAC en la celda — sin borde, sin contorno */
+  .stats__cert-logo {
+    width:       clamp(48px, 5vw, 68px);
+    height:      auto;
+    object-fit:  contain;
+    flex-shrink: 0;
+  }
+
+
   /* ════════════════════════════════════════════════════════════════════════
      ETIQUETA
   ════════════════════════════════════════════════════════════════════════ */
@@ -432,41 +508,14 @@ const stats: StatCell[] = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__cert {
-    display:     flex;
-    align-items: flex-start;
-    gap:         clamp(20px, 3vw, 32px);
-    margin-top:  1px; /* Une visualmente con el grid (gap trick visual) */
+    margin-top:  1px; /* Une visualmente con el grid */
 
     padding:          clamp(20px, 3vw, 32px);
     border:           1px solid var(--c-line);
-    background-color: var(--c-bg); /* Un tono más oscuro que --c-bg-raised */
-  }
-
-  .stats__cert-badge {
-    flex-shrink: 0;
-    width:       80px;
-    height:      80px;
-
-    display:         flex;
-    align-items:     center;
-    justify-content: center;
-
-    border:           1px solid var(--c-line-strong);
-    border-radius:    var(--r-micro); /* 4px — límite sagrado */
-    background-color: rgba(255, 255, 255, 0.03);
-    overflow:         hidden;
-  }
-
-  .stats__cert-img {
-    width:      100%;
-    height:     100%;
-    object-fit: contain; /* PNG con transparencia — NUNCA cover */
-    padding:    6px;
+    background-color: var(--c-bg);
   }
 
   .stats__cert-info {
-    flex:           1;
-    min-width:      0;
     display:        flex;
     flex-direction: column;
     gap:            8px;
@@ -487,19 +536,111 @@ const stats: StatCell[] = [
     font-weight: var(--fw-light);
     color:       var(--c-text-2);
     line-height: 1.65;
+    max-width:   72ch;
   }
 
-  /* Mobile: cert en columna */
-  @media (max-width: 639px) {
-    .stats__cert {
-      flex-direction: column;
-      align-items:    flex-start;
-    }
+  /* Botón "Ver documento AOC" — ghost sky blue + flecha animada */
+  .stats__cert-btn {
+    display:     inline-flex;
+    align-items: center;
+    gap:         8px;
+    margin-top:  var(--sp-3);
 
-    .stats__cert-badge {
-      width:  64px;
-      height: 64px;
-    }
+    padding: 8px 14px;
+
+    font-family:    var(--font-sans);
+    font-size:      0.6875rem; /* 11px */
+    font-weight:    var(--fw-semibold);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+    color:          var(--c-text-1);
+
+    background:    transparent;
+    border:        1px solid rgba(88, 181, 240, 0.35);
+    border-radius: var(--r-micro);
+    cursor:        pointer;
+
+    transition:
+      border-color     var(--dur-fast) var(--ease-out),
+      color            var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .stats__cert-btn:hover {
+    border-color:     rgba(88, 181, 240, 0.65);
+    background-color: rgba(88, 181, 240, 0.06);
+    color:            var(--c-white);
+  }
+
+  .stats__cert-btn svg {
+    flex-shrink: 0;
+    transition:  transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stats__cert-btn:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     LIGHTBOX AOC — <dialog> nativo
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .stats__aoc-dialog {
+    padding:    0;
+    background: transparent;
+    border:     none;
+    max-width:  min(92vw, 600px);
+    max-height: 90dvh;
+  }
+
+  /* Backdrop nativo del <dialog> */
+  .stats__aoc-dialog::backdrop {
+    background-color:        rgba(7, 8, 12, 0.88);
+    backdrop-filter:         blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .stats__aoc-inner {
+    position:         relative;
+    background-color: var(--c-bg-raised);
+    border:           1px solid var(--c-line-strong);
+    padding:          var(--sp-4);
+  }
+
+  .stats__aoc-close {
+    position: absolute;
+    top:      var(--sp-3);
+    right:    var(--sp-3);
+    z-index:  1;
+
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    width:           32px;
+    height:          32px;
+
+    background:    rgba(7, 8, 12, 0.65);
+    border:        1px solid var(--c-line-strong);
+    border-radius: var(--r-micro);
+    color:         var(--c-text-2);
+    cursor:        pointer;
+
+    transition:
+      color        var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .stats__aoc-close:hover {
+    color:        var(--c-white);
+    border-color: var(--c-text-2);
+  }
+
+  .stats__aoc-img {
+    display:    block;
+    width:      100%;
+    height:     auto;
+    max-height: calc(90dvh - 80px);
+    object-fit: contain;
   }
 </style>
 
@@ -602,6 +743,10 @@ const stats: StatCell[] = [
             cell.classList.add('is-visible');
           });
 
+          /* 1b. Activar el subrayado animado de "Tres décadas" */
+          var accent = document.querySelector('.stats__title-accent');
+          if (accent) accent.classList.add('is-underlined');
+
           /* 2. Disparar contador en cada celda numérica */
           counters.forEach(function (counter) {
             var target = parseInt(counter.dataset.target || '0', 10);
@@ -626,6 +771,42 @@ const stats: StatCell[] = [
     );
 
     observer.observe(grid);
+
+
+    /* ════════════════════════════════════════════════════════════════════
+       LIGHTBOX AOC — abrir / cerrar el <dialog>
+    ════════════════════════════════════════════════════════════════════ */
+
+    var openBtn  = document.getElementById('aoc-open-btn');
+    var closeBtn = document.getElementById('aoc-close-btn');
+    var dialog   = /** @type {HTMLDialogElement|null} */ (document.getElementById('aoc-dialog'));
+
+    if (openBtn && dialog) {
+      openBtn.addEventListener('click', function () {
+        dialog.showModal();
+      });
+    }
+
+    if (closeBtn && dialog) {
+      closeBtn.addEventListener('click', function () {
+        dialog.close();
+      });
+    }
+
+    /* Cerrar al hacer clic en el backdrop (fuera del contenido inner) */
+    if (dialog) {
+      dialog.addEventListener('click', function (e) {
+        var rect = dialog.getBoundingClientRect();
+        if (
+          e.clientX < rect.left   ||
+          e.clientX > rect.right  ||
+          e.clientY < rect.top    ||
+          e.clientY > rect.bottom
+        ) {
+          dialog.close();
+        }
+      });
+    }
 
   })();
 </script>
