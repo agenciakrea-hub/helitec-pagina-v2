@@ -51,7 +51,7 @@ const { lang = 'es' } = Astro.props;
 
       <!-- Logo avión GRANDE — flush derecho, escala del H2 -->
       <img
-        src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
+        src="/assets/recurso_logo_avion_helitec_(1).png"
         class="fleet__plane-deco"
         alt=""
         aria-hidden="true"
@@ -118,28 +118,28 @@ const { lang = 'es' } = Astro.props;
   }
 
   /* ════════════════════════════════════════════════════════════════════════
-     ENCABEZADO — overline + H2 (right) · logo flush derecho
+     ENCABEZADO — overline + H2 (left) · logo gigante flush derecho
   ════════════════════════════════════════════════════════════════════════ */
 
   .fleet__header {
     display:         flex;
-    align-items:     flex-start;
+    align-items:     center;        /* logo centrado verticalmente con el bloque */
     justify-content: space-between;
-    gap:             clamp(32px, 6vw, 80px);
+    gap:             clamp(24px, 5vw, 64px);
     margin-bottom:   clamp(36px, 5vh, 52px);
   }
 
-  /* Bloque de texto — right-aligned */
+  /* Bloque de texto — left-aligned (mismo padding que Servicios) */
   .fleet__header-text {
     flex:       1;
     min-width:  0;
-    text-align: right;
+    text-align: left;
   }
 
   .fleet__overline {
     display:         flex;
     align-items:     center;
-    justify-content: flex-end; /* línea a la derecha del texto */
+    justify-content: flex-start; /* línea a la derecha del texto */
     gap:             12px;
 
     font-family:    var(--font-sans);
@@ -152,7 +152,7 @@ const { lang = 'es' } = Astro.props;
     margin-bottom: 14px;
   }
 
-  /* Línea decorativa — aparece a la derecha del texto */
+  /* Línea decorativa — a la derecha del texto */
   .fleet__overline::after {
     content:          '';
     display:          block;
@@ -173,16 +173,18 @@ const { lang = 'es' } = Astro.props;
   }
 
   /*
-   * Logo avión — flush derecho, a escala del bloque H2.
-   * align-self: flex-start → ancla con el overline (top-aligned).
+   * Logo avión — GIGANTE, flush derecho.
+   * Altura visual ~igual a la del bloque H2 completo (overline + título 2 líneas).
+   * flex-shrink: 0 → no se comprime.
+   * align-self: center → centrado verticalmente con el bloque de texto.
    */
   .fleet__plane-deco {
-    height:      clamp(100px, 14vw, 160px);
+    height:      clamp(140px, 22vw, 280px);
     width:       auto;
     object-fit:  contain;
-    opacity:     0.70;
+    opacity:     0.75;
     flex-shrink: 0;
-    align-self:  flex-start;
+    align-self:  center;
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -228,11 +230,11 @@ const { lang = 'es' } = Astro.props;
 
   @media (max-width: 767px) {
     .fleet__header {
-      gap: clamp(12px, 4vw, 20px);
+      gap: clamp(12px, 4vw, 24px);
     }
 
     .fleet__plane-deco {
-      height: clamp(64px, 20vw, 96px);
+      height: clamp(100px, 28vw, 160px);
     }
 
     /* Más ancho en móvil para que el avión no quede diminuto */
