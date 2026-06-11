@@ -3,6 +3,9 @@
 import '../styles/variables.css';
 import '../styles/reset.css';
 
+/* ── Componentes globales ──────────────────────────────────────────────── */
+import Preloader from '../components/Preloader.astro';
+
 /* ── View Transitions — navegación suave entre páginas ─────────────────── */
 import { ViewTransitions } from 'astro:transitions';
 
@@ -137,6 +140,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
 </head>
 
 <body class={bodyClass}>
+
+  <!-- ── PRELOADER — cortina negra de entrada (K3-style) ──────────────────── -->
+  <!--
+    Cubre el viewport INMEDIATAMENTE al cargar.
+    Se desliza hacia arriba tras window.load + mín. 700ms.
+    Oculta el parpadeo inicial del video del Hero.
+    z-index: 9999 — sobre todo lo demás.
+  -->
+  <Preloader />
 
   <!-- ── SKIP LINK (Accesibilidad — usuarios de teclado/lectores) ─────────── -->
   <a href="#main-content" class="sr-only">

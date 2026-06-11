@@ -108,24 +108,36 @@ function getTipoLabel(aircraft: any, lang: string): string {
         }
       </h2>
 
-      <!-- Contador de categorías (dato factual del JSON) -->
-      <div class="fleet__cats">
-        <span class="fleet__cat-tag">
-          <!-- Ícono ala fija: forma estilizada de ala -->
-          <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M1 7L7 2L13 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
-            <path d="M4 9L7 7L10 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
-          </svg>
-          {lang === 'es' ? '5 Ala Fija' : '5 Fixed Wing'}
-        </span>
-        <span class="fleet__cat-tag">
-          <!-- Ícono ala rotatoria: aspas de rotor simplificadas -->
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
-            <path d="M7 1v3M7 10v3M1 7h3M10 7h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
-          </svg>
-          {lang === 'es' ? '3 Ala Rotatoria' : '3 Rotary Wing'}
-        </span>
+      <!-- Contador de categorías + logo decorativo avión -->
+      <div class="fleet__cats-row">
+        <div class="fleet__cats">
+          <span class="fleet__cat-tag">
+            <!-- Ícono ala fija: forma estilizada de ala -->
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M1 7L7 2L13 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+              <path d="M4 9L7 7L10 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+            </svg>
+            {lang === 'es' ? '5 Ala Fija' : '5 Fixed Wing'}
+          </span>
+          <span class="fleet__cat-tag">
+            <!-- Ícono ala rotatoria: aspas de rotor simplificadas -->
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
+              <path d="M7 1v3M7 10v3M1 7h3M10 7h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+            </svg>
+            {lang === 'es' ? '3 Ala Rotatoria' : '3 Rotary Wing'}
+          </span>
+        </div>
+
+        <!-- Logo decorativo avión Helitec -->
+        <img
+          src="/assets/recurso logo avion helitec (1).png"
+          class="fleet__plane-deco"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
 
     </header>
@@ -363,6 +375,24 @@ function getTipoLabel(aircraft: any, lang: string): string {
     line-height:    1.1;
     color:          var(--c-text-1);
     margin-bottom:  20px;
+  }
+
+  /* Fila categorías + logo avión decorativo */
+  .fleet__cats-row {
+    display:     flex;
+    align-items: center;
+    gap:         clamp(24px, 4vw, 48px);
+    flex-wrap:   wrap;
+  }
+
+  /* Logo decorativo avión Helitec */
+  .fleet__plane-deco {
+    height:     clamp(36px, 4vw, 52px);
+    width:      auto;
+    object-fit: contain;
+    opacity:    0.55;
+    flex-shrink: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
   }
 
   /* Tags de categoría en el header */

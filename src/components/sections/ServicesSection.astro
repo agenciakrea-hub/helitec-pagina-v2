@@ -142,6 +142,15 @@ const services = [
           <div class="sgrid__info">
             <span class="sgrid__num">{svc.num}</span>
             <h3 class="sgrid__title">{svc.title}</h3>
+            <!-- Recurso rojo — subrayado decorativo con reveal izq→der -->
+            <img
+              src="/assets/recurso rojo helitec.png"
+              class="sgrid__title-deco"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+            />
             <p class="sgrid__desc">{svc.desc}</p>
             <span class="sgrid__cta">
               <span class="sgrid__cta-label">{svc.cta}</span>
@@ -370,6 +379,30 @@ const services = [
     margin-bottom:  var(--sp-2);
   }
 
+  /* ── Recurso rojo — subrayado decorativo ───────────────────────────────── */
+
+  .sgrid__title-deco {
+    display:          block;
+    width:            clamp(48px, 35%, 110px);
+    height:           auto;
+    object-fit:       contain;
+    object-position:  left center;
+    margin-bottom:    var(--sp-2);
+
+    /*
+     * Reveal izquierda → derecha mediante clip-path.
+     * Estado inicial: completamente recortado (no visible).
+     * Estado activo (.sgrid__frame--revealed): clip-path 0% → imagen visible.
+     * Delay de 0.15s para que entre después del título.
+     */
+    clip-path:  inset(0 100% 0 0);
+    transition: clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+  }
+
+  .sgrid__frame--revealed .sgrid__title-deco {
+    clip-path: inset(0 0% 0 0);
+  }
+
   /* Descripción — texto secundario muted */
   .sgrid__desc {
     font-family:   var(--font-sans);
@@ -536,6 +569,28 @@ const services = [
   if (typeof ResizeObserver !== 'undefined') {
     new ResizeObserver(function () { updateParallax(); })
       .observe(document.documentElement);
+  }
+
+  /*
+   * ── Reveal del recurso rojo (subrayado izq→der) ──────────────────────────
+   * Cuando cada .sgrid__frame entra en el viewport (threshold 0.25),
+   * añadimos .sgrid__frame--revealed → CSS activa clip-path transition.
+   * Once: true — se dispara una sola vez por tarjeta.
+   */
+  if ('IntersectionObserver' in window) {
+    var revealObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('sgrid__frame--revealed');
+          revealObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.25 });
+
+    frames.forEach(function (frame) { revealObs.observe(frame); });
+  } else {
+    /* Fallback sin IntersectionObserver (IE11): revelar inmediatamente */
+    frames.forEach(function (frame) { frame.classList.add('sgrid__frame--revealed'); });
   }
 })();
 </script>

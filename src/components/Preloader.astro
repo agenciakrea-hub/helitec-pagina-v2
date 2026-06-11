@@ -1,0 +1,167 @@
+---
+/**
+ * Preloader.astro
+ * Consorcio Helitec — Pantalla de carga de entrada
+ *
+ * Efecto: cortina negra fullscreen que se desliza HACIA ARRIBA al revelarse,
+ * dejando ver el contenido de la página.
+ * Inspirado en la transición de idioma de k3studios.ae.
+ *
+ * Mecánica:
+ *   1. La cortina cubre TODO antes de que el HTML pinte (z-index: 9999)
+ *   2. Aparece inmediatamente → sin flash de contenido sin estilo
+ *   3. Barra de progreso sky-blue se anima hacia el 100% (0.9s)
+ *   4. Tras window.load (mín. 700ms), la cortina desliza hacia arriba
+ *   5. transitionend → el nodo se elimina del DOM
+ *
+ * Easing: cubic-bezier(0.76, 0, 0.24, 1) — curva Konpo/K3-style
+ * z-index: var(--z-top) = 9999
+ * Reglas anti-slop: ✓ (sin box-shadow, sin border-radius > 4px)
+ */
+---
+
+<div id="preloader" class="preloader" aria-hidden="true" role="presentation">
+
+  <!-- Logo centrado — marca de espera premium -->
+  <div class="preloader__center">
+    <img
+      src="/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png"
+      alt=""
+      class="preloader__logo"
+      width="200"
+      height="52"
+      fetchpriority="high"
+    />
+  </div>
+
+  <!-- Barra de progreso inferior — azul Helitec -->
+  <div class="preloader__track" aria-hidden="true">
+    <div class="preloader__bar" id="preloader-bar"></div>
+  </div>
+
+</div>
+
+
+<style>
+  /* ── Cortina principal ───────────────────────────────────────────────── */
+
+  .preloader {
+    position:         fixed;
+    inset:            0;
+    z-index:          9999;            /* Por encima de todo */
+    background-color: #000000;         /* Negro absoluto — coordina con --c-bg */
+
+    display:          flex;
+    flex-direction:   column;
+    align-items:      center;
+    justify-content:  center;
+
+    pointer-events:   all;
+
+    /*
+     * Inicio: translateY(0) — cubre el viewport.
+     * Tras .is-hidden: translateY(-100%) — desliza hacia arriba.
+     * NO se pone transition aquí para que no haya delay al entrar.
+     */
+    transform:    translateY(0);
+  }
+
+  /* ── Estado de salida ────────────────────────────────────────────────── */
+
+  .preloader.is-hidden {
+    transform:        translateY(-100%);
+    pointer-events:   none;
+    transition:       transform 1.0s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  /* ── Logo centrado ───────────────────────────────────────────────────── */
+
+  .preloader__center {
+    display:     flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: preloader-logo-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  }
+
+  @keyframes preloader-logo-in {
+    to {
+      opacity:   0.65;
+      transform: translateY(0);
+    }
+  }
+
+  .preloader__logo {
+    width:      clamp(140px, 18vw, 200px);
+    height:     auto;
+    object-fit: contain;
+    display:    block;
+  }
+
+  /* ── Barra de progreso ───────────────────────────────────────────────── */
+
+  .preloader__track {
+    position: absolute;
+    bottom:   0;
+    left:     0;
+    right:    0;
+    height:   2px;
+    background-color: rgba(88, 181, 240, 0.12);  /* Track tenue */
+  }
+
+  .preloader__bar {
+    height:     100%;
+    width:      0%;
+    background: var(--c-sky, #58b5f0);            /* Azul Helitec */
+    transform-origin: left center;
+  }
+
+  /* Al activar .is-loading: la barra llena el track */
+  .preloader.is-loading .preloader__bar {
+    width:      100%;
+    transition: width 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+</style>
+
+
+<script is:inline>
+(function () {
+  'use strict';
+
+  var preloader = document.getElementById('preloader');
+  if (!preloader) return;
+
+  /* Tiempo mínimo de visualización (ms) — da margen al video de fondo */
+  var MIN_MS   = 700;
+  var startAt  = Date.now();
+
+  /* Iniciar barra de progreso en el siguiente frame */
+  requestAnimationFrame(function () {
+    preloader.classList.add('is-loading');
+  });
+
+  function dismiss() {
+    var elapsed  = Date.now() - startAt;
+    var waitMore = Math.max(0, MIN_MS - elapsed);
+
+    setTimeout(function () {
+      preloader.classList.add('is-hidden');
+
+      /* Eliminar nodo del DOM una vez terminada la transición */
+      preloader.addEventListener('transitionend', function handler(e) {
+        if (e.target === preloader && e.propertyName === 'transform') {
+          preloader.remove();
+        }
+      });
+    }, waitMore);
+  }
+
+  /* Esperar a que la página esté completamente cargada */
+  if (document.readyState === 'complete') {
+    dismiss();
+  } else {
+    window.addEventListener('load', dismiss, { once: true });
+  }
+})();
+</script>

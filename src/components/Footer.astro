@@ -71,6 +71,16 @@ const currentYear = new Date().getFullYear();
           />
         </a>
 
+        <!-- Recurso rojo — subrayado decorativo bajo el logo -->
+        <img
+          src="/assets/recurso rojo helitec.png"
+          class="footer__logo-deco"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+        />
+
         <!-- Tagline / descripción corta -->
         <p class="footer__tagline">
           {lang === 'es'
@@ -324,6 +334,24 @@ const currentYear = new Date().getFullYear();
     opacity:    0.90;
 
     transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  /* Recurso rojo — subrayado decorativo bajo el logo */
+  .footer__logo-deco {
+    display:         block;
+    width:           clamp(60px, 40%, 130px);
+    height:          auto;
+    object-fit:      contain;
+    object-position: left center;
+    margin-top:      -12px; /* Acercar al logo */
+
+    /* Reveal izq → der al entrar en viewport */
+    clip-path:  inset(0 100% 0 0);
+    transition: clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+  }
+
+  .footer__logo-deco.is-revealed {
+    clip-path: inset(0 0% 0 0);
   }
 
   .footer__logo-link:hover .footer__logo,
@@ -690,3 +718,25 @@ const currentYear = new Date().getFullYear();
     }
   }
 </style>
+
+<script>
+(function () {
+  'use strict';
+
+  /* Recurso rojo bajo el logo: reveal al entrar en viewport */
+  var deco = document.querySelector('.footer__logo-deco');
+  if (!deco) return;
+
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) {
+        deco.classList.add('is-revealed');
+        obs.disconnect();
+      }
+    }, { threshold: 0.3 });
+    obs.observe(deco);
+  } else {
+    deco.classList.add('is-revealed');
+  }
+})();
+</script>
