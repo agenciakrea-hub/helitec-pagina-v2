@@ -181,12 +181,12 @@ const stats: StatCell[] = [
         <p class="stats__cert-title">
           {lang === 'es' ? 'Certificado de Operador Aéreo' : 'Air Operator Certificate'}
         </p>
-        <p class="stats__cert-body">
-          {lang === 'es'
-            ? 'Consorcio Helitec opera bajo Certificado AOC otorgado por el Instituto Nacional de Aeronáutica Civil (INAC) de Venezuela, garantizando el cumplimiento de todas las normativas de seguridad operacional nacional e internacional.'
-            : 'Consorcio Helitec operates under an AOC Certificate granted by Venezuela\'s Instituto Nacional de Aeronáutica Civil (INAC), ensuring compliance with all national and international operational safety regulations.'
+        <p class="stats__cert-body"
+          set:html={lang === 'es'
+            ? 'Consorcio Helitec opera bajo <span class="stats__highlight">Certificado AOC</span> otorgado por el <span class="stats__highlight">Instituto Nacional de Aeronáutica Civil (INAC)</span> de Venezuela, garantizando el cumplimiento de todas las normativas de seguridad operacional nacional e internacional.'
+            : 'Consorcio Helitec operates under an <span class="stats__highlight">AOC Certificate</span> granted by Venezuela\'s <span class="stats__highlight">Instituto Nacional de Aeronáutica Civil (INAC)</span>, ensuring compliance with all national and international operational safety regulations.'
           }
-        </p>
+        />
 
         <!-- Botón: abre el mini popup con la imagen del documento AOC -->
         <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
@@ -537,6 +537,14 @@ const stats: StatCell[] = [
     color:       var(--c-text-2);
     line-height: 1.65;
     max-width:   72ch;
+  }
+
+  /* Palabras resaltadas estilo Licorn — fondo azul Helitec sutil */
+  .stats__highlight {
+    background-color: rgba(88, 181, 240, 0.10);
+    color:            var(--c-sky);
+    padding:          1px 5px;
+    border-radius:    2px; /* ≤ 4px — ANTI-SLOP */
   }
 
   /* Botón "Ver documento AOC" — ghost sky blue + flecha animada */

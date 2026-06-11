@@ -106,6 +106,38 @@ const currentYear = new Date().getFullYear();
           <span class="footer__cert-tag">OACI</span>
         </div>
 
+        <!-- Redes sociales — recuadros estilo Helitec -->
+        <div class="footer__socials" aria-label={lang === 'es' ? 'Redes sociales' : 'Social media'}>
+          <a
+            class="footer__social-link"
+            href="https://www.linkedin.com/company/consorcio-helitec"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="LinkedIn de Consorcio Helitec (abre en nueva pestaña)"
+          >
+            <span class="footer__social-box" aria-hidden="true">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                <path d="M1 8L8 1M8 1H3M8 1v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+              </svg>
+            </span>
+            <span class="footer__social-label">LinkedIn</span>
+          </a>
+          <a
+            class="footer__social-link"
+            href="https://www.youtube.com/@consorciohtelitec"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="YouTube de Consorcio Helitec (abre en nueva pestaña)"
+          >
+            <span class="footer__social-box" aria-hidden="true">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                <path d="M1 8L8 1M8 1H3M8 1v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+              </svg>
+            </span>
+            <span class="footer__social-label">YouTube</span>
+          </a>
+        </div>
+
       </div>
 
       <!-- ── COLUMNA 2: Navegación ──────────────────────────────────────── -->
@@ -346,6 +378,59 @@ const currentYear = new Date().getFullYear();
     padding:       3px 7px;
     border:        1px solid rgba(88, 181, 240, 0.30);
     border-radius: var(--r-micro); /* 4px */
+  }
+
+  /* Redes sociales */
+  .footer__socials {
+    display:   flex;
+    gap:       10px;
+    flex-wrap: wrap;
+    margin-top: -4px; /* Compensa el gap del flex del col */
+  }
+
+  .footer__social-link {
+    display:     inline-flex;
+    align-items: center;
+    gap:         7px;
+    text-decoration: none;
+
+    font-family:    var(--font-sans);
+    font-size:      0.6875rem; /* 11px */
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-wide);
+    color:          var(--c-text-2);
+
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .footer__social-link:hover,
+  .footer__social-link:focus-visible {
+    color:   var(--c-white);
+    opacity: 1;
+  }
+
+  .footer__social-box {
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+    width:           20px;
+    height:          20px;
+    flex-shrink:     0;
+
+    background-color: rgba(88, 181, 240, 0.08);
+    border:           1px solid rgba(88, 181, 240, 0.28);
+    border-radius:    var(--r-micro); /* 4px */
+    color:            var(--c-sky);
+
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color     var(--dur-fast) var(--ease-out);
+  }
+
+  .footer__social-link:hover .footer__social-box,
+  .footer__social-link:focus-visible .footer__social-box {
+    background-color: rgba(88, 181, 240, 0.16);
+    border-color:     rgba(88, 181, 240, 0.52);
   }
 
   /* ════════════════════════════════════════════════════════════════════════

@@ -175,6 +175,8 @@ const services = [
 
   .sgrid {
     background-color: var(--c-bg);
+    padding-block:    clamp(48px, 7vh, 80px);
+    padding-inline:   calc(var(--sidebar-w) + var(--gutter));
   }
 
 
@@ -185,12 +187,10 @@ const services = [
     flex-direction:  column;
     gap:             var(--sp-2);
 
-    padding-top:     var(--sp-14);
     padding-bottom:  var(--sp-8);
-    padding-inline:  var(--gutter);
-    padding-left:    calc(var(--sidebar-w) + var(--gutter));
 
     border-bottom:   1px solid var(--c-line);
+    margin-bottom:   clamp(20px, 3vh, 32px);
   }
 
   /*
@@ -232,8 +232,7 @@ const services = [
     display:               grid;
     grid-template-columns: 1fr 1fr;
 
-    gap:              1px;
-    background-color: var(--c-line);   /* Separadores de 1px */
+    gap: clamp(12px, 1.5vw, 18px);
   }
 
 
@@ -250,6 +249,8 @@ const services = [
     position:         relative;
     display:          block;
     overflow:         hidden;
+    border-radius:    var(--r-micro);         /* 4px — ANTI-SLOP */
+    border:           1px solid var(--c-line);
 
     /*
      * Altura completa de la tarjeta — incluye foto + texto superpuesto.
@@ -416,9 +417,15 @@ const services = [
 
   /* ── Responsive ──────────────────────────────────────────────────────────── */
 
+  @media (max-width: 1023px) {
+    .sgrid {
+      padding-inline: var(--gutter);
+    }
+  }
+
   @media (max-width: 767px) {
-    .sgrid__header {
-      padding-left: var(--gutter);
+    .sgrid__grid {
+      gap: 10px;
     }
 
     .sgrid__heading {
@@ -453,7 +460,7 @@ const services = [
 
   @media (max-width: 479px) {
     .sgrid__header {
-      padding-block: var(--sp-10) var(--sp-5);
+      padding-bottom: var(--sp-5);
     }
 
     .sgrid__frame {
