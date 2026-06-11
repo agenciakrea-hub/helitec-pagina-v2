@@ -215,12 +215,22 @@ const services = [
     pointer-events: none;
 
     /*
-     * Cierre: fondo se aclara (300ms), luego visibility oculta
-     * después de que todas las celdas hayan salido (~600ms total).
+     * CIERRE — animación inversa limpia:
+     *
+     * El background-color NO transiciona en el cierre (sin fade gradual).
+     * Se queda en var(--c-bg) hasta que visibility:hidden lo oculta de golpe.
+     * Esto evita el artefacto: el modal permanece sólido negro mientras
+     * las celdas se deslizan hacia abajo (last cell exits at ~560ms).
+     *
+     * Timeline del cierre:
+     *   t=0ms    → class removed, celdas empiezan a deslizarse hacia abajo
+     *   t=0-560ms → fondo sólido negro, celdas animando
+     *   t=580ms  → visibility:hidden (corte limpio)
+     *   t=600ms  → background-color snaps a transparent (ya invisible, no importa)
      */
     transition:
-      background-color 300ms          var(--ease-out),
-      visibility       0s   linear     700ms;
+      background-color 0s   linear   600ms,
+      visibility       0s   linear   580ms;
   }
 
   /* Estado ABIERTO */
@@ -246,6 +256,25 @@ const services = [
    */
   :global(body.menu-is-open #site-header) {
     z-index: 850;
+  }
+
+  /*
+   * Anti-glitch de backdrop-filter durante el cierre del menú.
+   *
+   * Bug: al quitar menu-is-open, el header vuelve de z-850 a z-200.
+   * El compositor (GPU layers) puede mostrar la capa del header —que tiene
+   * backdrop-filter:blur— por encima del modal durante la transición,
+   * produciendo un fondo blanco/grisáceo visible antes de que el modal
+   * termine su animación de salida.
+   *
+   * Fix: durante menu-is-closing (620ms añadido por JS en Header.astro),
+   * el header se hace invisible al instante sin ninguna transition.
+   * El modal permanece sólido negro y se oculta limpiamente a t=580ms.
+   */
+  :global(body.menu-is-closing #site-header) {
+    opacity:        0 !important;
+    pointer-events: none !important;
+    transition:     none !important;
   }
 
 

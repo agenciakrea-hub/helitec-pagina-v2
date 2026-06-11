@@ -97,19 +97,21 @@ function getTipoLabel(aircraft: any, lang: string): string {
 
     <header class="fleet__header">
 
-      <p class="fleet__overline">
-        {lang === 'es' ? 'Nuestra Flota' : 'Our Fleet'}
-      </p>
+      <!-- Texto alineado a la izquierda -->
+      <div class="fleet__header-text">
 
-      <h2 class="fleet__title" id="fleet-heading">
-        {lang === 'es'
-          ? <>{activeFleet.length} aeronaves<br/>certificadas INAC</>
-          : <>{activeFleet.length} INAC-certified<br/>aircraft</>
-        }
-      </h2>
+        <p class="fleet__overline">
+          {lang === 'es' ? 'Nuestra Flota' : 'Our Fleet'}
+        </p>
 
-      <!-- Contador de categorías + logo decorativo avión -->
-      <div class="fleet__cats-row">
+        <h2 class="fleet__title" id="fleet-heading">
+          {lang === 'es'
+            ? <>Aeronaves certificadas<br/>y listas</>
+            : <>Certified aircraft,<br/>ready to fly</>
+          }
+        </h2>
+
+        <!-- Contador de categorías -->
         <div class="fleet__cats">
           <span class="fleet__cat-tag">
             <!-- Ícono ala fija: forma estilizada de ala -->
@@ -129,16 +131,17 @@ function getTipoLabel(aircraft: any, lang: string): string {
           </span>
         </div>
 
-        <!-- Logo decorativo avión Helitec -->
-        <img
-          src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
-          class="fleet__plane-deco"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-        />
       </div>
+
+      <!-- Logo avión GRANDE anclado a la derecha -->
+      <img
+        src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
+        class="fleet__plane-deco"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+      />
 
     </header>
 
@@ -339,7 +342,17 @@ function getTipoLabel(aircraft: any, lang: string): string {
   ════════════════════════════════════════════════════════════════════════ */
 
   .fleet__header {
-    margin-bottom: clamp(36px, 5vh, 52px);
+    display:         flex;
+    align-items:     flex-start;
+    justify-content: space-between;
+    gap:             clamp(32px, 6vw, 80px);
+    margin-bottom:   clamp(36px, 5vh, 52px);
+  }
+
+  /* Columna de texto — izquierda */
+  .fleet__header-text {
+    flex:      1;
+    min-width: 0; /* evita desbordamiento en flex */
   }
 
   .fleet__overline {
@@ -377,28 +390,20 @@ function getTipoLabel(aircraft: any, lang: string): string {
     margin-bottom:  20px;
   }
 
-  /* Fila categorías + logo avión decorativo */
-  .fleet__cats-row {
-    display:     flex;
-    align-items: center;
-    gap:         clamp(24px, 4vw, 48px);
-    flex-wrap:   wrap;
-  }
-
-  /* Logo decorativo avión Helitec */
+  /* Logo avión grande — columna derecha del header */
   .fleet__plane-deco {
-    height:     clamp(36px, 4vw, 52px);
-    width:      auto;
-    object-fit: contain;
-    opacity:    0.55;
+    height:      clamp(96px, 13vw, 168px);
+    width:       auto;
+    object-fit:  contain;
+    opacity:     0.70;
     flex-shrink: 0;
-    transition: opacity var(--dur-fast) var(--ease-out);
+    align-self:  center;
   }
 
   /* Tags de categoría en el header */
   .fleet__cats {
-    display:  flex;
-    gap:      12px;
+    display:   flex;
+    gap:       12px;
     flex-wrap: wrap;
   }
 
@@ -710,6 +715,18 @@ function getTipoLabel(aircraft: any, lang: string): string {
       display: none;
     }
 
+  }
+
+  /* Mobile (< 768px): header en columna — logo pequeño alineado a la derecha */
+  @media (max-width: 767px) {
+    .fleet__header {
+      flex-direction: column;
+      gap: clamp(16px, 4vw, 24px);
+    }
+    .fleet__plane-deco {
+      height:    clamp(56px, 18vw, 88px);
+      align-self: flex-end;
+    }
   }
 
   /* Tablet (640–1023px): 2 columnas en el carrusel (tarjetas más anchas) */

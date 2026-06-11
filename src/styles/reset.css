@@ -93,12 +93,27 @@ h1, h2, h3, h4, h5, h6 {
   font-weight:    var(--fw-light); /* Default ligero — los headlines son finos */
   line-height:    var(--lh-heading);
   letter-spacing: var(--ls-wide);
-  overflow-wrap:  break-word;
+  /*
+   * ANTI-HYPHEN: los titulares NUNCA se cortan con guión.
+   * overflow-wrap: normal → las palabras largas no se rompen en mitad.
+   */
+  overflow-wrap:  normal;
+  hyphens:        none;
+  word-break:     normal;
+}
+
+p, li, dt, dd, td, th, label, span, a {
+  /*
+   * ANTI-HYPHEN global: ningún elemento de texto corta palabras con guión.
+   * Las palabras que no caben bajan completas a la siguiente línea.
+   * Aplica a párrafos, listas, celdas de tabla y elementos inline.
+   */
+  hyphens:    none;
+  word-break: normal;
 }
 
 p {
-  overflow-wrap: break-word;
-  hyphens:       auto;
+  overflow-wrap: normal;
   max-width:     70ch; /* Limita longitud de línea para legibilidad óptima */
 }
 

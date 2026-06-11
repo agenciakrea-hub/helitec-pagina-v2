@@ -174,6 +174,10 @@ const { lang = 'es' } = Astro.props;
 <div class="csheet__fabs">
 
   <!-- FAB Cotización — CTA primario, abre panel SideLeadCTA -->
+  <!--
+    Strip vertical: altura ~130px con ícono + texto "COTIZACIÓN" permanente.
+    Al abrir el panel: ícono y texto se desvanecen, aparece ✕ centrado.
+  -->
   <button
     class="csheet__fab csheet__fab--cotizar"
     id="slcta-trigger"
@@ -182,13 +186,15 @@ const { lang = 'es' } = Astro.props;
     aria-controls="slcta-panel"
     aria-label="Solicitar cotización de vuelo privado"
   >
-    <!-- Tooltip onboarding: aparece 0.5s tras carga, desaparece a los 4s -->
-    <span class="csheet__fab-label" aria-hidden="true">Cotización</span>
+    <!-- Ícono avión (estado cerrado) -->
     <span class="csheet__fab-icon" aria-hidden="true">
-      <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="17" height="15" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M1 1L17 8L1 15V9.5L11 8L1 6.5V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
       </svg>
     </span>
+    <!-- Texto vertical permanente (estado cerrado) -->
+    <span class="csheet__fab-strip-text" aria-hidden="true">COTIZACIÓN</span>
+    <!-- ✕ (estado abierto) -->
     <span class="csheet__fab-close" aria-hidden="true">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
@@ -531,11 +537,15 @@ const { lang = 'es' } = Astro.props;
   /* ── FABs — Layout L invertida ──────────────────────────────────────────── */
   /*
    * Columna en esquina inferior-derecha:
-   *   [Cotización]            top
+   *   [Cotización — strip]    top
    *   [Linktree]              middle
    *   [LinkedIn][IG][Info]    bottom-row
    *
-   * align-items: flex-end asegura que la fila inferior quede alineada a la derecha.
+   * SCROLL BEHAVIOR:
+   *   Por defecto los FABs están ocultos fuera de pantalla (derecha).
+   *   Aparecen con slide-in solo cuando el usuario scrollea más allá del Hero.
+   *   JS añade .is-visible al detectar scrollY > 60% del viewport.
+   *   Nunca se muestran durante el Hero → UX limpia en la primera pantalla.
    */
   .csheet__fabs {
     position: fixed;
@@ -548,17 +558,40 @@ const { lang = 'es' } = Astro.props;
     align-items:    flex-end;
     gap:            8px;
 
-    /* Transición para ocultarse suavemente cuando el menú está abierto */
-    transition:
-      opacity    var(--dur-mid) var(--ease-out),
-      visibility var(--dur-mid) var(--ease-out);
-  }
-
-  /* Ocultar FABs cuando el menú principal está abierto */
-  :global(body.menu-is-open) .csheet__fabs {
+    /* ESTADO INICIAL — off-screen derecha + invisible */
+    transform:      translateX(calc(100% + 24px));
     opacity:        0;
     visibility:     hidden;
     pointer-events: none;
+
+    transition:
+      transform  0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity    0.40s var(--ease-out),
+      visibility 0s   linear  0.40s;
+  }
+
+  /* ESTADO VISIBLE — después de pasar el Hero */
+  .csheet__fabs.is-visible {
+    transform:      translateX(0);
+    opacity:        1;
+    visibility:     visible;
+    pointer-events: auto;
+
+    transition:
+      transform  0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity    0.40s var(--ease-out),
+      visibility 0s   linear  0s;
+  }
+
+  /* Ocultar FABs cuando el menú principal está abierto / cerrando */
+  :global(body.menu-is-open) .csheet__fabs,
+  :global(body.menu-is-closing) .csheet__fabs {
+    opacity:        0;
+    visibility:     hidden;
+    pointer-events: none;
+    transition:
+      opacity    0.20s var(--ease-out),
+      visibility 0s    linear  0.20s;
   }
 
   /* Fila inferior: LinkedIn + Instagram + Contacto */
@@ -592,8 +625,18 @@ const { lang = 'es' } = Astro.props;
       color        var(--dur-fast) var(--ease-out);
   }
 
-  /* ── FAB Cotización (CTA primario — azul marca) ─────────────────────────── */
+  /* ── FAB Cotización (CTA primario — strip vertical azul marca) ─────────── */
   .csheet__fab--cotizar {
+    /* Override base height → strip alto */
+    width:          44px;
+    height:         auto;
+    min-height:     134px;
+
+    /* Icono + texto en columna centrada */
+    flex-direction: column;
+    gap:            8px;
+    padding:        14px 0;
+
     background:  rgba(2, 58, 120, 0.50);
     border:      1px solid rgba(88, 181, 240, 0.22);
     color:       rgba(255, 255, 255, 0.88);
@@ -615,14 +658,51 @@ const { lang = 'es' } = Astro.props;
     border-color: rgba(88, 181, 240, 0.55);
   }
 
-  /* Swap icono avión ↔ ✕ */
-  .csheet__fab-icon,
-  .csheet__fab-close {
-    position: absolute;
-    display:  flex;
+  /* Texto vertical permanente del strip */
+  .csheet__fab-strip-text {
+    position:        relative;
+    writing-mode:    vertical-rl;
+    text-orientation: mixed;
+    transform:       rotate(180deg); /* lectura de abajo hacia arriba */
+
+    font-family:     var(--font-sans);
+    font-size:       8.5px;
+    font-weight:     var(--fw-medium);
+    letter-spacing:  0.14em;
+    text-transform:  uppercase;
+    color:           inherit;
+    white-space:     nowrap;
+
+    opacity:    1;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  /* Al abrir el panel: texto se oculta */
+  .csheet__fab--cotizar[aria-expanded="true"] .csheet__fab-strip-text { opacity: 0; }
+
+  /* ── Swap icono avión ↔ ✕ ───────────────────────────────────────────────── */
+  /*
+   * .csheet__fab-icon: posición relativa dentro del flex (ocupa espacio real).
+   * .csheet__fab-close: absoluto centrado — se superpone al icono al abrir.
+   */
+  .csheet__fab-icon {
+    position:        relative;
+    display:         flex;
     align-items:     center;
     justify-content: center;
-    transition: opacity var(--dur-fast) var(--ease-out);
+    flex-shrink:     0;
+    transition:      opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .csheet__fab-close {
+    position:        absolute;
+    top:             50%;
+    left:            50%;
+    transform:       translate(-50%, -50%);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    transition:      opacity var(--dur-fast) var(--ease-out);
   }
 
   .csheet__fab-icon  { opacity: 1; }
@@ -631,9 +711,7 @@ const { lang = 'es' } = Astro.props;
   .csheet__fab--cotizar[aria-expanded="true"] .csheet__fab-icon  { opacity: 0; }
   .csheet__fab--cotizar[aria-expanded="true"] .csheet__fab-close { opacity: 1; }
 
-  /* ── FABs cristal blanco: Linktree + LinkedIn + Instagram + Contacto ─────── */
-  .csheet__trigger,
-  .csheet__linktree-btn,
+  /* ── FABs cristal blanco: LinkedIn + Instagram ───────────────────────────── */
   .csheet__fab--linkedin,
   .csheet__fab--instagram {
     background: rgba(255, 255, 255, 0.08);
@@ -641,8 +719,6 @@ const { lang = 'es' } = Astro.props;
     color:      rgba(255, 255, 255, 0.75);
   }
 
-  .csheet__trigger:hover,
-  .csheet__linktree-btn:hover,
   .csheet__fab--linkedin:hover,
   .csheet__fab--instagram:hover {
     background: rgba(255, 255, 255, 0.16);
@@ -650,15 +726,47 @@ const { lang = 'es' } = Astro.props;
   }
 
   /* Hover border accent por identidad de red */
-  .csheet__trigger:hover       { border-color: rgba(88, 181, 240, 0.50); } /* Azul */
-  .csheet__linktree-btn:hover  { border-color: rgba(68, 195, 92,  0.45); } /* Verde Linktree */
-  .csheet__fab--linkedin:hover { border-color: rgba(10, 102, 194, 0.55); } /* Azul LinkedIn */
+  .csheet__fab--linkedin:hover  { border-color: rgba(10, 102, 194, 0.55); } /* Azul LinkedIn */
   .csheet__fab--instagram:hover { border-color: rgba(225, 48, 108, 0.45); } /* Rosa IG */
 
-  .csheet__trigger:focus-visible,
-  .csheet__linktree-btn:focus-visible,
   .csheet__fab--linkedin:focus-visible,
   .csheet__fab--instagram:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 2px;
+  }
+
+  /* ── Contacto — tinte verde oscuro ─────────────────────────────────────── */
+  .csheet__trigger {
+    background:  rgba(15, 60, 30, 0.55);
+    border:      1px solid rgba(40, 160, 90, 0.22);
+    color:       rgba(255, 255, 255, 0.75);
+  }
+
+  .csheet__trigger:hover {
+    background:   rgba(15, 60, 30, 0.80);
+    border-color: rgba(40, 160, 90, 0.45);
+    color:        var(--c-white);
+  }
+
+  .csheet__trigger:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 2px;
+  }
+
+  /* ── Linktree — tinte marrón oscuro ─────────────────────────────────────── */
+  .csheet__linktree-btn {
+    background:  rgba(60, 35, 10, 0.55);
+    border:      1px solid rgba(160, 100, 40, 0.22);
+    color:       rgba(255, 255, 255, 0.75);
+  }
+
+  .csheet__linktree-btn:hover {
+    background:   rgba(60, 35, 10, 0.80);
+    border-color: rgba(160, 100, 40, 0.45);
+    color:        var(--c-white);
+  }
+
+  .csheet__linktree-btn:focus-visible {
     outline:        2px solid var(--c-sky);
     outline-offset: 2px;
   }
@@ -731,6 +839,69 @@ const { lang = 'es' } = Astro.props;
 
 
 <script>
+  /**
+   * FABs — Scroll visibility controller
+   *
+   * Los FABs permanecen ocultos mientras el usuario está viendo el Hero.
+   * Se deslizan desde la derecha cuando el scroll supera el 60% del viewport.
+   *
+   * Estrategia:
+   *   1. IntersectionObserver sobre la sección Hero (si existe).
+   *   2. Fallback: scroll event con umbral = 60vh.
+   *
+   * La clase `.is-visible` activa el slide-in definido en CSS.
+   */
+  (function () {
+    var fabs = document.querySelector('.csheet__fabs');
+    if (!fabs) return;
+
+    var THRESHOLD_PX = window.innerHeight * 0.60;
+
+    /* ── Opción 1: IntersectionObserver sobre el Hero ── */
+    var heroSection = document.querySelector('.hero__section, .hero, [data-section="hero"], section:first-of-type');
+
+    if (heroSection && 'IntersectionObserver' in window) {
+      var heroObs = new IntersectionObserver(
+        function (entries) {
+          /* Si el Hero sigue visible → ocultar FABs; si salió → mostrar */
+          if (entries[0].isIntersecting) {
+            fabs.classList.remove('is-visible');
+          } else {
+            fabs.classList.add('is-visible');
+          }
+        },
+        {
+          threshold:  0,
+          /*
+           * rootMargin superior: empuja el umbral de disparo al 40% del viewport,
+           * de modo que el Hero se considera "fuera" cuando queda < 40% visible.
+           */
+          rootMargin: '-40% 0px 0px 0px',
+        }
+      );
+      heroObs.observe(heroSection);
+
+    } else {
+      /* ── Fallback: scroll event ── */
+      var ticking = false;
+      function checkScroll() {
+        if (window.scrollY > THRESHOLD_PX) {
+          fabs.classList.add('is-visible');
+        } else {
+          fabs.classList.remove('is-visible');
+        }
+        ticking = false;
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          requestAnimationFrame(checkScroll);
+          ticking = true;
+        }
+      }, { passive: true });
+      checkScroll(); /* estado inicial */
+    }
+  })();
+
   /**
    * ContactSheet — Controller
    *

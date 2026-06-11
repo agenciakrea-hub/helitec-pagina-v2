@@ -43,7 +43,7 @@ const services = [
      * independiente de `transform` — Transforms Level 2).
      * object-position: center 35% — se ve el techo de la cabina y los asientos.
      */
-    imgStyle: 'object-position: center 35%; scale: 0.86',
+    imgStyle: 'object-position: center 35%',
   },
   {
     num:   '02',
@@ -61,7 +61,7 @@ const services = [
      * Foco hacia la izquierda: el helicóptero está en el lado derecho de la foto
      * pero se recorta. Moviendo object-position hacia 15% el sujeto entra en cuadro.
      */
-    imgStyle: 'object-position: 15% center',
+    imgStyle: 'object-position: left center',
   },
   {
     num:   '03',
@@ -81,7 +81,7 @@ const services = [
      * scale 0.82 = imagen encoge dentro del frame → más contexto visible.
      * object-position centrada verticalmente para no cortar ninguno de los dos.
      */
-    imgStyle: 'object-position: center 55%; scale: 0.82',
+    imgStyle: 'object-position: center 55%',
   },
   {
     num:   '04',
@@ -118,6 +118,15 @@ const services = [
       set:html={lang === 'es'
         ? 'Soluciones aéreas<br>para cada <em class="sgrid__accent">misión</em>'
         : 'Aerial solutions<br>for every <em class="sgrid__accent">mission</em>'}
+    />
+    <!-- Recurso rojo bajo el título principal — reveal L→R muy lento -->
+    <img
+      src="/assets/recurso%20rojo%20helitec.png"
+      class="sgrid__heading-deco"
+      alt=""
+      aria-hidden="true"
+      loading="eager"
+      decoding="async"
     />
   </div>
 
@@ -254,6 +263,30 @@ const services = [
     color:      var(--c-sky);
   }
 
+  /* ── Recurso rojo bajo el título de sección ─────────────────────────────── */
+  /*
+   * PNG brush-stroke, posicionado justo bajo el H2.
+   * object-fit: fill → estira el PNG al ancho asignado (trazo de pincel).
+   * Reveal: clip-path L→R muy lento — activa .is-revealed vía IntersectionObserver.
+   */
+  .sgrid__heading-deco {
+    display:         block;
+    width:           100%;
+    max-width:       400px;
+    height:          16px;
+    object-fit:      fill;
+    object-position: left center;
+    margin-top:      var(--sp-3);
+
+    clip-path:  inset(0 100% 0 0);
+    transition: clip-path 0s;
+  }
+
+  .sgrid__header.is-revealed .sgrid__heading-deco {
+    clip-path:  inset(0 0% 0 0);
+    transition: clip-path 2.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+  }
+
 
   /* ── Grid 2×2 ───────────────────────────────────────────────────────────── */
 
@@ -321,13 +354,13 @@ const services = [
      * El JS del parallax escribe `style.transform = 'translateY(Xpx)'`.
      * CSS controla `scale`; JS controla `transform` — sin interferencia.
      */
-    scale:      1;
+    scale:      0.84;     /* reduce zoom global: más contexto visible en las 4 fotos */
     transition: scale var(--dur-slow) var(--ease-out);
   }
 
-  /* Zoom suave en hover — no conflictúa con el translateY del parallax */
+  /* Zoom muy sutil en hover */
   .sgrid__frame:hover .sgrid__photo {
-    scale: 1.04;
+    scale: 0.87;
   }
 
 
@@ -611,6 +644,26 @@ const services = [
   } else {
     /* Fallback sin IntersectionObserver (IE11): revelar inmediatamente */
     frames.forEach(function (frame) { frame.classList.add('sgrid__frame--revealed'); });
+  }
+
+  /*
+   * ── Reveal del recurso rojo bajo el heading ──────────────────────────────
+   * Cuando .sgrid__header entra en el viewport (threshold 0.4),
+   * añadimos .is-revealed → CSS activa clip-path transition (2.4s, muy lenta).
+   */
+  var sgridHeader = document.querySelector('.sgrid__header');
+  if (sgridHeader) {
+    if ('IntersectionObserver' in window) {
+      var headerObs = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) {
+          entries[0].target.classList.add('is-revealed');
+          headerObs.disconnect();
+        }
+      }, { threshold: 0.4 });
+      headerObs.observe(sgridHeader);
+    } else {
+      sgridHeader.classList.add('is-revealed');
+    }
   }
 })();
 </script>

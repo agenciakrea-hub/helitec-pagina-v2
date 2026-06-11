@@ -31,7 +31,7 @@ interface Props {
 
 const { lang = 'es' } = Astro.props;
 
-/* ── Definición de las 6 celdas estadísticas ─────────────────────────────── */
+/* ── Definición de las 10 celdas estadísticas (grid 2 × 5) ──────────────── */
 
 interface StatCell {
   /** Valor numérico a animar. null = texto fijo sin contador */
@@ -40,49 +40,107 @@ interface StatCell {
   display?:  string;
   /** Prefijo que se mantiene durante la animación (ej: "+") */
   prefix?:   string;
-  /** Etiqueta descriptiva bajo el valor */
-  label:     string;
+  /**
+   * Etiqueta descriptiva bajo el valor.
+   * null → celda sin subtítulo (ej: "Certificado FA" no necesita una)
+   */
+  label:     string | null;
   /** true → activa el contador rAF en JS */
   animate:   boolean;
+  /**
+   * Tipo de celda — controla el renderizado HTML y los estilos:
+   *   numeric → número grande animado con contador rAF
+   *   text    → texto largo ("Nacional e Internacional")
+   *   feature → capacidad operativa sin número (línea acento + texto)
+   *   inac    → imagen del sello recurso amarillo / INAC
+   */
+  kind:      'numeric' | 'text' | 'feature' | 'inac';
 }
 
 const stats: StatCell[] = [
+
+  /* ── Fila 1 — horas de vuelo ──────────────────────────────────────────── */
   {
     value:   117000,
     prefix:  '+',
     label:   lang === 'es' ? 'Horas de vuelo en helicópteros' : 'Helicopter flight hours',
     animate: true,
+    kind:    'numeric',
   },
   {
     value:   43000,
     prefix:  '+',
     label:   lang === 'es' ? 'Horas de vuelo en aviones' : 'Fixed-wing flight hours',
     animate: true,
+    kind:    'numeric',
   },
+
+  /* ── Fila 2 — escala operativa ────────────────────────────────────────── */
   {
     value:   171500,
     prefix:  '+',
     label:   lang === 'es' ? 'Pasajeros transportados' : 'Passengers transported',
     animate: true,
-  },
-  {
-    value:   null,
-    display: lang === 'es' ? 'Nacional e Internacional' : 'Domestic & International',
-    label:   lang === 'es' ? 'Cobertura de operaciones' : 'Operations coverage',
-    animate: false,
+    kind:    'numeric',
   },
   {
     value:   35,
     prefix:  '+',
     label:   lang === 'es' ? 'Años de experiencia' : 'Years of experience',
     animate: true,
+    kind:    'numeric',
+  },
+
+  /* ── Fila 3 — certificaciones ─────────────────────────────────────────── */
+  {
+    value:   null,
+    display: lang === 'es' ? 'Certificado FA'        : 'FA Certificate',
+    label:   null,
+    animate: false,
+    kind:    'feature',
   },
   {
     value:   null,
-    display: 'INAC · OACI',
+    display: lang === 'es' ? 'Centro de instrucción' : 'Training Center',
+    label:   lang === 'es' ? 'Certificado por INAC'  : 'INAC certified',
+    animate: false,
+    kind:    'feature',
+  },
+
+  /* ── Fila 4 — capacidades operativas ──────────────────────────────────── */
+  {
+    value:   null,
+    display: lang === 'es' ? 'Taller propio'       : 'In-house workshop',
+    label:   lang === 'es'
+      ? 'Inventario y repuestos — disponibilidad operativa total'
+      : 'Parts inventory — full operational availability',
+    animate: false,
+    kind:    'feature',
+  },
+  {
+    value:   null,
+    display: lang === 'es' ? 'Programa aeromédico' : 'Aeromedical program',
+    label:   null,
+    animate: false,
+    kind:    'feature',
+  },
+
+  /* ── Fila 5 — cobertura geográfica + sello INAC ───────────────────────── */
+  {
+    value:   null,
+    display: lang === 'es' ? 'Nacional e Internacional' : 'Domestic & International',
+    label:   lang === 'es' ? 'Cobertura de operaciones'  : 'Operations coverage',
+    animate: false,
+    kind:    'text',
+  },
+  {
+    value:   null,
+    display: '',
     label:   lang === 'es' ? 'Certificaciones activas' : 'Active certifications',
     animate: false,
+    kind:    'inac',
   },
+
 ];
 ---
 
@@ -107,11 +165,12 @@ const stats: StatCell[] = [
 
     </header>
 
-    <!-- ── Grid de estadísticas — 6 celdas ──────────────────────────────── -->
+    <!-- ── Grid de estadísticas — 10 celdas (2 × 5) ────────────────────── -->
     <!--
       data-stats-grid → punto de observación del IntersectionObserver
       [data-stat-cell] → celdas individuales con animación K3
       style="- -i: N"  → índice para el transition-delay escalonado
+      stats__cell--{kind} → clase de tipo para estilos específicos por variante
     -->
     <div
       class="stats__grid"
@@ -122,34 +181,34 @@ const stats: StatCell[] = [
 
       {stats.map((stat, i) => (
         <div
-          class="stats__cell"
+          class={`stats__cell stats__cell--${stat.kind}`}
           data-stat-cell
           style={`--i: ${i}`}
           role="listitem"
         >
 
           <div class="stats__value-wrap">
-            {stat.animate && stat.value !== null ? (
+            {stat.kind === 'numeric' ? (
               /*
-               * Celdas numéricas animadas.
-               * data-counter  → marca el span para el script de conteo
-               * data-target   → valor final como string (ej: "117000")
-               * data-prefix   → prefijo a conservar durante el conteo ("+")
-               * El contenido inicial es el valor ya formateado para SSR/noscript.
+               * Celdas numéricas animadas (filas 1 y 2).
+               * data-counter → marca el span para el script de conteo
+               * data-target  → valor final como string (ej: "117000")
+               * data-prefix  → prefijo fijo durante el conteo ("+")
                */
               <span
                 class="stats__value"
                 data-counter
                 data-target={String(stat.value)}
                 data-prefix={stat.prefix ?? ''}
-                aria-label={`${stat.prefix ?? ''}${stat.value.toLocaleString('de-DE')} ${stat.label}`}
+                aria-label={`${stat.prefix ?? ''}${stat.value!.toLocaleString('de-DE')} ${stat.label}`}
               >
-                {stat.prefix ?? ''}{stat.value.toLocaleString('de-DE')}
+                {stat.prefix ?? ''}{stat.value!.toLocaleString('de-DE')}
               </span>
-            ) : stat.display === 'INAC · OACI' ? (
+
+            ) : stat.kind === 'inac' ? (
               /*
-               * Celda INAC: imagen del sello oficial, sin borde ni contorno.
-               * Archivo esperado: /public/assets/INAC-badge.png
+               * Celda INAC: imagen del recurso amarillo (sello de certificación).
+               * Fila 5, columna derecha.
                */
               <img
                 src="/assets/recurso%20amarillo%20helitec.png"
@@ -160,14 +219,31 @@ const stats: StatCell[] = [
                 loading="lazy"
                 decoding="async"
               />
+
+            ) : stat.kind === 'feature' ? (
+              /*
+               * Celdas de capacidad operativa (filas 3 y 4).
+               * Texto sin número, con acento gráfico (línea sky-blue via ::before).
+               */
+              <span class="stats__value stats__value--feature">
+                {stat.display}
+              </span>
+
             ) : (
+              /*
+               * Celda de texto genérico (fila 5, columna izquierda).
+               * Ej: "Nacional e Internacional"
+               */
               <span class="stats__value stats__value--text">
                 {stat.display}
               </span>
             )}
           </div>
 
-          <p class="stats__label">{stat.label}</p>
+          {/* Subtítulo: solo si la celda tiene label (null → sin etiqueta) */}
+          {stat.label && (
+            <p class="stats__label">{stat.label}</p>
+          )}
 
         </div>
       ))}
@@ -188,12 +264,15 @@ const stats: StatCell[] = [
           }
         />
 
-        <!-- Botón: abre el mini popup con la imagen del documento AOC -->
+        <!-- Botón: abre el lightbox con el certificado AOC -->
         <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
-          <span>{lang === 'es' ? 'Ver documento AOC' : 'View AOC Document'}</span>
-          <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
-            <path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+          <!-- Ícono ojo — indica "visualizar", no descargar -->
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
+            <path d="M1 5.5C1 5.5 3.5 1 8 1C12.5 1 15 5.5 15 5.5C15 5.5 12.5 10 8 10C3.5 10 1 5.5 1 5.5Z"
+              stroke="currentColor" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="miter"/>
+            <circle cx="8" cy="5.5" r="2" stroke="currentColor" stroke-width="1.2"/>
           </svg>
+          <span>{lang === 'es' ? 'Ver certificado' : 'View certificate'}</span>
         </button>
       </div>
 
@@ -363,18 +442,20 @@ const stats: StatCell[] = [
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     GRID — truco gap + background-color para divisores sin border
+     GRID — 2 columnas × 5 filas
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__grid {
     display:               grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap:                   0;
-    /*
-     * Sin separadores visuales — los números flotan sobre el fondo negro.
-     * El espaciado del padding de cada celda crea la separación visual.
-     */
   }
+
+  /*
+   * Sin separadores de borde entre filas ni columnas.
+   * Los números y el espaciado (padding de celda) crean la separación visual.
+   * La estructura de cuadrícula se percibe por el ritmo tipográfico, no por líneas.
+   */
 
   /* ════════════════════════════════════════════════════════════════════════
      CELDA — estado inicial + animación K3 staggered fade-up
@@ -461,13 +542,39 @@ const stats: StatCell[] = [
     color:          var(--c-text-1);
   }
 
-  /* Celda 6: "INAC · OACI" — mayúsculas, azul certificación */
-  .stats__value--cert {
-    font-size:      clamp(1.1rem, 2vw, 1.5rem);
+  /* ── Celdas feature (filas 3 y 4) — capacidades sin número ─────────────── */
+
+  /*
+   * El value-wrap de las feature cells dispone icono/texto en columna.
+   * El acento gráfico (línea sky-blue) se inyecta via ::before en el span.
+   */
+  .stats__cell--feature .stats__value-wrap {
+    flex-direction: column;
+    align-items:    flex-start;
+    gap:            0;
+  }
+
+  .stats__value--feature {
+    font-family:    var(--font-display);
+    font-size:      clamp(1.0rem, 1.8vw, 1.40rem);
     font-weight:    var(--fw-light); /* 300 */
-    letter-spacing: var(--ls-widest);
+    letter-spacing: var(--ls-wider);
     text-transform: uppercase;
-    color:          var(--c-sky);
+    line-height:    1.3;
+    color:          var(--c-text-1);
+  }
+
+  /*
+   * Acento gráfico: línea sky-blue de 18px que actúa como "eyebrow marker"
+   * antes del texto de cada celda feature. Aparece naturalmente antes del texto.
+   */
+  .stats__value--feature::before {
+    content:          '';
+    display:          block;
+    width:            18px;
+    height:           1.5px;
+    background-color: var(--c-sky);
+    margin-bottom:    10px;
   }
 
   /* Imagen del sello INAC en la celda — sin borde, sin contorno */
@@ -480,7 +587,7 @@ const stats: StatCell[] = [
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     ETIQUETA
+     ETIQUETA — con efecto resaltador (marcador) Azul Helitec
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__label {
@@ -491,6 +598,54 @@ const stats: StatCell[] = [
     text-transform: uppercase;
     color:          var(--c-text-2);
     line-height:    1.4;
+
+    /*
+     * EFECTO RESALTADOR (marcador de texto):
+     * Un pseudo-elemento ::before con background-color sólido (Azul Helitec)
+     * que "barre" de izquierda a derecha con transform: scaleX(0 → 1).
+     *
+     * Técnica: sin linear-gradient. Solo background-color + transform.
+     * isolation: isolate → contexto de apilado propio, z-index: -1 funciona
+     * dentro del <p> sin afectar a otros elementos del DOM.
+     */
+    position:  relative;
+    isolation: isolate; /* contexto de apilado aislado para z-index del ::before */
+  }
+
+  /*
+   * El "marcador" — fondo azul Helitec (#023a78) que yace detrás del texto.
+   * Estado inicial: invisible (scaleX 0, origen izquierda).
+   * La transición se define solo en .is-visible para evitar animación inversa al salir.
+   */
+  .stats__label::before {
+    content:          '';
+    position:         absolute;
+    top:              -2px;
+    bottom:           -2px;
+    left:             -4px;
+    right:            0;
+    background-color: var(--c-brand); /* #023a78 — Azul Helitec marca */
+
+    z-index:          -1; /* debajo del texto, dentro del contexto aislado */
+
+    transform:        scaleX(0);
+    transform-origin: left center;
+    transition:       transform 0s; /* sin transición por defecto */
+  }
+
+  /*
+   * Activar el barrido cuando el IntersectionObserver agrega .is-visible
+   * a la celda padre (.stats__cell).
+   *
+   * Timing:
+   *   · 2.4s con spring (0.16, 1, 0.3, 1) → muy lento y suave
+   *   · Delay: stagger propio de la celda (var(--i) × 90ms)
+   *            + 700ms para que el número termine de contar antes del barrido
+   */
+  .stats__cell.is-visible .stats__label::before {
+    transform:        scaleX(1);
+    transition:       transform 2.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--i, 0) * 90ms + 700ms);
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -504,27 +659,30 @@ const stats: StatCell[] = [
     }
   }
 
-  /* Mobile (< 640px): 2 columnas × 3 filas — compacto en viewport */
+  /* Mobile (< 640px): ajustes de escala — grid ya es 2 columnas globalmente */
   @media (max-width: 639px) {
-    .stats__grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
     .stats__cell {
       padding: 18px 14px;
     }
 
-    /* Valores numéricos más pequeños en pantallas estrechas */
+    /* Números principales: reducir escala en pantallas muy estrechas */
     .stats__value {
       font-size: clamp(1.6rem, 7vw, 2.2rem);
     }
 
+    /* Texto "Nacional e Internacional" más compacto */
     .stats__value--text {
       font-size: clamp(0.85rem, 4vw, 1rem);
     }
 
-    .stats__value--cert {
-      font-size: clamp(0.9rem, 4.5vw, 1.1rem);
+    /* Feature cells: texto más pequeño en mobile */
+    .stats__value--feature {
+      font-size: clamp(0.85rem, 3.5vw, 1.05rem);
+    }
+
+    .stats__value--feature::before {
+      width:         14px;
+      margin-bottom: 7px;
     }
   }
 
@@ -533,11 +691,11 @@ const stats: StatCell[] = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__cert {
-    margin-top:  1px; /* Une visualmente con el grid */
+    margin-top:       clamp(28px, 4vh, 48px);
 
-    padding:          clamp(20px, 3vw, 32px);
-    border:           1px solid var(--c-line);
-    background-color: var(--c-bg);
+    padding:          clamp(20px, 3vw, 32px) 0;
+    border-top:       1px solid var(--c-line); /* solo borde superior — separa del grid */
+    background-color: transparent;
   }
 
   .stats__cert-info {
@@ -607,11 +765,13 @@ const stats: StatCell[] = [
 
   .stats__cert-btn svg {
     flex-shrink: 0;
-    transition:  transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    color:       var(--c-sky);
+    opacity:     0.75;
+    transition:  opacity var(--dur-fast) var(--ease-out);
   }
 
   .stats__cert-btn:hover svg {
-    transform: translateX(4px);
+    opacity: 1;
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -619,17 +779,31 @@ const stats: StatCell[] = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__aoc-dialog {
+    /*
+     * CENTRADO — fiable en todos los browsers con showModal().
+     *
+     * El <dialog> vive en el "top layer" (capas sobre z-index normal).
+     * En ese contexto, position: fixed + inset: 0 + margin: auto lo
+     * centra EXACTAMENTE en el viewport, horizontal y verticalmente.
+     * Equivalente moderno a: top: 50%; left: 50%; transform: translate(-50%,-50%).
+     */
+    position:   fixed;
+    inset:      0;          /* top:0 right:0 bottom:0 left:0 — ancla al viewport */
+    margin:     auto;       /* centra dentro del rectángulo inset */
+
     padding:    0;
     border:     none;
     background: transparent;
 
     /*
-     * Tamaño fijo para que el flex column interior llene el espacio.
-     * En mobile (<640px) ocupa casi todo el viewport.
+     * Ancho proporcional a un documento tipo A4 portrait (~620px).
+     * Sin height fija: el inner (flex column) determina la altura
+     * según el contenido real del certificado.
+     * max-height + overflow:hidden limita para pantallas pequeñas.
      */
-    width:      min(94vw, 740px);
-    height:     min(92dvh, 920px);
-    max-width:  94vw;
+    width:      min(92vw, 620px);
+    height:     min(92dvh, 880px); /* ~A4 ratio en 620px → 877px + toolbar */
+    max-width:  92vw;
     max-height: 92dvh;
     overflow:   hidden;
   }
@@ -748,13 +922,12 @@ const stats: StatCell[] = [
     cursor: grabbing;
   }
 
-  /* Imagen: centrada, sin distorsión, transform gestionado por JS */
+  /* Imagen: llena el ancho disponible — elimina espacio negro lateral y vertical */
   .stats__aoc-img {
     display:          block;
+    width:            100%;    /* siempre ocupa el ancho del viewport */
+    height:           auto;    /* proporcional a la imagen (A4: ~1.414 ratio) */
     max-width:        100%;
-    max-height:       100%;
-    width:            auto;
-    height:           auto;
     object-fit:       contain;
 
     transform-origin: center center;

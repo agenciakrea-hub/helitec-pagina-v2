@@ -324,13 +324,33 @@ const {
           if (window.lenisInstance) window.lenisInstance.start();
 
           /*
+           * CIERRE LIMPIO — anti-glitch de backdrop-filter.
+           *
+           * Problema: al quitar menu-is-open, el header vuelve de z-850 a z-200.
+           * El compositor del browser puede elevar la capa del header (que tiene
+           * backdrop-filter:blur) por encima del modal durante la transición,
+           * produciendo un artefacto blanco semi-transparente visible.
+           *
+           * Solución: añadir menu-is-closing → CSS fuerza header opacity:0 al
+           * instante durante los 600ms que dura la animación de cierre.
+           * Se retira después de que el modal haya desaparecido completamente.
+           */
+          document.body.classList.add('menu-is-closing');
+          setTimeout(function () {
+            document.body.classList.remove('menu-is-closing');
+          }, 620); /* > 580ms (visibility:hidden del modal) */
+
+          /*
            * Si el header se forzó visible por apertura de menú en el tope,
            * restaurarlo a su estado transparente al cerrar (y si seguimos en tope).
+           * Se hace con un pequeño delay para que coincida con la desaparición del modal.
            */
           if (header.dataset.menuForcedVisible && scrollY <= THRESHOLD) {
-            var headerLogo = document.getElementById('header-logo');
-            if (headerLogo) headerLogo.style.opacity = '0';
-            header.classList.remove('is-scrolled');
+            setTimeout(function () {
+              var headerLogo = document.getElementById('header-logo');
+              if (headerLogo) headerLogo.style.opacity = '0';
+              header.classList.remove('is-scrolled');
+            }, 590);
           }
           delete header.dataset.menuForcedVisible;
         }

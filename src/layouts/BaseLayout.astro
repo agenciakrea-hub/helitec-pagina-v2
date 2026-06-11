@@ -233,6 +233,22 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     · window.lenisInstance expuesto globalmente para que Header.astro
       pueda pausar/reanudar Lenis cuando el menú modal esté abierto.
   ──────────────────────────────────────────────────────────────────────────── -->
+  <!--
+    ── SCROLL RESTORATION ─────────────────────────────────────────────────────
+    Forza scroll al tope en cada carga/recarga (F5).
+    · history.scrollRestoration = "manual" → el browser NO restaura la posición
+      del scroll anterior (evita el "saltón" al recargar).
+    · window.scrollTo(0, 0) → garantiza posición 0 incluso en SPA/View Transitions.
+    · is:inline → se ejecuta de forma síncrona antes de que cualquier otro script
+      intente animar o leer window.scrollY.
+  ──────────────────────────────────────────────────────────────────────────── -->
+  <script is:inline>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  </script>
+
   <script is:inline type="module">
     import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs';
 
