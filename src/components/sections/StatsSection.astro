@@ -152,7 +152,7 @@ const stats: StatCell[] = [
                * Archivo esperado: /public/assets/INAC-badge.png
                */
               <img
-                src="/assets/INAC-badge.png"
+                src="/assets/recurso amarillo helitec.png"
                 alt="INAC — Instituto Nacional de Aeronáutica Civil de Venezuela"
                 class="stats__cert-logo"
                 width="72"
@@ -340,15 +340,11 @@ const stats: StatCell[] = [
   .stats__grid {
     display:               grid;
     grid-template-columns: repeat(3, 1fr);
-
+    gap:                   0;
     /*
-     * gap: 1px + background-color: var(--c-line) crea líneas divisoras de 1px
-     * entre las celdas sin necesidad de borders explícitos.
-     * Las celdas tienen background-color: var(--c-bg-raised) que cubre el gap.
+     * Sin separadores visuales — los números flotan sobre el fondo negro.
+     * El espaciado del padding de cada celda crea la separación visual.
      */
-    gap:              1px;
-    background-color: var(--c-line);
-    border:           1px solid var(--c-line);
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -356,7 +352,7 @@ const stats: StatCell[] = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__cell {
-    background-color: var(--c-bg-raised);
+    background-color: transparent;
 
     /*
      * Padding compacto para el look "dashboard".

@@ -24,9 +24,9 @@
 
   /* ── 2. FONDOS (Near-black con subtono azul frío) ─────────────────────── */
 
-  --c-bg:           #07080C;   /* Fondo global de página                      */
+  --c-bg:           #000000;   /* Fondo global de página — negro absoluto      */
   --c-bg-raised:    #0D1117;   /* Superficies elevadas: cards, paneles        */
-  --c-bg-overlay:   rgba(7, 8, 12, 0.85); /* Overlay sobre fotos hero         */
+  --c-bg-overlay:   rgba(0, 0, 0, 0.85); /* Overlay sobre fotos hero          */
 
   /* Estado del menú abierto — transiciona desde --c-bg a este valor         */
   --c-menu-open:    #061D3C;   /* Dark navy corporativo (derivado de #023a78) */
@@ -37,7 +37,7 @@
   --c-text-1:       #ffffff;               /* Titulares, texto principal      */
   --c-text-2:       rgba(255,255,255,.60); /* Subtítulos, body copy           */
   --c-text-3:       rgba(255,255,255,.35); /* Metadatos, placeholders         */
-  --c-text-inv:     #07080C;               /* Texto oscuro sobre fondos claros */
+  --c-text-inv:     #000000;               /* Texto oscuro sobre fondos claros */
 
 
   /* ── 4. LÍNEAS Y BORDES ────────────────────────────────────────────────── */
