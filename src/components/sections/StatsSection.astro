@@ -152,7 +152,7 @@ const stats: StatCell[] = [
                * Archivo esperado: /public/assets/INAC-badge.png
                */
               <img
-                src="/assets/recurso amarillo helitec.png"
+                src="/assets/recurso%20amarillo%20helitec.png"
                 alt="INAC — Instituto Nacional de Aeronáutica Civil de Venezuela"
                 class="stats__cert-logo"
                 width="72"
@@ -199,10 +199,12 @@ const stats: StatCell[] = [
 
     </div>
 
-    <!-- ── Lightbox AOC — <dialog> nativo ────────────────────────────── -->
+    <!-- ── Lightbox AOC — <dialog> nativo con zoom y pan ───────────── -->
     <!--
       Se abre con .showModal() → backdrop oscuro nativo del browser.
       Se cierra: botón ✕, clic en el backdrop, o tecla Escape.
+      Zoom: rueda del mouse (desktop) | pinch con 2 dedos (mobile)
+      Pan:  clic + arrastrar (desktop) | 1 dedo cuando scale > 1 (mobile)
     -->
     <dialog
       class="stats__aoc-dialog"
@@ -210,25 +212,52 @@ const stats: StatCell[] = [
       aria-label={lang === 'es' ? 'Certificado de Operador Aéreo' : 'Air Operator Certificate'}
     >
       <div class="stats__aoc-inner">
-        <button
-          class="stats__aoc-close"
-          id="aoc-close-btn"
-          type="button"
-          aria-label={lang === 'es' ? 'Cerrar' : 'Close'}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-          </svg>
-        </button>
-        <img
-          src="/assets/AOC.png"
-          alt="Certificado de Operador Aéreo — INAC Venezuela"
-          class="stats__aoc-img"
-          width="600"
-          height="800"
-          loading="lazy"
-          decoding="async"
-        />
+
+        <!-- Barra de controles: zoom level + botones + cerrar -->
+        <div class="stats__aoc-toolbar">
+          <span class="stats__aoc-zoom-label" id="aoc-zoom-label" aria-live="polite">100%</span>
+          <div class="stats__aoc-controls">
+            <button class="stats__aoc-ctrl" id="aoc-zoom-out" type="button"
+              aria-label={lang === 'es' ? 'Alejar' : 'Zoom out'}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              </svg>
+            </button>
+            <button class="stats__aoc-ctrl" id="aoc-zoom-reset" type="button"
+              aria-label={lang === 'es' ? 'Tamaño original' : 'Reset zoom'}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <rect x="2" y="2" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+              </svg>
+            </button>
+            <button class="stats__aoc-ctrl" id="aoc-zoom-in" type="button"
+              aria-label={lang === 'es' ? 'Acercar' : 'Zoom in'}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              </svg>
+            </button>
+            <button class="stats__aoc-close" id="aoc-close-btn" type="button"
+              aria-label={lang === 'es' ? 'Cerrar' : 'Close'}>
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Viewport: contiene la imagen y maneja el pan/zoom -->
+        <div class="stats__aoc-viewport" id="aoc-viewport">
+          <img
+            src="/assets/AOC.png"
+            alt="Certificado de Operador Aéreo — INAC Venezuela"
+            class="stats__aoc-img"
+            id="aoc-img"
+            draggable="false"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
       </div>
     </dialog>
 
@@ -586,65 +615,156 @@ const stats: StatCell[] = [
   }
 
   /* ════════════════════════════════════════════════════════════════════════
-     LIGHTBOX AOC — <dialog> nativo
+     LIGHTBOX AOC — <dialog> nativo con zoom & pan
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__aoc-dialog {
     padding:    0;
-    background: transparent;
     border:     none;
-    max-width:  min(92vw, 600px);
-    max-height: 90dvh;
+    background: transparent;
+
+    /*
+     * Tamaño fijo para que el flex column interior llene el espacio.
+     * En mobile (<640px) ocupa casi todo el viewport.
+     */
+    width:      min(94vw, 740px);
+    height:     min(92dvh, 920px);
+    max-width:  94vw;
+    max-height: 92dvh;
+    overflow:   hidden;
   }
 
   /* Backdrop nativo del <dialog> */
   .stats__aoc-dialog::backdrop {
-    background-color:        rgba(7, 8, 12, 0.88);
-    backdrop-filter:         blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background-color:        rgba(4, 5, 8, 0.92);
+    backdrop-filter:         blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
+  /* Inner: flex column — barra fija arriba, viewport ocupa el resto */
   .stats__aoc-inner {
-    position:         relative;
+    display:          flex;
+    flex-direction:   column;
+    height:           100%;
     background-color: var(--c-bg-raised);
     border:           1px solid var(--c-line-strong);
-    padding:          var(--sp-4);
+    overflow:         hidden;
   }
 
-  .stats__aoc-close {
-    position: absolute;
-    top:      var(--sp-3);
-    right:    var(--sp-3);
-    z-index:  1;
+  /* ── Barra de controles ──────────────────────────────────────────────── */
 
+  .stats__aoc-toolbar {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    flex-shrink:     0;
+
+    padding:         10px 14px;
+    border-bottom:   1px solid var(--c-line);
+    background-color: rgba(7, 8, 12, 0.6);
+  }
+
+  .stats__aoc-zoom-label {
+    font-family:    var(--font-sans);
+    font-size:      0.6875rem; /* 11px */
+    font-weight:    var(--fw-semibold);
+    letter-spacing: var(--ls-wider);
+    text-transform: uppercase;
+    color:          var(--c-text-2);
+    min-width:      40px;
+  }
+
+  .stats__aoc-controls {
+    display: flex;
+    gap:     4px;
+  }
+
+  /* Botones de zoom + cerrar — mismo estilo base */
+  .stats__aoc-ctrl,
+  .stats__aoc-close {
     display:         flex;
     align-items:     center;
     justify-content: center;
-    width:           32px;
-    height:          32px;
+    width:           30px;
+    height:          30px;
 
-    background:    rgba(7, 8, 12, 0.65);
-    border:        1px solid var(--c-line-strong);
+    background:    transparent;
+    border:        1px solid var(--c-line);
     border-radius: var(--r-micro);
     color:         var(--c-text-2);
     cursor:        pointer;
 
     transition:
       color        var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out);
+      border-color var(--dur-fast) var(--ease-out),
+      background   var(--dur-fast) var(--ease-out);
   }
 
+  .stats__aoc-ctrl:hover {
+    color:        var(--c-white);
+    border-color: var(--c-line-strong);
+    background:   rgba(255,255,255,0.05);
+  }
+
+  /* Botón cerrar — ligero acento diferenciador */
+  .stats__aoc-close {
+    margin-left: 8px;
+    border-color: rgba(255,255,255,0.18);
+  }
   .stats__aoc-close:hover {
     color:        var(--c-white);
     border-color: var(--c-text-2);
   }
 
+  /* ── Viewport — área de imagen con overflow oculto ───────────────────── */
+
+  .stats__aoc-viewport {
+    flex:             1;
+    position:         relative;
+    overflow:         hidden;
+    cursor:           default;
+
+    /*
+     * Centrar la imagen en el viewport.
+     * La imagen usa position: absolute para ser transformada
+     * con translate + scale desde su centro.
+     */
+    display:          flex;
+    align-items:      center;
+    justify-content:  center;
+
+    /*
+     * touch-action: none bloquea el scroll nativo del browser para
+     * que los eventos touch pasen al JS de pinch/pan.
+     * El JS maneja pan con 1 dedo cuando scale > 1.
+     */
+    touch-action:     none;
+  }
+
+  .stats__aoc-viewport.is-draggable {
+    cursor: grab;
+  }
+  .stats__aoc-viewport.is-dragging {
+    cursor: grabbing;
+  }
+
+  /* Imagen: centrada, sin distorsión, transform gestionado por JS */
   .stats__aoc-img {
-    display:    block;
-    width:      100%;
-    height:     auto;
-    max-height: calc(90dvh - 80px);
-    object-fit: contain;
+    display:          block;
+    max-width:        100%;
+    max-height:       100%;
+    width:            auto;
+    height:           auto;
+    object-fit:       contain;
+
+    transform-origin: center center;
+    transform:        translate(0, 0) scale(1);
+    will-change:      transform;
+
+    /* Evitar arrastre nativo del browser en la imagen */
+    user-select:      none;
+    -webkit-user-drag: none;
+    pointer-events:   none; /* El viewport captura los eventos */
   }
 </style>
 
@@ -778,39 +898,248 @@ const stats: StatCell[] = [
 
 
     /* ════════════════════════════════════════════════════════════════════
-       LIGHTBOX AOC — abrir / cerrar el <dialog>
+       LIGHTBOX AOC — Zoom & Pan completo
+       ─────────────────────────────────────────────────────────────────
+       Estado: { scale, panX, panY }
+         · scale  → 1.0 a 4.0 (1 = tamaño contenido, 4 = 400% zoom)
+         · panX/Y → desplazamiento en px desde el centro del viewport
+                    en el sistema de coordenadas del PADRE (sin escalar)
+
+       Zoom pointer-centered (rueda):
+         newPanX = pointerOffsetX * (1 - d) + panX * d
+         donde d = newScale / oldScale
+
+       Zoom botones: ×1.4 / ÷1.4 desde el centro
+       Pan drag (mouse): cuando scale > 1
+       Pan drag (touch): 1 dedo cuando scale > 1
+       Pinch zoom (touch): 2 dedos — distancia entre puntos → newScale
     ════════════════════════════════════════════════════════════════════ */
 
-    var openBtn  = document.getElementById('aoc-open-btn');
-    var closeBtn = document.getElementById('aoc-close-btn');
-    var dialog   = /** @type {HTMLDialogElement|null} */ (document.getElementById('aoc-dialog'));
+    var openBtn   = document.getElementById('aoc-open-btn');
+    var closeBtn  = document.getElementById('aoc-close-btn');
+    var zoomInBtn = document.getElementById('aoc-zoom-in');
+    var zoomOutBtn= document.getElementById('aoc-zoom-out');
+    var zoomResetBtn = document.getElementById('aoc-zoom-reset');
+    var zoomLabel = document.getElementById('aoc-zoom-label');
+    var dialog    = /** @type {HTMLDialogElement|null} */ (document.getElementById('aoc-dialog'));
+    var viewport  = document.getElementById('aoc-viewport');
+    var img       = document.getElementById('aoc-img');
 
-    if (openBtn && dialog) {
+    if (!dialog || !viewport || !img) return;
+
+    var MIN_SCALE = 1;
+    var MAX_SCALE = 5;
+
+    /* Estado del zoom/pan */
+    var state = { scale: 1, panX: 0, panY: 0 };
+
+    /* ── Aplicar transform al <img> y actualizar el label ─────────────── */
+    function applyTransform() {
+      img.style.transform =
+        'translate(' + state.panX + 'px, ' + state.panY + 'px) scale(' + state.scale + ')';
+      if (zoomLabel) zoomLabel.textContent = Math.round(state.scale * 100) + '%';
+
+      /* Cambiar cursor del viewport según si se puede hacer pan */
+      if (state.scale > 1) {
+        viewport.classList.add('is-draggable');
+      } else {
+        viewport.classList.remove('is-draggable');
+        viewport.classList.remove('is-dragging');
+      }
+    }
+
+    /* ── Limitar el pan para que la imagen no se salga del viewport ─────── */
+    function clampPan() {
+      if (state.scale <= 1) {
+        state.panX = 0;
+        state.panY = 0;
+        return;
+      }
+      /* Tamaño natural renderizado de la imagen (sin transform) */
+      var iw = img.offsetWidth;
+      var ih = img.offsetHeight;
+      var vw = viewport.clientWidth;
+      var vh = viewport.clientHeight;
+
+      /*
+       * El exceso: cuánto sobresale la imagen escalada respecto al viewport.
+       * maxPan = (imagen_escalada - viewport) / 2
+       * Si la imagen escalada cabe en el viewport, max = 0 → sin pan.
+       */
+      var maxX = Math.max(0, (iw * state.scale - vw) / 2);
+      var maxY = Math.max(0, (ih * state.scale - vh) / 2);
+
+      state.panX = Math.max(-maxX, Math.min(maxX, state.panX));
+      state.panY = Math.max(-maxY, Math.min(maxY, state.panY));
+    }
+
+    /* ── Resetear estado de zoom/pan ──────────────────────────────────── */
+    function resetZoom() {
+      state.scale = 1;
+      state.panX  = 0;
+      state.panY  = 0;
+      applyTransform();
+    }
+
+    /* ── Zoom centrado en un punto (px, py) del viewport ─────────────── */
+    function zoomAtPoint(newScale, px, py) {
+      newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
+      var d = newScale / state.scale;
+      state.panX  = px * (1 - d) + state.panX * d;
+      state.panY  = py * (1 - d) + state.panY * d;
+      state.scale = newScale;
+      clampPan();
+      applyTransform();
+    }
+
+    /* ── RUEDA DEL MOUSE — zoom pointer-centered ──────────────────────── */
+    viewport.addEventListener('wheel', function (e) {
+      e.preventDefault();
+
+      /* deltaY negativo = acercar (scroll up), positivo = alejar (scroll down) */
+      var factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      var newScale = state.scale * factor;
+
+      /* Centro del viewport en coordenadas relativas al viewport */
+      var rect = viewport.getBoundingClientRect();
+      var px = e.clientX - rect.left - rect.width  / 2;
+      var py = e.clientY - rect.top  - rect.height / 2;
+
+      zoomAtPoint(newScale, px, py);
+    }, { passive: false });
+
+
+    /* ── BOTONES DE ZOOM ───────────────────────────────────────────────── */
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', function () {
+        zoomAtPoint(state.scale * 1.4, 0, 0);
+      });
+    }
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', function () {
+        zoomAtPoint(state.scale / 1.4, 0, 0);
+      });
+    }
+    if (zoomResetBtn) {
+      zoomResetBtn.addEventListener('click', resetZoom);
+    }
+
+
+    /* ── DRAG CON MOUSE — pan cuando scale > 1 ──────────────────────── */
+    var isDragging = false;
+    var dragOrigin = { x: 0, y: 0, panX: 0, panY: 0 };
+
+    viewport.addEventListener('mousedown', function (e) {
+      if (state.scale <= 1 || e.button !== 0) return;
+      isDragging = true;
+      dragOrigin = { x: e.clientX, y: e.clientY, panX: state.panX, panY: state.panY };
+      viewport.classList.add('is-dragging');
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (!isDragging) return;
+      state.panX = dragOrigin.panX + (e.clientX - dragOrigin.x);
+      state.panY = dragOrigin.panY + (e.clientY - dragOrigin.y);
+      clampPan();
+      applyTransform();
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!isDragging) return;
+      isDragging = false;
+      viewport.classList.remove('is-dragging');
+    });
+
+
+    /* ── TOUCH — pinch zoom + drag de un dedo ──────────────────────── */
+    var lastPinchDist = 0;
+    var lastPinchScale = 1;
+    var touchDragOrigin = null;
+
+    viewport.addEventListener('touchstart', function (e) {
+      if (e.touches.length === 2) {
+        /* Iniciar pinch */
+        e.preventDefault();
+        lastPinchDist  = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        lastPinchScale = state.scale;
+        touchDragOrigin = null;
+      } else if (e.touches.length === 1 && state.scale > 1) {
+        /* Pan con un dedo (solo cuando hay zoom) */
+        touchDragOrigin = {
+          x: e.touches[0].clientX, y: e.touches[0].clientY,
+          panX: state.panX, panY: state.panY
+        };
+      }
+    }, { passive: false });
+
+    viewport.addEventListener('touchmove', function (e) {
+      if (e.touches.length === 2 && lastPinchDist > 0) {
+        e.preventDefault();
+        var dist     = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        var newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, lastPinchScale * (dist / lastPinchDist)));
+
+        /* Centro del pinch en coordenadas del viewport */
+        var rect = viewport.getBoundingClientRect();
+        var cx = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left - rect.width  / 2;
+        var cy = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top  - rect.height / 2;
+
+        var d = newScale / state.scale;
+        state.panX  = cx * (1 - d) + state.panX * d;
+        state.panY  = cy * (1 - d) + state.panY * d;
+        state.scale = newScale;
+        clampPan();
+        applyTransform();
+
+      } else if (e.touches.length === 1 && touchDragOrigin) {
+        e.preventDefault();
+        state.panX = touchDragOrigin.panX + (e.touches[0].clientX - touchDragOrigin.x);
+        state.panY = touchDragOrigin.panY + (e.touches[0].clientY - touchDragOrigin.y);
+        clampPan();
+        applyTransform();
+      }
+    }, { passive: false });
+
+    viewport.addEventListener('touchend', function (e) {
+      if (e.touches.length < 2) lastPinchDist = 0;
+      if (e.touches.length < 1) touchDragOrigin = null;
+    });
+
+
+    /* ── ABRIR / CERRAR el dialog ──────────────────────────────────── */
+    if (openBtn) {
       openBtn.addEventListener('click', function () {
         dialog.showModal();
       });
     }
 
-    if (closeBtn && dialog) {
+    if (closeBtn) {
       closeBtn.addEventListener('click', function () {
         dialog.close();
       });
     }
 
-    /* Cerrar al hacer clic en el backdrop (fuera del contenido inner) */
-    if (dialog) {
-      dialog.addEventListener('click', function (e) {
-        var rect = dialog.getBoundingClientRect();
-        if (
-          e.clientX < rect.left   ||
-          e.clientX > rect.right  ||
-          e.clientY < rect.top    ||
-          e.clientY > rect.bottom
-        ) {
-          dialog.close();
-        }
-      });
-    }
+    /* Cerrar al hacer clic en el backdrop (fuera del .stats__aoc-inner) */
+    dialog.addEventListener('click', function (e) {
+      var rect = dialog.getBoundingClientRect();
+      if (
+        e.clientX < rect.left   ||
+        e.clientX > rect.right  ||
+        e.clientY < rect.top    ||
+        e.clientY > rect.bottom
+      ) {
+        dialog.close();
+      }
+    });
+
+    /* Resetear zoom al cerrar */
+    dialog.addEventListener('close', resetZoom);
 
   })();
 </script>
