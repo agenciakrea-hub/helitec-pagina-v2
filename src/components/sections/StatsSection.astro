@@ -31,7 +31,7 @@ interface Props {
 
 const { lang = 'es' } = Astro.props;
 
-/* ── Definición de las 10 celdas estadísticas (grid 2 × 5) ──────────────── */
+/* ── Definición de las 8 celdas estadísticas (grid 2 × 4) ───────────────── */
 
 interface StatCell {
   /** Valor numérico a animar. null = texto fijo sin contador */
@@ -94,13 +94,6 @@ const stats: StatCell[] = [
   /* ── Fila 3 — certificaciones ─────────────────────────────────────────── */
   {
     value:   null,
-    display: lang === 'es' ? 'Certificado FA'        : 'FA Certificate',
-    label:   null,
-    animate: false,
-    kind:    'feature',
-  },
-  {
-    value:   null,
     display: lang === 'es' ? 'Centro de instrucción' : 'Training Center',
     label:   lang === 'es' ? 'Certificado por INAC'  : 'INAC certified',
     animate: false,
@@ -117,15 +110,8 @@ const stats: StatCell[] = [
     animate: false,
     kind:    'feature',
   },
-  {
-    value:   null,
-    display: lang === 'es' ? 'Programa aeromédico' : 'Aeromedical program',
-    label:   null,
-    animate: false,
-    kind:    'feature',
-  },
 
-  /* ── Fila 5 — cobertura geográfica + sello INAC ───────────────────────── */
+  /* ── Fila 4 — cobertura geográfica + sello INAC ───────────────────────── */
   {
     value:   null,
     display: lang === 'es' ? 'Nacional e Internacional' : 'Domestic & International',
@@ -475,31 +461,6 @@ const stats: StatCell[] = [
     flex-direction: column;
     gap:            8px;
 
-    /*
-     * ESTADO INICIAL (antes de animación K3):
-     * Las celdas comienzan invisibles y desplazadas 24px hacia abajo.
-     * El JS añade .is-visible cuando el observer dispara → CSS anima.
-     */
-    opacity:     0;
-    transform:   translateY(24px);
-    will-change: opacity, transform;
-
-    transition:
-      opacity   0.55s var(--ease-out),
-      transform 0.55s var(--ease-out);
-
-    /*
-     * Delay escalonado K3: cada celda espera 90ms más que la anterior.
-     * --i se inyecta inline desde Astro: style="- -i: 0", "- -i: 1", …
-     * Celda 0 → 0ms, celda 1 → 90ms, celda 2 → 180ms, …, celda 5 → 450ms
-     */
-    transition-delay: calc(var(--i, 0) * 90ms);
-  }
-
-  /* Estado visible — activado por JS tras IntersectionObserver */
-  .stats__cell.is-visible {
-    opacity:   1;
-    transform: translateY(0);
   }
 
   /* ════════════════════════════════════════════════════════════════════════

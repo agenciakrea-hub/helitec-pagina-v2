@@ -160,47 +160,42 @@ const { lang = 'es' } = Astro.props;
 
 </div>
 
-<!-- ── FABs — Layout L invertida ─────────────────────────────────────────── -->
+<!-- ── FAB Cotización — scroll-triggered, solo aparece al salir del Hero ──── -->
 <!--
-  Esquina inferior derecha. Estructura:
+  Elemento fijo independiente del grupo estático de abajo.
+  Solo el COTIZACIÓN FAB tiene comportamiento de scroll trigger.
+  #slcta-trigger: localizado por SideLeadCTA.astro para abrir el panel.
+-->
+<button
+  class="csheet__fab csheet__fab--cotizar"
+  id="slcta-trigger"
+  type="button"
+  aria-expanded="false"
+  aria-controls="slcta-panel"
+  aria-label="Solicitar cotización de vuelo privado"
+>
+  <!-- Ícono avión (estado cerrado) -->
+  <span class="csheet__fab-icon" aria-hidden="true">
+    <svg width="17" height="15" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L17 8L1 15V9.5L11 8L1 6.5V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+    </svg>
+  </span>
+  <!-- Texto vertical permanente (estado cerrado) -->
+  <span class="csheet__fab-strip-text" aria-hidden="true">COTIZACIÓN</span>
+  <!-- ✕ (estado abierto) -->
+  <span class="csheet__fab-close" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+    </svg>
+  </span>
+</button>
 
-      [Cotización]            ← columna, arriba  (abre cotizador)
-      [Linktree]              ← columna, medio   (hub de redes)
-  [LinkedIn][IG][Contacto]   ← fila inferior, izq→der
-
+<!-- ── FABs siempre visibles — Linktree + fila inferior ──────────────────── -->
+<!--
+  Estos botones son visibles en todo momento, incluido el Hero.
   z-index: 895 — encima de SideLeadCTA (848), debajo del backdrop ContactSheet (898).
-  #slcta-trigger vive aquí; SideLeadCTA.astro lo localiza por ID.
 -->
 <div class="csheet__fabs">
-
-  <!-- FAB Cotización — CTA primario, abre panel SideLeadCTA -->
-  <!--
-    Strip vertical: altura ~130px con ícono + texto "COTIZACIÓN" permanente.
-    Al abrir el panel: ícono y texto se desvanecen, aparece ✕ centrado.
-  -->
-  <button
-    class="csheet__fab csheet__fab--cotizar"
-    id="slcta-trigger"
-    type="button"
-    aria-expanded="false"
-    aria-controls="slcta-panel"
-    aria-label="Solicitar cotización de vuelo privado"
-  >
-    <!-- Ícono avión (estado cerrado) -->
-    <span class="csheet__fab-icon" aria-hidden="true">
-      <svg width="17" height="15" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1L17 8L1 15V9.5L11 8L1 6.5V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
-      </svg>
-    </span>
-    <!-- Texto vertical permanente (estado cerrado) -->
-    <span class="csheet__fab-strip-text" aria-hidden="true">COTIZACIÓN</span>
-    <!-- ✕ (estado abierto) -->
-    <span class="csheet__fab-close" aria-hidden="true">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
-      </svg>
-    </span>
-  </button>
 
   <!-- FAB Linktree — hub de redes sociales -->
   <!-- [DATO: reemplazar href con la URL real del Linktree de Consorcio Helitec] -->
@@ -534,18 +529,10 @@ const { lang = 'es' } = Astro.props;
     line-height: 1.6;
   }
 
-  /* ── FABs — Layout L invertida ──────────────────────────────────────────── */
+  /* ── FABs siempre visibles — Linktree + fila inferior ───────────────────── */
   /*
-   * Columna en esquina inferior-derecha:
-   *   [Cotización — strip]    top
-   *   [Linktree]              middle
-   *   [LinkedIn][IG][Info]    bottom-row
-   *
-   * SCROLL BEHAVIOR:
-   *   Por defecto los FABs están ocultos fuera de pantalla (derecha).
-   *   Aparecen con slide-in solo cuando el usuario scrollea más allá del Hero.
-   *   JS añade .is-visible al detectar scrollY > 60% del viewport.
-   *   Nunca se muestran durante el Hero → UX limpia en la primera pantalla.
+   * Estos FABs son visibles en todo momento, incluido el Hero.
+   * Sin scroll trigger — el usuario los ve siempre en la esquina inferior derecha.
    */
   .csheet__fabs {
     position: fixed;
@@ -557,8 +544,22 @@ const { lang = 'es' } = Astro.props;
     flex-direction: column;
     align-items:    flex-end;
     gap:            8px;
+  }
 
-    /* ESTADO INICIAL — off-screen derecha + invisible */
+  /* ── FAB Cotización — scroll-triggered, solo visible fuera del Hero ──────── */
+  /*
+   * Posición fija independiente, anclado encima del grupo .csheet__fabs.
+   * Cálculo del bottom:
+   *   Grupo estático: Linktree(44px) + gap(8px) + row(44px) + gap(8px) = 104px
+   *   + offset base del grupo = bottom total del grupo estático
+   */
+  .csheet__fab--cotizar {
+    position: fixed;
+    bottom:   calc(clamp(16px, 3vh, 24px) + 104px);
+    right:    12px;
+    z-index:  895;
+
+    /* SCROLL TRIGGER — estado inicial: off-screen derecha + invisible */
     transform:      translateX(calc(100% + 24px));
     opacity:        0;
     visibility:     hidden;
@@ -570,8 +571,8 @@ const { lang = 'es' } = Astro.props;
       visibility 0s   linear  0.40s;
   }
 
-  /* ESTADO VISIBLE — después de pasar el Hero */
-  .csheet__fabs.is-visible {
+  /* ESTADO VISIBLE — slide-in al pasar el Hero */
+  .csheet__fab--cotizar.is-visible {
     transform:      translateX(0);
     opacity:        1;
     visibility:     visible;
@@ -583,9 +584,11 @@ const { lang = 'es' } = Astro.props;
       visibility 0s   linear  0s;
   }
 
-  /* Ocultar FABs cuando el menú principal está abierto / cerrando */
+  /* Ocultar todos los FABs cuando el menú principal está abierto / cerrando */
   :global(body.menu-is-open) .csheet__fabs,
-  :global(body.menu-is-closing) .csheet__fabs {
+  :global(body.menu-is-closing) .csheet__fabs,
+  :global(body.menu-is-open) .csheet__fab--cotizar,
+  :global(body.menu-is-closing) .csheet__fab--cotizar {
     opacity:        0;
     visibility:     hidden;
     pointer-events: none;
@@ -625,7 +628,12 @@ const { lang = 'es' } = Astro.props;
       color        var(--dur-fast) var(--ease-out);
   }
 
-  /* ── FAB Cotización (CTA primario — strip vertical azul marca) ─────────── */
+  /* ── FAB Cotización — visual styles (posición + scroll trigger arriba) ──── */
+  /*
+   * Los estilos de posición, z-index y scroll trigger están en el bloque
+   * .csheet__fab--cotizar de la sección "FABs siempre visibles".
+   * Aquí solo se añaden los overrides visuales respecto al .csheet__fab base.
+   */
   .csheet__fab--cotizar {
     /* Override base height → strip alto */
     width:          44px;
@@ -840,20 +848,21 @@ const { lang = 'es' } = Astro.props;
 
 <script>
   /**
-   * FABs — Scroll visibility controller
+   * FAB Cotización — Scroll visibility controller
    *
-   * Los FABs permanecen ocultos mientras el usuario está viendo el Hero.
-   * Se deslizan desde la derecha cuando el scroll supera el 60% del viewport.
+   * SOLO el strip de Cotización tiene comportamiento de scroll trigger.
+   * Los demás FABs (Linktree, LinkedIn, Instagram, Contacto) son siempre visibles.
+   *
+   * El FAB cotización permanece oculto mientras el usuario ve el Hero.
+   * Se desliza desde la derecha cuando el Hero sale del viewport (> 40% scrolleado).
    *
    * Estrategia:
    *   1. IntersectionObserver sobre la sección Hero (si existe).
    *   2. Fallback: scroll event con umbral = 60vh.
-   *
-   * La clase `.is-visible` activa el slide-in definido en CSS.
    */
   (function () {
-    var fabs = document.querySelector('.csheet__fabs');
-    if (!fabs) return;
+    var cotizar = document.querySelector('.csheet__fab--cotizar');
+    if (!cotizar) return;
 
     var THRESHOLD_PX = window.innerHeight * 0.60;
 
@@ -863,19 +872,15 @@ const { lang = 'es' } = Astro.props;
     if (heroSection && 'IntersectionObserver' in window) {
       var heroObs = new IntersectionObserver(
         function (entries) {
-          /* Si el Hero sigue visible → ocultar FABs; si salió → mostrar */
+          /* Si el Hero sigue visible → ocultar cotización; si salió → mostrar */
           if (entries[0].isIntersecting) {
-            fabs.classList.remove('is-visible');
+            cotizar.classList.remove('is-visible');
           } else {
-            fabs.classList.add('is-visible');
+            cotizar.classList.add('is-visible');
           }
         },
         {
           threshold:  0,
-          /*
-           * rootMargin superior: empuja el umbral de disparo al 40% del viewport,
-           * de modo que el Hero se considera "fuera" cuando queda < 40% visible.
-           */
           rootMargin: '-40% 0px 0px 0px',
         }
       );
@@ -886,9 +891,9 @@ const { lang = 'es' } = Astro.props;
       var ticking = false;
       function checkScroll() {
         if (window.scrollY > THRESHOLD_PX) {
-          fabs.classList.add('is-visible');
+          cotizar.classList.add('is-visible');
         } else {
-          fabs.classList.remove('is-visible');
+          cotizar.classList.remove('is-visible');
         }
         ticking = false;
       }

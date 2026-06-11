@@ -43,7 +43,7 @@ const services = [
      * independiente de `transform` — Transforms Level 2).
      * object-position: center 35% — se ve el techo de la cabina y los asientos.
      */
-    imgStyle: 'object-position: center 35%',
+    imgStyle: 'object-position: center 35%; scale: 0.86',
   },
   {
     num:   '02',
@@ -61,7 +61,7 @@ const services = [
      * Foco hacia la izquierda: el helicóptero está en el lado derecho de la foto
      * pero se recorta. Moviendo object-position hacia 15% el sujeto entra en cuadro.
      */
-    imgStyle: 'object-position: left center',
+    imgStyle: 'object-position: 15% center',
   },
   {
     num:   '03',
@@ -81,7 +81,7 @@ const services = [
      * scale 0.82 = imagen encoge dentro del frame → más contexto visible.
      * object-position centrada verticalmente para no cortar ninguno de los dos.
      */
-    imgStyle: 'object-position: center 55%',
+    imgStyle: 'object-position: center 55%; scale: 0.82',
   },
   {
     num:   '04',
@@ -171,15 +171,6 @@ const services = [
           <div class="sgrid__info">
             <span class="sgrid__num">{svc.num}</span>
             <h3 class="sgrid__title">{svc.title}</h3>
-            <!-- Recurso rojo — subrayado decorativo con reveal izq→der -->
-            <img
-              src="/assets/recurso%20rojo%20helitec.png"
-              class="sgrid__title-deco"
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-            />
             <p class="sgrid__desc">{svc.desc}</p>
             <span class="sgrid__cta">
               <span class="sgrid__cta-label">{svc.cta}</span>
@@ -271,10 +262,10 @@ const services = [
    */
   .sgrid__heading-deco {
     display:         block;
-    width:           100%;
-    max-width:       400px;
-    height:          16px;
-    object-fit:      fill;
+    width:           auto;
+    max-width:       320px;
+    height:          auto;
+    object-fit:      contain;
     object-position: left center;
     margin-top:      var(--sp-3);
 
@@ -354,13 +345,13 @@ const services = [
      * El JS del parallax escribe `style.transform = 'translateY(Xpx)'`.
      * CSS controla `scale`; JS controla `transform` — sin interferencia.
      */
-    scale:      0.84;     /* reduce zoom global: más contexto visible en las 4 fotos */
+    scale:      1;
     transition: scale var(--dur-slow) var(--ease-out);
   }
 
-  /* Zoom muy sutil en hover */
+  /* Zoom sutil en hover */
   .sgrid__frame:hover .sgrid__photo {
-    scale: 0.87;
+    scale: 1.04;
   }
 
 
@@ -430,30 +421,6 @@ const services = [
     color:          var(--c-text-1);
     line-height:    1.1;
     margin-bottom:  var(--sp-2);
-  }
-
-  /* ── Recurso rojo — subrayado decorativo ───────────────────────────────── */
-
-  .sgrid__title-deco {
-    display:          block;
-    width:            clamp(48px, 35%, 110px);
-    height:           auto;
-    object-fit:       contain;
-    object-position:  left center;
-    margin-bottom:    var(--sp-2);
-
-    /*
-     * Reveal izquierda → derecha mediante clip-path.
-     * Estado inicial: completamente recortado (no visible).
-     * Estado activo (.sgrid__frame--revealed): clip-path 0% → imagen visible.
-     * Delay de 0.15s para que entre después del título.
-     */
-    clip-path:  inset(0 100% 0 0);
-    transition: clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
-  }
-
-  .sgrid__frame--revealed .sgrid__title-deco {
-    clip-path: inset(0 0% 0 0);
   }
 
   /* Descripción — texto secundario muted */
@@ -622,28 +589,6 @@ const services = [
   if (typeof ResizeObserver !== 'undefined') {
     new ResizeObserver(function () { updateParallax(); })
       .observe(document.documentElement);
-  }
-
-  /*
-   * ── Reveal del recurso rojo (subrayado izq→der) ──────────────────────────
-   * Cuando cada .sgrid__frame entra en el viewport (threshold 0.25),
-   * añadimos .sgrid__frame--revealed → CSS activa clip-path transition.
-   * Once: true — se dispara una sola vez por tarjeta.
-   */
-  if ('IntersectionObserver' in window) {
-    var revealObs = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('sgrid__frame--revealed');
-          revealObs.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.25 });
-
-    frames.forEach(function (frame) { revealObs.observe(frame); });
-  } else {
-    /* Fallback sin IntersectionObserver (IE11): revelar inmediatamente */
-    frames.forEach(function (frame) { frame.classList.add('sgrid__frame--revealed'); });
   }
 
   /*

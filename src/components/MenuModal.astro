@@ -215,21 +215,19 @@ const services = [
     pointer-events: none;
 
     /*
-     * CIERRE — animación inversa limpia:
+     * CIERRE — fondo transparente inmediato:
      *
-     * El background-color NO transiciona en el cierre (sin fade gradual).
-     * Se queda en var(--c-bg) hasta que visibility:hidden lo oculta de golpe.
-     * Esto evita el artefacto: el modal permanece sólido negro mientras
-     * las celdas se deslizan hacia abajo (last cell exits at ~560ms).
+     * background-color snaps a transparent en t=0 (delay 0ms).
+     * Las celdas se deslizan hacia abajo SOBRE el hero visible.
+     * El usuario ve el índice normal mientras las celdas salen de pantalla.
      *
      * Timeline del cierre:
-     *   t=0ms    → class removed, celdas empiezan a deslizarse hacia abajo
-     *   t=0-560ms → fondo sólido negro, celdas animando
-     *   t=580ms  → visibility:hidden (corte limpio)
-     *   t=600ms  → background-color snaps a transparent (ya invisible, no importa)
+     *   t=0ms      → class removed, fondo snaps a transparent, celdas inician salida
+     *   t=0-560ms  → celdas animando sobre el hero visible
+     *   t=580ms    → visibility:hidden (oculta todo limpiamente)
      */
     transition:
-      background-color 0s   linear   600ms,
+      background-color 0s   linear   0ms,
       visibility       0s   linear   580ms;
   }
 
