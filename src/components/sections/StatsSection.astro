@@ -337,9 +337,16 @@ const stats: StatCell[] = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats {
-    background-color: var(--c-bg-raised);
-    border-top:       1px solid var(--c-line);
-    padding-block:    clamp(56px, 9vh, 104px);
+    /*
+     * LIGHT THEME — override autorizado por Tech Lead.
+     * El gradiente crea una transición elegante desde blanco puro (0–85%)
+     * hasta el fondo oscuro del proyecto (85–100%), conectando visualmente
+     * con la ServicesSection que le sigue.
+     * NOTA: linear-gradient como fondo de sección — excepción aprobada (v3).
+     */
+    background:    linear-gradient(to bottom, #ffffff 0%, #ffffff 85%, var(--c-bg, #050505) 100%);
+    border-top:    1px solid rgba(0, 0, 0, 0.08); /* separador sutil sobre hero oscuro */
+    padding-block: clamp(56px, 9vh, 104px);
   }
 
   .stats__inner {
@@ -540,10 +547,20 @@ const stats: StatCell[] = [
 
   /* Imagen del sello INAC en la celda — sin borde, sin contorno */
   .stats__cert-logo {
-    width:       clamp(48px, 5vw, 68px);
+    width:       clamp(80px, 9vw, 108px); /* Aumentado: era clamp(48px, 5vw, 68px) */
     height:      auto;
     object-fit:  contain;
     flex-shrink: 0;
+  }
+
+  /* Celda INAC — contenido centrado horizontal y verticalmente */
+  .stats__cell--inac {
+    align-items:     center;
+    justify-content: center;
+  }
+
+  .stats__cell--inac .stats__value-wrap {
+    justify-content: center;
   }
 
 
@@ -899,6 +916,91 @@ const stats: StatCell[] = [
     user-select:      none;
     -webkit-user-drag: none;
     pointer-events:   none; /* El viewport captura los eventos */
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     LIGHT THEME OVERRIDES — inversión de paleta para sección blanca
+     ─────────────────────────────────────────────────────────────────────
+     Regla: todo texto → #1a1a1a / #444 / #555 para legibilidad sobre blanco.
+     Acentos (líneas, íconos) → var(--c-brand) [navy] o var(--c-sky) / var(--c-red)
+     conservados tal como indica el brief (v3).
+     Las reglas de este bloque sobreescriben las del tema oscuro por cascada.
+  ════════════════════════════════════════════════════════════════════════ */
+
+  /* Overline: azul Helitec oscuro (navy) para contraste sobre fondo blanco */
+  .stats__overline {
+    color: var(--c-brand);
+  }
+  .stats__overline::before {
+    background-color: var(--c-brand);
+  }
+
+  /* Títulos: negro corporativo */
+  .stats__title {
+    color: #1a1a1a;
+  }
+
+  /* Valores numéricos y de texto */
+  .stats__value {
+    color: #1a1a1a;
+  }
+  .stats__value--text,
+  .stats__value--feature {
+    color: #1a1a1a;
+  }
+
+  /* Labels: gris corporativo oscuro */
+  .stats__label {
+    color: #555555;
+  }
+
+  /*
+   * Efecto marcador (::before sweep): en fondo blanco el navy oscuro queda
+   * muy duro. Reemplazamos por un tinte sky-blue suave — el texto #555 sigue
+   * siendo legible sobre él.
+   */
+  .stats__label::before {
+    background-color: rgba(88, 181, 240, 0.18);
+  }
+
+  /* Separador de la sección cert en modo claro */
+  .stats__cert {
+    border-top-color: rgba(0, 0, 0, 0.10);
+  }
+
+  /* Textos del bloque de certificación */
+  .stats__cert-title {
+    color: var(--c-brand);
+  }
+  .stats__cert-body {
+    color: #444444;
+  }
+
+  /* Palabras resaltadas: tinte brand-blue sobre fondo blanco */
+  .stats__highlight {
+    background-color: rgba(2, 58, 120, 0.08);
+    color:            var(--c-brand);
+    padding:          1px 5px;
+    border-radius:    2px;
+  }
+
+  /* Botón "Ver certificado" — adaptado a tema claro */
+  .stats__cert-btn {
+    color:        #1a1a1a;
+    border-color: rgba(2, 58, 120, 0.28);
+  }
+  .stats__cert-btn svg {
+    color:   var(--c-brand);
+    opacity: 0.80;
+  }
+  .stats__cert-btn:hover {
+    border-color:     rgba(2, 58, 120, 0.55);
+    background-color: rgba(2, 58, 120, 0.05);
+    color:            #000000;
+  }
+  .stats__cert-btn:hover svg {
+    opacity: 1;
   }
 </style>
 

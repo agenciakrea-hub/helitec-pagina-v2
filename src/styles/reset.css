@@ -23,8 +23,14 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 
-  /* Tab focus visible */
-  scroll-behavior: smooth;
+  /*
+   * scroll-behavior debe ser `auto` cuando se usa Lenis.
+   * Lenis gestiona su propio easing — si coexiste con `smooth`, el navegador
+   * puede ignorar el `behavior:'instant'` de los calls de Lenis y aplicar su
+   * propia animación CSS, creando un loop de scroll que bloquea y colapsa
+   * la barra nativa al tamaño del viewport.
+   */
+  scroll-behavior: auto;
 
   /* Altura mínima garantizada */
   block-size: 100%;

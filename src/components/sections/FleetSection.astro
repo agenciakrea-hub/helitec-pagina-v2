@@ -149,7 +149,7 @@ const faqItems = [
   .ops__plane-deco {
     position:        absolute;
     right:           0;
-    top:             clamp(60px, 8vh, 100px);   /* subido: cola asoma sobre "SOBRE" */
+    top:             clamp(60px, 8vh, 100px);
 
     height:          clamp(420px, 58vw, 720px);
     width:           auto;
@@ -157,10 +157,11 @@ const faqItems = [
     object-fit:      contain;
     object-position: right top;
 
-    opacity:         0.15;   /* era 0.18 — reducido para legibilidad FAQ */
+    opacity:         0;   /* JS anima: 0 → 0.4 durante el ensamblaje */
     z-index:         0;
     pointer-events:  none;
     user-select:     none;
+    will-change:     transform, opacity;
   }
 
 
@@ -529,10 +530,12 @@ const faqItems = [
 
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 2 — Motor de Scroll VANDSLAB
+   * PARTE 2 — Motor de Scroll V5
    *
-   * Ventana: (sectionHeight + vh). p=0 al entrar el borde inferior;
-   * p=1 al salir el borde superior. Timelines escalonados para efecto Tetris.
+   * Ventana: vh/2.
+   * p=0: tope de la sección toca el borde inferior del viewport.
+   * p=1: tope de la sección llega al centro del viewport (50vh).
+   * El usuario ve el ensamblaje completo mientras la sección entra en pantalla.
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
@@ -545,8 +548,9 @@ const faqItems = [
     var lSolid    = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="solid"]'));
     var lAccent   = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="accent"]'));
     var lBase     = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="base"]'));
+    var planeDeco = /** @type {HTMLElement|null} */ (section && section.querySelector('.ops__plane-deco'));
 
-    if (!section || !faqModule || !lOutline || !lSolid || !lAccent || !lBase) return;
+    if (!section || !faqModule || !lOutline || !lSolid || !lAccent || !lBase || !planeDeco) return;
 
 
     /* ── prefers-reduced-motion ────────────────────────────────────────── */
@@ -556,6 +560,8 @@ const faqItems = [
         el.style.opacity   = '1';
         el.style.transform = 'none';
       });
+      planeDeco.style.opacity   = '0.4';
+      planeDeco.style.transform = 'none';
       return;
     }
 
@@ -586,8 +592,9 @@ const faqItems = [
     /* ── Estado inicial ────────────────────────────────────────────────── */
 
     function setInitialState() {
+      /* SOBRE NUESTRAS — baja desde arriba (rojo sólido) */
       lOutline.style.opacity   = '0';
-      lOutline.style.transform = isMobile ? 'translateY(-30px)' : 'translateY(-60px)';
+      lOutline.style.transform = isMobile ? 'translateY(-30px)' : 'translateY(-50px)';
 
       lSolid.style.opacity     = '0';
       lSolid.style.transform   = isMobile ? 'translateX(-40px)' : 'translateX(-100px)';
@@ -602,6 +609,10 @@ const faqItems = [
       faqModule.style.transform = 'translateX('
         + Math.round(window.innerWidth * (isMobile ? 0.20 : 1.0))
         + 'px)';
+
+      /* Avión — entra desde la derecha como pieza final */
+      planeDeco.style.opacity   = '0';
+      planeDeco.style.transform = 'translateX(100px)';
     }
 
     setInitialState();
@@ -613,11 +624,12 @@ const faqItems = [
       var rect = section.getBoundingClientRect();
       var vh   = window.innerHeight;
       /*
-       * Ventana = sectionHeight + vh.
-       * p=0: sección entra por borde inferior del viewport.
-       * p=1: sección sale completamente por borde superior.
+       * Ventana = vh / 2.
+       * p=0: tope de la sección en el borde inferior del viewport (rect.top = vh).
+       * p=1: tope de la sección en el centro del viewport (rect.top = vh/2).
+       * El ensamblaje completo es visible mientras la sección entra en pantalla.
        */
-      return clamp01((vh - rect.top) / (rect.height + vh));
+      return clamp01((vh - rect.top) / (vh * 0.5));
     }
 
 
@@ -630,14 +642,18 @@ const faqItems = [
       if (Math.abs(p - lastP) < 0.0005) return;
       lastP = p;
 
-      var p0   = easeOut(mapRange(p, 0.05, 0.30));  /* layer-outline  */
-      var p1   = easeOut(mapRange(p, 0.10, 0.35));  /* layer-solid    */
-      var p2   = easeOut(mapRange(p, 0.15, 0.40));  /* layer-accent   */
-      var p3   = easeOut(mapRange(p, 0.03, 0.25));  /* layer-base     */
-      var pFaq = easeOut(mapRange(p, 0.10, 0.48));  /* faq-module     */
+      /*
+       * Timelines escalonados — cada pieza llega en secuencia.
+       * Rangos distribuidos sobre todo el 0..1 para aprovechar la ventana vh/2.
+       */
+      var p0     = easeOut(mapRange(p, 0.00, 0.60));  /* SOBRE NUESTRAS (rojo, baja) */
+      var p1     = easeOut(mapRange(p, 0.08, 0.68));  /* OPERACIONES (izquierda)     */
+      var p2     = easeOut(mapRange(p, 0.15, 0.75));  /* FLOTA (derecha)             */
+      var p3     = easeOut(mapRange(p, 0.02, 0.52));  /* Y SERVICIOS (fade)          */
+      var pFaq   = easeOut(mapRange(p, 0.20, 0.92));  /* FAQ module (derecha)        */
+      var pPlane = easeOut(mapRange(p, 0.12, 0.80));  /* Logo avión (derecha)        */
 
       if (isMobile) {
-        /* Mobile Tetris — distancias cortas, overflow recortado por section */
         lOutline.style.opacity   = p0.toFixed(3);
         lOutline.style.transform = 'translateY(' + lerp(-30, 0, p0).toFixed(1) + 'px)';
 
@@ -650,15 +666,13 @@ const faqItems = [
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
         faqModule.style.opacity   = pFaq.toFixed(3);
-        /* 20vw calculado por frame — respeta cambios de orientación */
         faqModule.style.transform = 'translateX('
           + lerp(Math.round(window.innerWidth * 0.20), 0, pFaq).toFixed(1)
           + 'px)';
 
       } else {
-        /* Desktop — efecto Tetris direccional completo */
         lOutline.style.opacity   = p0.toFixed(3);
-        lOutline.style.transform = 'translateY(' + lerp(-60, 0, p0).toFixed(2) + 'px)';
+        lOutline.style.transform = 'translateY(' + lerp(-50, 0, p0).toFixed(2) + 'px)';
 
         lSolid.style.opacity     = p1.toFixed(3);
         lSolid.style.transform   = 'translateX(' + lerp(-100, 0, p1).toFixed(2) + 'px)';
@@ -673,6 +687,10 @@ const faqItems = [
           + lerp(window.innerWidth, 0, pFaq).toFixed(1)
           + 'px)';
       }
+
+      /* Avión: siempre desde la derecha — igual en mobile y desktop */
+      planeDeco.style.opacity   = lerp(0, 0.4, pPlane).toFixed(3);
+      planeDeco.style.transform = 'translateX(' + lerp(100, 0, pPlane).toFixed(2) + 'px)';
     }
 
 

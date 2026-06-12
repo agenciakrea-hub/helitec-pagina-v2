@@ -71,6 +71,31 @@ const { lang = 'es' } = Astro.props;
   <!-- Tarjetas de contacto -->
   <div class="csheet__cards">
 
+    <!-- 00 — Reservar vuelo por WhatsApp -->
+    <a
+      href="https://api.whatsapp.com/send/?phone=582129590401&text=Quiero%20reservar%20un%20vuelo,%20vengo%20de%20la%20pagina%20de%20Helitec&type=phone_number&app_absent=0"
+      class="csheet__card csheet__card--whatsapp"
+      target="_blank"
+      rel="noopener noreferrer"
+      data-type="whatsapp"
+    >
+      <span class="csheet__card-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.52 3.48A11.9 11.9 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.12.55 4.18 1.6 6L0 24l6.17-1.57A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.22-3.48-8.52ZM12 21.94a9.9 9.9 0 0 1-5.04-1.37l-.36-.22-3.66.94.97-3.56-.24-.37A9.9 9.9 0 0 1 2.06 12C2.06 6.49 6.49 2.06 12 2.06S21.94 6.49 21.94 12 17.51 21.94 12 21.94Zm5.44-7.42c-.3-.15-1.76-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.14-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.48-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.03 1.01-1.03 2.46s1.06 2.85 1.2 3.05c.15.2 2.08 3.18 5.04 4.46.7.3 1.25.48 1.68.62.7.22 1.34.19 1.85.11.56-.08 1.76-.72 2-1.41.25-.7.25-1.3.18-1.42-.07-.12-.27-.2-.57-.34Z" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="csheet__card-info">
+        <span class="csheet__card-label">WhatsApp</span>
+        <span class="csheet__card-value">Reservar vuelo</span>
+        <span class="csheet__card-hint">Vengo de la página web</span>
+      </div>
+      <span class="csheet__card-arrow" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+        </svg>
+      </span>
+    </a>
+
     <!-- 01 — Oficina Caracas -->
     <a
       href="tel:+582125551234"
@@ -411,6 +436,12 @@ const { lang = 'es' } = Astro.props;
     background-color: var(--c-bg);
   }
 
+  /* WhatsApp — acento verde WA en el icono */
+  .csheet__card--whatsapp .csheet__card-icon {
+    color:        #25D366;
+    border-color: rgba(37, 211, 102, 0.30);
+  }
+
   .csheet__card--urgent {
     /* Tarjeta de urgencia: acento rojo sutil en el indicador */
   }
@@ -561,6 +592,21 @@ const { lang = 'es' } = Astro.props;
   :global(body.menu-is-closing) .csheet__fabs,
   :global(body.menu-is-open) .csheet__fab--cotizar,
   :global(body.menu-is-closing) .csheet__fab--cotizar {
+    opacity:        0;
+    visibility:     hidden;
+    pointer-events: none;
+    transition:
+      opacity    0.20s var(--ease-out),
+      visibility 0s    linear  0.20s;
+  }
+
+  /*
+   * Cuando el cotizador (SideLeadCTA) está abierto, ocultar el grupo de FABs
+   * sociales y de contacto. El strip .slcta__trigger (Cotización) queda visible
+   * porque no tiene ninguna regla de ocultamiento para slcta-is-open —
+   * el usuario lo usa para cerrar el panel.
+   */
+  :global(body.slcta-is-open) .csheet__fabs {
     opacity:        0;
     visibility:     hidden;
     pointer-events: none;
