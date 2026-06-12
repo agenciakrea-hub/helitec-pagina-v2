@@ -39,6 +39,24 @@ html {
 }
 
 
+/* ── 3a. SCROLL LOCK — estados de modal (no usar body.style.overflow nunca) ── */
+
+/*
+ * Cada modal gestiona su propio lock mediante una clase en <body>.
+ * NUNCA usar document.body.style.overflow directamente — genera race conditions
+ * entre componentes que se abren/cierran de forma independiente.
+ *
+ * body.menu-is-open  → Header.astro  (ya gestionado por classList.toggle)
+ * body.csheet-is-open → ContactSheet.astro
+ * body.slcta-is-open  → SideLeadCTA.astro
+ */
+body.menu-is-open,
+body.csheet-is-open,
+body.slcta-is-open {
+  overflow: hidden;
+}
+
+
 /* ── 3. BODY ──────────────────────────────────────────────────────────────── */
 
 body {

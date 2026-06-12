@@ -774,22 +774,22 @@ const currentYear = new Date().getFullYear();
      Usa :global() porque son clases de otros componentes.
   ════════════════════════════════════════════════════════════════════════ */
 
-  :global(body.footer-visible) .slcta__trigger {
-    opacity:        0;
-    visibility:     hidden;
-    pointer-events: none;
+  :global(body.footer-visible .slcta__trigger) {
+    opacity:        0 !important;
+    visibility:     hidden !important;
+    pointer-events: none !important;
     transition:
       opacity    0.35s var(--ease-out),
-      visibility 0s    linear 0.35s !important;
+      visibility 0s    linear 0.35s;
   }
 
-  :global(body.footer-visible) .csheet__fabs {
-    opacity:        0;
-    visibility:     hidden;
-    pointer-events: none;
+  :global(body.footer-visible .csheet__fabs) {
+    opacity:        0 !important;
+    visibility:     hidden !important;
+    pointer-events: none !important;
     transition:
       opacity    0.35s var(--ease-out),
-      visibility 0s    linear 0.35s !important;
+      visibility 0s    linear 0.35s;
   }
 
   /*

@@ -1006,12 +1006,12 @@
 
   @media (max-width: 767px) {
     .slcta__trigger {
-      right:         16px;                              /* alineado con los FABs */
+      right:         12px;                              /* alineado con los FABs */
       border-right:  1px solid rgba(88, 181, 240, 0.22); /* restaurar borde derecho */
       border-radius: 4px;                               /* todas las esquinas */
 
-      /* off-screen: 100% propio (44px) + right (16px) + 2px margen = 62px */
-      transform:     translateX(calc(100% + 18px));
+      /* off-screen: 100% propio (44px) + right (12px) + 2px margen = 58px */
+      transform:     translateX(calc(100% + 14px));
     }
   }
 </style>
@@ -1072,8 +1072,7 @@
       trigger.setAttribute('aria-expanded', 'true');
       trigger.setAttribute('aria-label', 'Cerrar cotizador de vuelo privado');
       panel.setAttribute('aria-hidden', 'false');
-
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('slcta-is-open'); /* overflow vía reset.css */
 
       /* Foco al primer campo interactivo tras la animación */
       const DUR_MID = parseFloat(
@@ -1098,8 +1097,7 @@
       trigger.setAttribute('aria-expanded', 'false');
       trigger.setAttribute('aria-label', 'Abrir cotizador de vuelo privado');
       panel.setAttribute('aria-hidden', 'true');
-
-      document.body.style.overflow = '';
+      document.body.classList.remove('slcta-is-open');
       trigger.focus();
     }
 

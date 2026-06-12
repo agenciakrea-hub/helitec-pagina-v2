@@ -296,12 +296,9 @@ const {
          * evitando el salto visual en iOS/Android.
          */
         if (isOpen) {
-          const scrollY = window.scrollY;
-          document.body.style.top      = `-${scrollY}px`;
-          document.body.style.overflow = 'hidden';
-          document.body.style.width    = '100%';
           /* Pausar Lenis: evita que procese eventos de wheel durante el menú */
           if (window.lenisInstance) window.lenisInstance.stop();
+          /* overflow: hidden se aplica vía CSS → body.menu-is-open (reset.css) */
 
           /*
            * Comportamiento hero: si el usuario abre el menú antes de scrollear,
@@ -315,11 +312,7 @@ const {
             header.dataset.menuForcedVisible = 'true';
           }
         } else {
-          const scrollY = Math.abs(parseInt(document.body.style.top || '0', 10));
-          document.body.style.overflow = '';
-          document.body.style.top      = '';
-          document.body.style.width    = '';
-          window.scrollTo({ top: scrollY, behavior: 'instant' });
+          /* overflow: '' se restaura automáticamente al quitar body.menu-is-open */
           /* Reanudar Lenis al cerrar el menú */
           if (window.lenisInstance) window.lenisInstance.start();
 

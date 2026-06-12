@@ -845,7 +845,7 @@ const { lang = 'es' } = Astro.props;
       trigger.setAttribute('aria-expanded', 'true');
       trigger.setAttribute('aria-label', 'Cerrar información de contacto');
       sheet.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('csheet-is-open'); /* overflow vía reset.css */
 
       /* Foco al primer elemento interactivo */
       setTimeout(() => {
@@ -861,7 +861,7 @@ const { lang = 'es' } = Astro.props;
       trigger.setAttribute('aria-expanded', 'false');
       trigger.setAttribute('aria-label', 'Abrir información de contacto');
       sheet.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
+      document.body.classList.remove('csheet-is-open');
       trigger.focus();
     }
 
