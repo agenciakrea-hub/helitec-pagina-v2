@@ -344,8 +344,14 @@ const stats: StatCell[] = [
      * con la ServicesSection que le sigue.
      * NOTA: linear-gradient como fondo de sección — excepción aprobada (v3).
      */
-    background:    linear-gradient(to bottom, #ffffff 0%, #ffffff 85%, var(--c-bg, #050505) 100%);
-    border-top:    1px solid rgba(0, 0, 0, 0.08); /* separador sutil sobre hero oscuro */
+    /*
+     * Gradiente: blanco puro (0–82%) → negro puro (95–100%).
+     * Llega a #000000 (= var(--c-bg)) ANTES del borde inferior de la sección,
+     * eliminando la franja gris/blanca visible cuando SERVICIOS entra en pantalla.
+     * La transición termina 5% antes del borde para garantizar costura limpia.
+     */
+    background:    linear-gradient(to bottom, #ffffff 0%, #ffffff 82%, #000000 95%);
+    border-top:    none; /* sin línea separadora — el cambio de color crea la separación visual */
     padding-block: clamp(56px, 9vh, 104px);
   }
 
@@ -392,7 +398,7 @@ const stats: StatCell[] = [
   .stats__title {
     font-family:    var(--font-display);
     font-size:      var(--text-2xl); /* clamp(2rem, 1.5rem + 2.5vw, 3.5rem) */
-    font-weight:    var(--fw-thin);  /* 200 — OBLIGATORIO */
+    font-weight:    var(--fw-light); /* 300 — límite superior OBLIGATORIO H2 */
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
     line-height:    1.1;
@@ -458,15 +464,14 @@ const stats: StatCell[] = [
     background-color: transparent;
 
     /*
-     * Padding compacto para el look "dashboard".
-     * Valores menores que la v1 para que las 6 celdas quepan
-     * en el viewport sin scroll excesivo.
+     * Padding reducido para apretar la grilla verticalmente.
+     * Horizontal sin cambios — solo el vertical se comprime.
      */
-    padding: clamp(20px, 2.5vw, 28px) clamp(16px, 2vw, 24px);
+    padding: clamp(10px, 1.4vw, 14px) clamp(16px, 2vw, 24px);
 
     display:        flex;
     flex-direction: column;
-    gap:            8px;
+    gap:            6px;
 
   }
 
@@ -482,7 +487,7 @@ const stats: StatCell[] = [
   .stats__value {
     font-family:    var(--font-display);
     font-size:      clamp(1.9rem, 3.2vw, 2.75rem);
-    font-weight:    var(--fw-thin); /* 200 — OBLIGATORIO */
+    font-weight:    var(--fw-regular); /* 400 — más legible sobre fondo blanco */
     letter-spacing: var(--ls-wide);
     line-height:    1;
     color:          #111111; /* tema claro — fondo blanco */
@@ -504,9 +509,10 @@ const stats: StatCell[] = [
   .stats__value--text {
     font-family:    var(--font-display);
     font-size:      clamp(1rem, 1.8vw, 1.35rem);
-    font-weight:    var(--fw-light); /* 300 */
+    font-weight:    var(--fw-regular); /* 400 */
     letter-spacing: var(--ls-wider);
     line-height:    1.3;
+    text-transform: uppercase; /* NACIONAL E INTERNACIONAL */
     color:          #111111; /* tema claro — fondo blanco */
   }
 
@@ -525,7 +531,7 @@ const stats: StatCell[] = [
   .stats__value--feature {
     font-family:    var(--font-display);
     font-size:      clamp(1.0rem, 1.8vw, 1.40rem);
-    font-weight:    var(--fw-light); /* 300 */
+    font-weight:    var(--fw-regular); /* 400 */
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
     line-height:    1.3;
@@ -571,10 +577,10 @@ const stats: StatCell[] = [
   .stats__label {
     font-family:    var(--font-sans);
     font-size:      var(--text-xs);
-    font-weight:    var(--fw-regular);
+    font-weight:    var(--fw-medium); /* 500 — más legible */
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
-    color:          #555555; /* tema claro — fondo blanco */
+    color:          #444444; /* tema claro — ligeramente más oscuro para legibilidad */
     line-height:    1.4;
 
     /*
@@ -640,7 +646,7 @@ const stats: StatCell[] = [
   /* Mobile (< 640px): ajustes de escala — grid ya es 2 columnas globalmente */
   @media (max-width: 639px) {
     .stats__cell {
-      padding: 18px 14px;
+      padding: 10px 14px;
     }
 
     /* Números principales: reducir escala en pantallas muy estrechas */
@@ -672,8 +678,8 @@ const stats: StatCell[] = [
     margin-top:       clamp(28px, 4vh, 48px);
 
     padding:          clamp(20px, 3vw, 32px) 0;
-    border-top:       1px solid rgba(255,255,255,.12); /* línea separadora visible sobre fondo oscuro */
-    background-color: var(--c-bg); /* fondo sólido oscuro — bloquea el gradiente de transición */
+    border-top:       1px solid var(--c-line); /* separador sutil — mismo tono que el fondo */
+    background-color: transparent;
   }
 
   .stats__cert-info {
@@ -952,23 +958,57 @@ const stats: StatCell[] = [
 
   /* Labels: gris corporativo oscuro */
   .stats__label {
-    color: #555555;
+    color: #444444;
   }
 
-  /*
-   * Efecto marcador (::before sweep): en fondo blanco el navy oscuro queda
-   * muy duro. Reemplazamos por un tinte sky-blue suave — el texto #555 sigue
-   * siendo legible sobre él.
-   */
+  /* Efecto marcador: azul Helitec navy (--c-brand) sobre fondo blanco */
   .stats__label::before {
-    background-color: rgba(88, 181, 240, 0.18);
+    background-color: var(--c-brand); /* #023a78 — azul Helitec oscuro */
   }
 
-  /*
-   * NOTA: El bloque .stats__cert tiene background-color: var(--c-bg) — fondo oscuro.
-   * Sus textos usan los estilos base (--c-text-1, --c-sky, etc.) que son correctos
-   * sobre fondo oscuro. No se sobreescriben aquí.
-   */
+  /* Labels sobre el marcador navy: blanco para contraste */
+  .stats__cell.is-visible .stats__label {
+    color: var(--c-white);
+  }
+
+  /* Separador del cert block en contexto claro */
+  .stats__cert {
+    border-top-color: rgba(0, 0, 0, 0.10);
+  }
+
+  /* Cert block — textos en tema claro (fondo blanco/gradiente) */
+  .stats__cert-title {
+    color: var(--c-brand);
+  }
+  .stats__cert-body {
+    color: #444444;
+  }
+
+  /* Palabras resaltadas en cert body */
+  .stats__highlight {
+    background-color: rgba(2, 58, 120, 0.08);
+    color:            var(--c-brand);
+    padding:          1px 5px;
+    border-radius:    2px;
+  }
+
+  /* Botón "Ver certificado" — tema claro */
+  .stats__cert-btn {
+    color:        #1a1a1a;
+    border-color: rgba(2, 58, 120, 0.28);
+  }
+  .stats__cert-btn svg {
+    color:   var(--c-brand);
+    opacity: 0.80;
+  }
+  .stats__cert-btn:hover {
+    border-color:     rgba(2, 58, 120, 0.55);
+    background-color: rgba(2, 58, 120, 0.05);
+    color:            #000000;
+  }
+  .stats__cert-btn:hover svg {
+    opacity: 1;
+  }
 </style>
 
 

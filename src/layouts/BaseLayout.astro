@@ -252,24 +252,50 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
   <script is:inline type="module">
     import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs';
 
-    const lenis = new Lenis({
-      duration:        1.35,
-      easing:          t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel:     true,
-      smoothTouch:     false,   /* Nativo en iOS/Android */
-      touchMultiplier: 2,
-      infinite:        false,
-    });
+    /*
+     * FIX TÁCTIL — Touch Hijacking Bug
+     * ─────────────────────────────────────────────────────────────────────────
+     * Lenis v1.x registra listeners internos de touchstart/touchmove en el
+     * wrapper de scroll incluso cuando smoothTouch: false. Esos listeners no
+     * son siempre passive:true, lo que obliga al browser a esperar la
+     * resolución del JS antes de ejecutar el gesto. Bajo cualquier pausa del
+     * RAF (GC, render pesado) el gesto se "pierde" y el scroll se congela.
+     *
+     * Solución: Lenis SOLO se inicializa en dispositivos con puntero fino
+     * (mouse/trackpad = desktop). En touch (pointer: coarse = phones, tablets)
+     * el scroll nativo de iOS/Android — que ya tiene inercia propia — manda.
+     *
+     * window.lenisInstance queda null en touch.
+     * Header.astro ya verifica `if (window.lenisInstance)` antes de llamar
+     * stop()/start() → no hay errores en mobile.
+     * ─────────────────────────────────────────────────────────────────────────
+     */
+    const isTouch = window.matchMedia('(pointer: coarse)').matches
+                  || ('ontouchstart' in window);
 
-    /* Exponer globalmente — Header.astro llama stop()/start() al toggle del menú */
-    window.lenisInstance = lenis;
+    if (!isTouch) {
+      const lenis = new Lenis({
+        duration:    1.35,
+        easing:      t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        infinite:    false,
+        /* smoothTouch y touchMultiplier eliminados: Lenis no corre en touch */
+      });
 
-    /* RAF loop */
-    function raf(time) {
-      lenis.raf(time);
+      /* Exponer globalmente — Header.astro llama stop()/start() al toggle del menú */
+      window.lenisInstance = lenis;
+
+      /* RAF loop */
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
       requestAnimationFrame(raf);
+
+    } else {
+      /* Touch device: scroll 100% nativo — sin Lenis */
+      window.lenisInstance = null;
     }
-    requestAnimationFrame(raf);
   </script>
 
 </body>

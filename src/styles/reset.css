@@ -42,6 +42,22 @@ html {
    * evita el quirk donde el navegador propaga el overflow al viewport.
    */
   overflow-x: clip;
+
+  /*
+   * FIX TÁCTIL — Señal explícita al browser de que el scroll vertical
+   * SIEMPRE está permitido en el documento raíz.
+   *
+   * Sin esta declaración, cualquier listener JS (aunque sea passive:false
+   * en un elemento hijo) obliga al browser a esperar resolución completa
+   * del event handler antes de comenzar a panear, causando el "freeze"
+   * táctil intermitente (usuario tiene que levantar el dedo y reintentar).
+   *
+   * touch-action se computa como la INTERSECCIÓN de todos los ancestros:
+   *   html (pan-y) ∩ cualquier hijo (auto) = pan-y  → scroll vertical OK
+   *   html (pan-y) ∩ .stats__aoc-viewport (none) = none → el dialog de
+   *   zoom del AOC Certificate sigue bloqueando para su pinch/pan propio.
+   */
+  touch-action: pan-y;
 }
 
 
