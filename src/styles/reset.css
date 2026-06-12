@@ -32,8 +32,21 @@ html {
    */
   scroll-behavior: auto;
 
-  /* Altura mínima garantizada */
-  block-size: 100%;
+  /*
+   * min-block-size: 100% (NO block-size: 100%) — diferencia crítica:
+   *
+   * block-size: 100%    = height: 100vh fijo.
+   *   PROBLEMA: combinado con overflow-x: clip, Chrome recomputa
+   *   overflow-y como `auto` (regla de reescritura de overflow).
+   *   El html queda con height: 100vh + overflow-y: auto → se convierte
+   *   en un scroll container independiente del viewport → DOBLE SCROLLBAR.
+   *   La barra azul (styled) queda en el html; el viewport genera la suya.
+   *
+   * min-block-size: 100% = html crece con el contenido (mínimo 100vh).
+   *   overflow-y se mantiene en visible, el scroll lo gestiona solo el
+   *   viewport → una única scrollbar (la azul styled de html).
+   */
+  min-block-size: 100%;
 
   /*
    * Elimina scroll horizontal en cualquier resolución.
