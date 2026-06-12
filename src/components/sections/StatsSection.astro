@@ -396,7 +396,7 @@ const stats: StatCell[] = [
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
     line-height:    1.1;
-    color:          var(--c-text-1);
+    color:          #111111; /* tema claro — fondo blanco */
   }
 
   /* ── "Tres décadas" / "Three decades" — subrayado bicolor animado ──────── */
@@ -485,7 +485,7 @@ const stats: StatCell[] = [
     font-weight:    var(--fw-thin); /* 200 — OBLIGATORIO */
     letter-spacing: var(--ls-wide);
     line-height:    1;
-    color:          var(--c-text-1);
+    color:          #111111; /* tema claro — fondo blanco */
 
     /*
      * font-variant-numeric: tabular-nums evita que los caracteres
@@ -507,7 +507,7 @@ const stats: StatCell[] = [
     font-weight:    var(--fw-light); /* 300 */
     letter-spacing: var(--ls-wider);
     line-height:    1.3;
-    color:          var(--c-text-1);
+    color:          #111111; /* tema claro — fondo blanco */
   }
 
   /* ── Celdas feature (filas 3 y 4) — capacidades sin número ─────────────── */
@@ -529,7 +529,7 @@ const stats: StatCell[] = [
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
     line-height:    1.3;
-    color:          var(--c-text-1);
+    color:          #111111; /* tema claro — fondo blanco */
   }
 
   /*
@@ -574,7 +574,7 @@ const stats: StatCell[] = [
     font-weight:    var(--fw-regular);
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
-    color:          var(--c-text-2);
+    color:          #555555; /* tema claro — fondo blanco */
     line-height:    1.4;
 
     /*
@@ -672,8 +672,8 @@ const stats: StatCell[] = [
     margin-top:       clamp(28px, 4vh, 48px);
 
     padding:          clamp(20px, 3vw, 32px) 0;
-    border-top:       1px solid var(--c-line); /* solo borde superior — separa del grid */
-    background-color: transparent;
+    border-top:       1px solid rgba(255,255,255,.12); /* línea separadora visible sobre fondo oscuro */
+    background-color: var(--c-bg); /* fondo sólido oscuro — bloquea el gradiente de transición */
   }
 
   .stats__cert-info {
@@ -964,44 +964,11 @@ const stats: StatCell[] = [
     background-color: rgba(88, 181, 240, 0.18);
   }
 
-  /* Separador de la sección cert en modo claro */
-  .stats__cert {
-    border-top-color: rgba(0, 0, 0, 0.10);
-  }
-
-  /* Textos del bloque de certificación */
-  .stats__cert-title {
-    color: var(--c-brand);
-  }
-  .stats__cert-body {
-    color: #444444;
-  }
-
-  /* Palabras resaltadas: tinte brand-blue sobre fondo blanco */
-  .stats__highlight {
-    background-color: rgba(2, 58, 120, 0.08);
-    color:            var(--c-brand);
-    padding:          1px 5px;
-    border-radius:    2px;
-  }
-
-  /* Botón "Ver certificado" — adaptado a tema claro */
-  .stats__cert-btn {
-    color:        #1a1a1a;
-    border-color: rgba(2, 58, 120, 0.28);
-  }
-  .stats__cert-btn svg {
-    color:   var(--c-brand);
-    opacity: 0.80;
-  }
-  .stats__cert-btn:hover {
-    border-color:     rgba(2, 58, 120, 0.55);
-    background-color: rgba(2, 58, 120, 0.05);
-    color:            #000000;
-  }
-  .stats__cert-btn:hover svg {
-    opacity: 1;
-  }
+  /*
+   * NOTA: El bloque .stats__cert tiene background-color: var(--c-bg) — fondo oscuro.
+   * Sus textos usan los estilos base (--c-text-1, --c-sky, etc.) que son correctos
+   * sobre fondo oscuro. No se sobreescriben aquí.
+   */
 </style>
 
 
