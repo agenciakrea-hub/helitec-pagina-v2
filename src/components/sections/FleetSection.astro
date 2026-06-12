@@ -139,21 +139,21 @@ const faqItems = [
     padding-block:    clamp(72px, 11vh, 120px);
 
     /*
-     * FIX LAYOUT COLLAPSE — overflow-x: clip en lugar de overflow: hidden
+     * overflow: hidden — CRÍTICO: hace DOS cosas simultáneas que son necesarias:
+     *   1. Clipa visualmente el .ops__plane-deco (position:absolute, h:720px)
+     *      que desborda por abajo y por la derecha del contenedor.
+     *   2. Suprime el position:sticky de .ops__left (CSS spec: sticky queda
+     *      desactivado por cualquier ancestro con scroll container). Esto es
+     *      INTENCIONAL — el título debe scrollear con la página en el layout
+     *      actual (sin sticky real activado).
      *
-     * overflow: hidden crea un scroll container (BFC). En iOS Safari, cuando
-     * un hijo tiene will-change: transform (GPU compositing layer) con un
-     * translateX grande, el compositor puede temporalmente calcular los scroll
-     * bounds del DOCUMENTO incluyendo la extensión de la capa GPU — antes del
-     * clipping CSS. Ese instante hace que scrollHeight colapse a innerHeight,
-     * la barra nativa ocupa el 100% y el scroll se congela.
+     * NUNCA reemplazar por overflow-x:clip aquí — hacerlo desbloquea el sticky
+     * y elimina el clip vertical, creando el espacio negro gigante reportado.
      *
-     * overflow-x: clip recorta el overflow VISUAL sin crear un scroll container,
-     * eliminando la confusión del compositor. Chrome 90+, Firefox 81+, Safari 16+.
-     * En browsers < Safari 16: el clip no aplica (sin freeze, la animación
-     * simplemente no se recorta en el borde — efecto visual menor aceptable).
+     * Fix para el scroll-freeze de iOS está en el JS: eliminando el translateX
+     * del faqModule en mobile (ver setInitialState y applyFrame abajo).
      */
-    overflow-x: clip;
+    overflow: hidden;
   }
 
 
@@ -623,15 +623,16 @@ const faqItems = [
 
       faqModule.style.opacity   = '0';
       /*
-       * FIX LAYOUT COLLAPSE — en mobile NO hay translateX para faqModule.
+       * FIX SCROLL FREEZE TÁCTIL — en mobile NO hay translateX para faqModule.
        *
-       * En desktop (overflow-x: clip activo): translateX(100vw) → clip visual,
-       * sin scroll container, sin freeze. El slide-in desde la derecha funciona.
+       * Desktop: translateX(100vw) clipeado por overflow:hidden. El slide-in
+       * desde la derecha funciona. No hay scroll táctil → no hay freeze.
        *
-       * En mobile: translateX(20vw) ≈ 75-90px combinado con will-change:transform
-       * creaba una GPU layer que excedía los bounds del contenedor. Esto causaba
-       * que el compositor de iOS temporalmente "viera" un scrollHeight colapsado.
-       * Solución: solo opacity en mobile — fade in sin overflow de ningún tipo.
+       * Mobile: translateX(20vw) ≈ 75-90px combinado con will-change:transform
+       * creaba una GPU compositing layer que excedía los bounds del contenedor.
+       * El compositor de iOS la "veía" fuera del overflow:hidden boundary antes
+       * del clip stage → scrollHeight colapsaba momentáneamente → scroll se
+       * congelaba. Solución: solo opacity en mobile. Sin translateX, sin overflow.
        */
       faqModule.style.transform = isMobile
         ? 'none'
