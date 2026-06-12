@@ -107,8 +107,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering:          optimizeLegibility;
 
-  /* Evita desbordamiento horizontal accidental */
-  overflow-x: hidden;
+  /*
+   * FIX DOBLE SCROLLBAR — usar clip, NO hidden.
+   *
+   * overflow-x: hidden activa la regla de reescritura de overflow del CSS spec:
+   * como hidden ≠ visible, el browser computa overflow-y como `auto`, convirtiendo
+   * body en un scroll container independiente. Combinado con html { overflow-x: clip },
+   * que impide la propagación del overflow del body al viewport, quedan dos scroll
+   * containers activos → dos scrollbars azules visibles al cargar la página.
+   *
+   * overflow-x: clip NO activa esa regla de reescritura → overflow-y se mantiene
+   * visible → body NO se convierte en scroll container → una sola scrollbar.
+   * (Mismo principio que ya se aplica en html arriba.)
+   */
+  overflow-x: clip;
 
   /* Mínimo de altura para posicionamiento fixed */
   min-block-size: 100%;
