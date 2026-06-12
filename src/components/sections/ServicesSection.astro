@@ -60,6 +60,7 @@ const services = [
     cta:       lang === 'es' ? 'Activar emergencia médica'     : 'Activate medical emergency',
     href:      'https://wa.me/584166235254?text=EMERGENCIA+AEROM%C3%89DICA',
     img:       '/assets/Avion%20y%20Ambulancia1.jpg',
+    imgMobile: '/assets/f5-fullsize-render.jpg',
     alt:       lang === 'es'
       ? 'Metro III Helitec junto a ambulancia — servicio aeromédico'
       : 'Helitec Metro III alongside ambulance — aeromedical service',
@@ -130,14 +131,20 @@ const services = [
         >
 
           <!-- Imagen con parallax + encuadre per-card vía imgStyle inline -->
-          <img
-            class="sgrid__photo"
-            src={svc.img}
-            alt={svc.alt}
-            style={svc.imgStyle ?? ''}
-            loading={i < 2 ? 'eager' : 'lazy'}
-            decoding="async"
-          />
+          <!-- <picture> permite asset diferente en móvil (ej: card-03 aeromédicos) -->
+          <picture>
+            {svc.imgMobile && (
+              <source media="(max-width: 767px)" srcset={svc.imgMobile} />
+            )}
+            <img
+              class="sgrid__photo"
+              src={svc.img}
+              alt={svc.alt}
+              style={svc.imgStyle ?? ''}
+              loading={i < 2 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+          </picture>
 
           <!--
             Gradiente oscuro inferior para legibilidad del texto.

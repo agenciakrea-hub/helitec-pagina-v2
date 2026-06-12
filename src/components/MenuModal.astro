@@ -66,10 +66,11 @@ const services = [
     alt:   'Helicóptero Helitec en operación petrolera',
   },
   {
-    label: 'Traslados Aeromédicos',
-    href:  '/#servicios',
-    img:   '/assets/Avion%20y%20Ambulancia1.jpg',
-    alt:   'Metro III Helitec junto a ambulancia — servicio aeromédico',
+    label:     'Traslados Aeromédicos',
+    href:      '/#servicios',
+    img:       '/assets/Avion%20y%20Ambulancia1.jpg',
+    imgMobile: '/assets/f5-fullsize-render.jpg',
+    alt:       'Metro III Helitec junto a ambulancia — servicio aeromédico',
   },
   {
     label: 'Carga y Eslinga',
@@ -166,13 +167,19 @@ const services = [
           aria-hidden="true": el <span> del label ya describe el servicio.
           object-fit: cover OBLIGATORIO (ver reset.css + refuerzo explícito aquí).
         -->
-        <img
-          src={service.img}
-          alt={service.alt}
-          class="menu-modal__card-img"
-          loading="lazy"
-          aria-hidden="true"
-        />
+        <!-- <picture> permite asset diferente en móvil (ej: card aeromédicos) -->
+        <picture>
+          {service.imgMobile && (
+            <source media="(max-width: 767px)" srcset={service.imgMobile} />
+          )}
+          <img
+            src={service.img}
+            alt={service.alt}
+            class="menu-modal__card-img"
+            loading="lazy"
+            aria-hidden="true"
+          />
+        </picture>
 
         <!--
           Overlay rgba: SOLO para legibilidad del texto sobre foto real.
