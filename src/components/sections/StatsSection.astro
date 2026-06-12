@@ -892,11 +892,32 @@ const stats: StatCell[] = [
     justify-content:  center;
 
     /*
-     * touch-action: none bloquea el scroll nativo del browser para
-     * que los eventos touch pasen al JS de pinch/pan.
-     * El JS maneja pan con 1 dedo cuando scale > 1.
+     * touch-action NO se define aquí en el estado base.
+     * Se aplica SOLO cuando el dialog está abierto (ver regla abajo).
+     * Sin esta restricción, el viewport secuestraba los eventos touch
+     * de toda la página incluso cuando el modal estaba cerrado.
      */
-    touch-action:     none;
+  }
+
+  /*
+   * touch-action: none — bloquea scroll nativo del browser ÚNICAMENTE
+   * cuando el visor está activo. Así el JS de pinch/pan recibe los eventos.
+   * El dialog[open] selector garantiza que esto no afecta al scroll global.
+   */
+  .stats__aoc-dialog[open] .stats__aoc-viewport {
+    touch-action: none;
+  }
+
+  /*
+   * Modal cerrado — completamente intangible.
+   * pointer-events: none: sin clics, sin toques fantasma.
+   * visibility: hidden: el browser ni siquiera lo considera para hit-testing.
+   * Esto previene que un <dialog> renderizado en el top layer pero oculto
+   * intercepte eventos táctiles en el contenido de la página debajo.
+   */
+  .stats__aoc-dialog:not([open]) {
+    pointer-events: none;
+    visibility:     hidden;
   }
 
   .stats__aoc-viewport.is-draggable {
@@ -1237,6 +1258,8 @@ const stats: StatCell[] = [
 
     /* ── RUEDA DEL MOUSE — zoom pointer-centered ──────────────────────── */
     viewport.addEventListener('wheel', function (e) {
+      /* Guardia: no procesar si el dialog está cerrado */
+      if (!dialog.open) return;
       e.preventDefault();
 
       /* deltaY negativo = acercar (scroll up), positivo = alejar (scroll down) */
@@ -1301,6 +1324,8 @@ const stats: StatCell[] = [
     var touchDragOrigin = null;
 
     viewport.addEventListener('touchstart', function (e) {
+      /* Guardia: no procesar si el dialog está cerrado */
+      if (!dialog.open) return;
       if (e.touches.length === 2) {
         /* Iniciar pinch */
         e.preventDefault();
@@ -1320,6 +1345,8 @@ const stats: StatCell[] = [
     }, { passive: false });
 
     viewport.addEventListener('touchmove', function (e) {
+      /* Guardia: no procesar si el dialog está cerrado */
+      if (!dialog.open) return;
       if (e.touches.length === 2 && lastPinchDist > 0) {
         e.preventDefault();
         var dist     = Math.hypot(
