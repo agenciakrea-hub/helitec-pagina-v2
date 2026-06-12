@@ -137,7 +137,23 @@ const faqItems = [
     background-color: var(--c-bg);
     border-top:       none; /* eliminado — sin líneas divisorias entre secciones */
     padding-block:    clamp(72px, 11vh, 120px);
-    overflow:         hidden;   /* recorta translateX durante slide-in */
+
+    /*
+     * FIX LAYOUT COLLAPSE — overflow-x: clip en lugar de overflow: hidden
+     *
+     * overflow: hidden crea un scroll container (BFC). En iOS Safari, cuando
+     * un hijo tiene will-change: transform (GPU compositing layer) con un
+     * translateX grande, el compositor puede temporalmente calcular los scroll
+     * bounds del DOCUMENTO incluyendo la extensión de la capa GPU — antes del
+     * clipping CSS. Ese instante hace que scrollHeight colapse a innerHeight,
+     * la barra nativa ocupa el 100% y el scroll se congela.
+     *
+     * overflow-x: clip recorta el overflow VISUAL sin crear un scroll container,
+     * eliminando la confusión del compositor. Chrome 90+, Firefox 81+, Safari 16+.
+     * En browsers < Safari 16: el clip no aplica (sin freeze, la animación
+     * simplemente no se recorta en el borde — efecto visual menor aceptable).
+     */
+    overflow-x: clip;
   }
 
 
@@ -606,9 +622,20 @@ const faqItems = [
       lBase.style.transform    = 'none';
 
       faqModule.style.opacity   = '0';
-      faqModule.style.transform = 'translateX('
-        + Math.round(window.innerWidth * (isMobile ? 0.20 : 1.0))
-        + 'px)';
+      /*
+       * FIX LAYOUT COLLAPSE — en mobile NO hay translateX para faqModule.
+       *
+       * En desktop (overflow-x: clip activo): translateX(100vw) → clip visual,
+       * sin scroll container, sin freeze. El slide-in desde la derecha funciona.
+       *
+       * En mobile: translateX(20vw) ≈ 75-90px combinado con will-change:transform
+       * creaba una GPU layer que excedía los bounds del contenedor. Esto causaba
+       * que el compositor de iOS temporalmente "viera" un scrollHeight colapsado.
+       * Solución: solo opacity en mobile — fade in sin overflow de ningún tipo.
+       */
+      faqModule.style.transform = isMobile
+        ? 'none'
+        : 'translateX(' + Math.round(window.innerWidth) + 'px)';
 
       /* Avión — entra desde la derecha como pieza final */
       planeDeco.style.opacity   = '0';
@@ -665,10 +692,11 @@ const faqItems = [
 
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
-        faqModule.style.opacity   = pFaq.toFixed(3);
-        faqModule.style.transform = 'translateX('
-          + lerp(Math.round(window.innerWidth * 0.20), 0, pFaq).toFixed(1)
-          + 'px)';
+        /* FIX: en mobile faqModule solo anima opacity — sin translateX.
+         * Elimina el overflow que causaba el Layout Collapse en iOS Safari.
+         * transform ya está en 'none' desde setInitialState() — no se escribe aquí
+         * para no crear un valor que el compositor pueda malinterpretar. */
+        faqModule.style.opacity  = pFaq.toFixed(3);
 
       } else {
         lOutline.style.opacity   = p0.toFixed(3);
