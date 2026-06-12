@@ -1,35 +1,16 @@
 ---
 /**
- * FleetSection.astro — "Ingeniería del Servicio"  v3 (Motor Scroll VANDSLAB)
+ * FleetSection.astro — "Ingeniería del Servicio"  v4
  * Consorcio Helitec
  *
- * Layout: 2 columnas desktop / apilado mobile
- *   · Col izq (sticky): H2 de 4 capas animadas por scroll
- *   · Col der:           FAQ acordeón, entra desde el borde derecho
- *   · Fondo:             Logo avión gigante absolute right
- *
- * Motor de animación (scroll-driven, 60fps):
- *   IntersectionObserver → activa scroll listener solo cuando la sección
- *   está en el viewport (performance). requestAnimationFrame suaviza la
- *   escritura de transforms. progreso 0→1 mapeado a través de la sección.
- *
- *   Timelines (todos completos ≈ progress 0.48 = "centro del scroll"):
- *     layer-outline  0.05–0.30 → translateY(-60px → 0) + opacity
- *     layer-solid    0.10–0.35 → translateX(-100px → 0) + opacity
- *     layer-accent   0.15–0.40 → translateX(+60px → 0) + opacity
- *     layer-base     0.03–0.25 → opacity solo (ancla estática)
- *     faq-module     0.10–0.48 → translateX(100vw → 0) + opacity
- *
- *   Mobile (<768px):
- *     Sólo movimiento vertical sutil + opacity (sin horizontales)
- *     para evitar overflow lateral en pantallas estrechas.
- *
- * Anti-slop compliance:
- *   ✓ PROHIBIDO box-shadow
- *   ✓ PROHIBIDO linear-gradient decorativo
- *   ✓ border-radius ≤ 4px
- *   ✓ font-weight 700 en capas "pesadas" — decisión explícita del Tech Lead
- *     (referencia VANDSLAB); regla fw:200-300 aplica a titulares estándar
+ * FIX v4:
+ *   1. Timing scroll comprimido: animación completa mientras la sección
+ *      está en el tercio inferior del viewport (progress formula = vh en
+ *      lugar de sectionHeight+vh). Texto visible al animarse.
+ *   2. Legibilidad FAQ: opacidad del logo reducida a 0.15 + backdrop
+ *      semitransparente en .faq-module para separar texto del fondo.
+ *   3. Highlight sweeps en frases clave del FAQ: <span class="hl">
+ *      activados con delay al abrir cada panel del acordeón.
  */
 
 interface Props {
@@ -38,26 +19,30 @@ interface Props {
 
 const { lang = 'es' } = Astro.props;
 
+/*
+ * Respuestas con markup HTML — renderizadas con set:html en el template.
+ * <span class="hl">...</span> marca frases para el efecto de resaltado.
+ */
 const faqItems = [
   {
     q: '¿QUÉ VENTAJAS TIENE UN VUELO CHÁRTER EJECUTIVO FRENTE A UN VUELO COMERCIAL?',
-    a: 'Flexibilidad total en rutas, privacidad y confort con cabinas VIP, y eficiencia absoluta evitando filas y demoras en terminales masivas.',
+    a: '<span class="hl">Flexibilidad total</span> en rutas, privacidad y confort con cabinas VIP, y <span class="hl">eficiencia absoluta</span> evitando filas y demoras en terminales masivas.',
   },
   {
     q: '¿QUÉ CERTIFICACIONES DE SEGURIDAD POSEE CONSORCIO HELITEC C.A.?',
-    a: 'Operamos bajo estrictos estándares: SMS certificado por el INAC, Mantenimiento predictivo en tiempo real, y tripulaciones expertas con más de 10,000 horas de vuelo.',
+    a: 'SMS <span class="hl">certificado por la Autoridad Aeronáutica Venezolana (INAC)</span>, <span class="hl">Mantenimiento Predictivo</span> en tiempo real, y <span class="hl">Tripulaciones Expertas</span> con más de 10.000 horas de vuelo.',
   },
   {
     q: '¿CUÁNTO CUESTA UN VUELO CHÁRTER EJECUTIVO?',
-    a: 'El costo es personalizado según: tipo de aeronave seleccionada, distancia y tasas aeroportuarias, y servicios adicionales como catering a la carta o traslados blindados.',
+    a: '<span class="hl">El costo de una operación privada se estructura de manera personalizada</span>: tipo de aeronave, distancia, tasas aeroportuarias y servicios como catering a la carta o traslados blindados.',
   },
   {
     q: '¿PUEDEN OPERAR VUELOS MÉDICOS DE EMERGENCIA?',
-    a: 'Sí. Operamos en alianza con Aeroambulancia Silva, ofreciendo auténticas UCI móviles, repatriaciones sanitarias expeditivas y respuesta inmediata 24/7.',
+    a: 'Sí. Operamos en <span class="hl">alianza estratégica directa con Aeroambulancia Silva</span>, ofreciendo auténticas UCI móviles, repatriaciones sanitarias expeditivas y respuesta inmediata 24/7.',
   },
   {
     q: '¿CÓMO OPTIMIZAMOS LA LOGÍSTICA EN PLATAFORMAS PETROLERAS?',
-    a: 'A través de operaciones en enclaves remotos, estricto cumplimiento de normativas de Seguridad y Salud Laboral (SST) exigidas por consorcios, y flota comercial versátil de alta densidad.',
+    a: '<span class="hl">Operaciones en Enclaves Remotos</span>, <span class="hl">Cumplimiento riguroso de normativas</span> de SST exigidas por consorcios, y <span class="hl">Configuración de Flota Comercial Versátil</span> de alta densidad.',
   },
 ];
 ---
@@ -65,11 +50,6 @@ const faqItems = [
 
 <section class="ops" id="flota" aria-labelledby="ops-heading" data-ops-section>
 
-  <!--
-    Logo avión gigante — decorativo, fondo absoluto.
-    right: 0 → toca el borde real del viewport (section = 100% ancho).
-    z-index: 0 + pointer-events: none → bajo todo el contenido interactivo.
-  -->
   <img
     src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
     class="ops__plane-deco"
@@ -81,7 +61,7 @@ const faqItems = [
 
   <div class="ops__inner">
 
-    <!-- ══ COL IZQUIERDA — Tipografía desarmada (sticky) ═══════════════════ -->
+    <!-- ══ COL IZQUIERDA — Tipografía desarmada (sticky en desktop) ════════ -->
     <div class="ops__left">
       <header class="ops__header">
 
@@ -89,12 +69,6 @@ const faqItems = [
           {lang === 'es' ? 'Ingeniería del Servicio' : 'Service Engineering'}
         </p>
 
-        <!--
-          H2 en 4 capas independientes. Cada span tiene:
-          · data-layer="*"   → hook JS (sin acoplamiento a clases)
-          · will-change en CSS → hint al compositor GPU
-          JS sobreescribe transform/opacity mediante rAF en cada scroll tick.
-        -->
         <h2 class="ops__title" id="ops-heading">
           <span class="ops__title-layer layer-outline" data-layer="outline">
             SOBRE NUESTRAS
@@ -123,7 +97,7 @@ const faqItems = [
         aria-label="Preguntas frecuentes"
       >
 
-        {faqItems.map((item, i) => (
+        {faqItems.map((item) => (
           <div class="faq-item" role="listitem" data-faq-item>
 
             <button
@@ -138,63 +112,68 @@ const faqItems = [
 
             <div class="faq-panel" data-faq-panel>
               <div class="faq-panel__inner">
-                <p class="faq-panel__text">{item.a}</p>
+                <!--
+                  set:html renderiza el markup con <span class="hl"> para highlights.
+                  Las clases .hl e .hl.is-highlighted son :global en el <style>.
+                -->
+                <p class="faq-panel__text" set:html={item.a}></p>
               </div>
             </div>
 
           </div>
         ))}
 
-      </div><!-- /.faq-module -->
+      </div>
 
-    </div><!-- /.ops__right -->
+    </div>
 
-  </div><!-- /.ops__inner -->
+  </div>
 </section>
 
 
 <style>
   /* ════════════════════════════════════════════════════════════════════════
-     SECCIÓN CONTENEDOR
+     SECCIÓN
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops {
-    position:         relative;   /* anchor para el logo absolute */
+    position:         relative;
     background-color: var(--c-bg);
     border-top:       1px solid var(--c-line);
     padding-block:    clamp(72px, 11vh, 120px);
-    overflow:         hidden;     /* recorta translateX de todas las capas — mobile y desktop */
+    overflow:         hidden;   /* recorta translateX durante slide-in */
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
      LOGO AVIÓN DE FONDO
+     Reducido a opacity: 0.15 para mejorar legibilidad del FAQ.
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops__plane-deco {
-    position:         absolute;
-    right:            0;
-    top:              clamp(180px, 26vh, 240px);
+    position:        absolute;
+    right:           0;
+    top:             clamp(180px, 26vh, 240px);
 
-    height:           clamp(420px, 58vw, 720px);
-    width:            auto;
+    height:          clamp(420px, 58vw, 720px);
+    width:           auto;
 
-    object-fit:       contain;
-    object-position:  right top;
+    object-fit:      contain;
+    object-position: right top;
 
-    opacity:          0.18;
-    z-index:          0;
-    pointer-events:   none;
-    user-select:      none;
+    opacity:         0.15;   /* era 0.18 — reducido para legibilidad FAQ */
+    z-index:         0;
+    pointer-events:  none;
+    user-select:     none;
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     GRID PRINCIPAL — 2 COLUMNAS (desktop) / APILADO (mobile)
+     GRID PRINCIPAL
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops__inner {
-    position:       relative;  /* stacking context sobre el logo (z:0) */
+    position:       relative;
     z-index:        1;
 
     max-width:      var(--content-max);
@@ -207,11 +186,9 @@ const faqItems = [
     align-items:           start;
   }
 
-  /* Col izquierda sticky — el título permanece visible
-     mientras el usuario scrollea el acordeón */
   .ops__left {
     position: sticky;
-    top:      calc(var(--header-h) + 32px);  /* 68px header + margen */
+    top:      calc(var(--header-h) + 32px);
   }
 
 
@@ -245,7 +222,7 @@ const faqItems = [
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     H2 DESARMADO — 4 CAPAS TIPOGRÁFICAS
+     H2 — 4 CAPAS TIPOGRÁFICAS
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops__title {
@@ -262,33 +239,24 @@ const faqItems = [
 
   .ops__title-layer {
     display:    block;
-    /*
-     * GPU compositing hint: el motor JS actualiza transform/opacity en rAF.
-     * will-change promueve cada capa a su propia layer del compositor,
-     * garantizando actualizaciones sin reflow (60fps incluso en mobile).
-     */
     will-change: transform, opacity;
   }
 
-  /* Rojo Helitec sólido */
   .layer-outline {
-    color:       var(--c-red);   /* #e53b1c */
+    color:       var(--c-red);
     font-weight: 700;
   }
 
-  /* Blanco puro, pesado */
   .layer-solid {
     color:       var(--c-text-1);
     font-weight: 700;
   }
 
-  /* Azul Helitec */
   .layer-accent {
-    color:       var(--c-sky);   /* #58b5f0 */
+    color:       var(--c-sky);
     font-weight: 700;
   }
 
-  /* Blanco puro, pesado — ancla estática (solo opacity) */
   .layer-base {
     color:       var(--c-text-1);
     font-weight: 700;
@@ -296,13 +264,22 @@ const faqItems = [
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     FAQ MODULE — hint GPU para el slide-in desde el borde derecho
+     FAQ MODULE
+     Backdrop semitransparente para separar el texto del logo de fondo.
   ════════════════════════════════════════════════════════════════════════ */
 
   .faq-module {
     display:        flex;
     flex-direction: column;
     will-change:    transform, opacity;
+
+    /* Legibilidad: fondo oscuro sutil + desenfoque del logo detrás */
+    background:            rgba(0, 0, 0, 0.42);
+    backdrop-filter:       blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border:                1px solid var(--c-line);
+    border-radius:         4px;   /* máx anti-slop: 4px */
+    padding:               var(--sp-3) var(--sp-5);
   }
 
 
@@ -333,10 +310,10 @@ const faqItems = [
     padding-block:   var(--sp-5);
     padding-inline:  0;
 
-    background:      none;
-    border:          none;
-    cursor:          pointer;
-    text-align:      left;
+    background:  none;
+    border:      none;
+    cursor:      pointer;
+    text-align:  left;
   }
 
   .faq-trigger:hover {
@@ -408,7 +385,50 @@ const faqItems = [
     font-size:    var(--text-sm);
     font-weight:  var(--fw-light);
     line-height:  1.75;
-    color:        var(--c-text-3);
+    color:        var(--c-text-2);   /* subido de text-3 para mejor legibilidad */
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     HIGHLIGHT SPANS — efecto resaltador Azul Helitec
+     Idéntico al patrón de StatsSection (aprobado por Tech Lead).
+
+     Mecanismo: background-size anima de 0% → 100% (sweep de izq a der).
+
+     REGLA CRÍTICA: NO definir transition en el estado base (.hl).
+     En Blink/WebKit, cuando transition cambia junto con la propiedad animada
+     en la misma recalculación de estilos, el browser usa la transition del
+     estado ANTERIOR (la base, 0ms), no la del destino — el sweep es invisible.
+     Con transition SOLO en .hl.is-highlighted, el forward usa 650ms ✓ y el
+     reset al quitar la clase usa "ninguna" (sin animación, instant) ✓.
+
+     :global() necesario porque set:html no recibe el Astro CID.
+  ════════════════════════════════════════════════════════════════════════ */
+
+  :global(.hl) {
+    background-image:    linear-gradient(
+                           rgba(88, 181, 240, 0.38),
+                           rgba(88, 181, 240, 0.38)
+                         );
+    background-repeat:   no-repeat;
+    background-size:     0% 90%;
+    background-position: left center;
+    padding-inline:      2px;
+    border-radius:       2px;
+
+    /*
+     * box-decoration-break: clone — en spans multi-línea, cada línea
+     * recibe su propio background en vez de que el bg se "corte" en el wrap.
+     */
+    -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+
+    /* ⚠ SIN transition aquí — ver explicación arriba */
+  }
+
+  :global(.hl.is-highlighted) {
+    background-size: 100% 90%;
+    transition: background-size 650ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
 
@@ -424,7 +444,7 @@ const faqItems = [
     }
 
     .ops__left {
-      position: static;  /* Sin sticky en mobile */
+      position: static;
     }
   }
 
@@ -443,11 +463,11 @@ const faqItems = [
 <script>
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 1 — FAQ Acordeón (Vanilla JS)
+   * PARTE 1 — FAQ Acordeón
    *
-   * · Click → abre/cierra panel con max-height real (scrollHeight)
-   * · Solo un panel abierto a la vez
-   * · aria-expanded sincronizado
+   * Al abrir: expande panel con max-height real, activa .hl.is-highlighted
+   * con delay de 150ms (sweep visible después de que el panel abre).
+   * Al cerrar: colapsa panel, remueve highlights al instante (reset).
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
@@ -463,6 +483,11 @@ const faqItems = [
       item.classList.remove('is-open');
       if (panel)   panel.style.maxHeight = '0';
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
+
+      /* Reset highlights: sin animación (transition: 0ms en CSS base) */
+      item.querySelectorAll('.hl').forEach(function (el) {
+        el.classList.remove('is-highlighted');
+      });
     }
 
     /** @param {HTMLElement} item */
@@ -473,6 +498,25 @@ const faqItems = [
       item.classList.add('is-open');
       if (panel && inner) panel.style.maxHeight = inner.scrollHeight + 'px';
       if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+      /*
+       * Highlights: delay de 150ms para que el panel abra parcialmente
+       * antes de que el sweep arranque — efecto más dramático y visible.
+       */
+      setTimeout(function () {
+        item.querySelectorAll('.hl').forEach(function (el, idx) {
+          /*
+           * void el.offsetWidth — fuerza un reflow sincrónico.
+           * Sin esto, el browser puede batchar el estado background-size:0%
+           * y background-size:100% en el mismo frame (sin detección del
+           * valor inicial) → la transition no dispara.
+           */
+          void el.offsetWidth;
+          setTimeout(function () {
+            el.classList.add('is-highlighted');
+          }, idx * 110); /* 110ms de escalonado entre cada frase */
+        });
+      }, 200); /* 200ms: panel abierto parcialmente antes de que sweeps arranquen */
     }
 
     items.forEach(function (item) {
@@ -489,39 +533,32 @@ const faqItems = [
 
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 2 — Motor de Scroll VANDSLAB
+   * PARTE 2 — Motor de Scroll VANDSLAB  (v4 — timing comprimido)
    *
-   * Arquitectura:
-   *   · IntersectionObserver observa [data-ops-section]
-   *   · Al entrar en viewport → activa scroll listener
-   *   · Al salir → remueve scroll listener (performance)
-   *   · scroll handler → encola un requestAnimationFrame (un frame por tick)
-   *   · applyFrame() calcula progress y escribe transforms/opacity
+   * FIX TIMING v4:
+   * La fórmula de progreso anterior usaba (sectionHeight + vh) como ventana,
+   * lo que hacía que en secciones altas (especialmente mobile apilado) la
+   * animación completara cuando el usuario ya había pasado el texto.
    *
-   * Progress (p):
-   *   p = 0  → tope de la sección toca el borde inferior del viewport
-   *   p = 0.5 → centro de la sección = centro del viewport (≈ fully assembled)
-   *   p = 1  → sección sale completamente por arriba del viewport
+   * Nueva fórmula: ventana = 1 × vh (un viewport de scroll).
+   * · p=0: sección entra por el borde inferior del viewport
+   * · p=1: tope de la sección llega al borde superior del viewport
+   * Esto garantiza que la animación del TEXTO completa mientras está visible.
    *
-   * Timelines (start, end):
-   *   layer-outline  → [0.05, 0.30]  translateY(-60→0) + opacity
-   *   layer-solid    → [0.10, 0.35]  translateX(-100→0) + opacity
-   *   layer-accent   → [0.15, 0.40]  translateX(+60→0) + opacity
-   *   layer-base     → [0.03, 0.25]  opacity solo (ancla)
-   *   faq-module     → [0.10, 0.48]  translateX(vw→0) + opacity
+   * El FAQ tiene un timeline diferido ([0.40, 0.90]) para que su entrada
+   * ocurra cuando el usuario ha scrolleado lo suficiente para verlo.
    *
-   * Mobile (<768px):
-   *   Solo movimiento vertical sutil + opacity (sin horizontales).
-   *   Evita overflow lateral en pantallas estrechas.
-   *
-   * prefers-reduced-motion:
-   *   Si el usuario prefiere movimiento reducido, se muestran todos los
-   *   elementos en su estado final sin animación.
+   * Timelines (start, end) con ventana 1×vh:
+   *   layer-outline [0.05, 0.35] → completa con section top a ~65% del viewport
+   *   layer-solid   [0.10, 0.38] → completa con section top a ~62% del viewport
+   *   layer-accent  [0.15, 0.42] → completa con section top a ~58% del viewport
+   *   layer-base    [0.02, 0.28] → opacity, ancla
+   *   faq-module    [0.40, 0.90] → entra cuando section está más avanzada en view
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
 
-    /* ── Selección de elementos ──────────────────────────────────────────── */
+    /* ── Elementos ─────────────────────────────────────────────────────── */
 
     var section   = /** @type {HTMLElement|null} */ (document.querySelector('[data-ops-section]'));
     var faqModule = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-faq-module]'));
@@ -533,12 +570,9 @@ const faqItems = [
     if (!section || !faqModule || !lOutline || !lSolid || !lAccent || !lBase) return;
 
 
-    /* ── Reducción de movimiento (accesibilidad) ────────────────────────── */
+    /* ── prefers-reduced-motion ────────────────────────────────────────── */
 
-    var mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    if (mql.matches) {
-      /* Mostrar todo en estado final sin animación */
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       [lOutline, lSolid, lAccent, lBase, faqModule].forEach(function (el) {
         el.style.opacity   = '1';
         el.style.transform = 'none';
@@ -547,55 +581,32 @@ const faqItems = [
     }
 
 
-    /* ── Utilidades matemáticas ─────────────────────────────────────────── */
+    /* ── Utilidades ────────────────────────────────────────────────────── */
 
     /** @param {number} v */
     function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
-    /**
-     * Mapea v del rango [lo, hi] a [0, 1] con clamping.
-     * @param {number} v @param {number} lo @param {number} hi
-     */
+    /** @param {number} v @param {number} lo @param {number} hi */
     function mapRange(v, lo, hi) { return clamp01((v - lo) / (hi - lo)); }
 
-    /**
-     * easeOutCubic: rápido al inicio, deceleración premium al final.
-     * @param {number} t
-     */
+    /** easeOutCubic — rápido → deceleración premium @param {number} t */
     function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
-    /**
-     * Interpolación lineal.
-     * @param {number} a @param {number} b @param {number} t
-     */
+    /** @param {number} a @param {number} b @param {number} t */
     function lerp(a, b, t) { return a + (b - a) * t; }
 
 
-    /* ── Detección de mobile ─────────────────────────────────────────────── */
+    /* ── Mobile detection ──────────────────────────────────────────────── */
 
     var isMobile = false;
-
-    function detectMobile() {
-      isMobile = window.innerWidth < 768;
-    }
+    function detectMobile() { isMobile = window.innerWidth < 768; }
     detectMobile();
     window.addEventListener('resize', detectMobile, { passive: true });
 
 
-    /* ── Estado inicial — JS escribe antes del primer paint ─────────────── */
-    /*
-     * Las capas empiezan ocultas/desplazadas. JS las anima al estado final.
-     * Se establece ANTES del primer frame visible para evitar FOUC.
-     * Si JS no carga: el CSS muestra los elementos sin opacity (legibles).
-     */
+    /* ── Estado inicial ────────────────────────────────────────────────── */
 
     function setInitialState() {
-      /*
-       * Mobile y desktop comparten la misma lógica direccional (Tetris).
-       * La diferencia es la DISTANCIA del desplazamiento: más corta en mobile
-       * para que el recorrido sea proporcional al viewport estrecho.
-       * overflow: hidden en .ops recorta cualquier overflow visual.
-       */
       lOutline.style.opacity   = '0';
       lOutline.style.transform = isMobile ? 'translateY(-30px)' : 'translateY(-60px)';
 
@@ -606,67 +617,53 @@ const faqItems = [
       lAccent.style.transform  = isMobile ? 'translateX(40px)' : 'translateX(60px)';
 
       lBase.style.opacity      = '0';
-      lBase.style.transform    = 'none';  /* ancla estática */
+      lBase.style.transform    = 'none';
 
       faqModule.style.opacity   = '0';
-      /* FAQ: entra desde la derecha.
-         Mobile → 20vw (derrape suave proporcional al ancho de pantalla).
-         Desktop → 100vw (entrada dramática desde fuera del viewport). */
-      faqModule.style.transform = 'translateX(' + Math.round(window.innerWidth * (isMobile ? 0.20 : 1.0)) + 'px)';
+      faqModule.style.transform = 'translateX('
+        + Math.round(window.innerWidth * (isMobile ? 0.20 : 1.0))
+        + 'px)';
     }
 
     setInitialState();
 
 
-    /* ── Cálculo de progreso ────────────────────────────────────────────── */
+    /* ── Progreso (ventana comprimida: 1×vh) ───────────────────────────── */
 
     function getProgress() {
-      var rect  = section.getBoundingClientRect();
-      var vh    = window.innerHeight;
+      var rect = section.getBoundingClientRect();
+      var vh   = window.innerHeight;
       /*
-       * Fórmula: (vh - rect.top) / (sectionHeight + vh)
-       * · p = 0 cuando rect.top = vh  (sección justo entrando por abajo)
-       * · p = 0.5 cuando el centro de la sección = centro del viewport
-       * · p = 1 cuando rect.bottom = 0 (sección completamente arriba)
+       * Ventana = vh (un viewport de scroll).
+       * Efecto: la animación del texto completa cuando el tope de la sección
+       * alcanza el borde superior del viewport — siempre frente al usuario.
        */
-      return clamp01((vh - rect.top) / (rect.height + vh));
+      return clamp01((vh - rect.top) / vh);
     }
 
 
     /* ── Escritura de animaciones ───────────────────────────────────────── */
 
-    var lastP = -1;  /* evita escrituras innecesarias al DOM */
+    var lastP = -1;
 
     function applyFrame() {
       var p = getProgress();
-
-      /* Saltar si el progreso no cambió significativamente */
       if (Math.abs(p - lastP) < 0.0005) return;
       lastP = p;
 
       /*
-       * Progresiones individuales por timeline.
-       * mapRange(p, start, end) → 0→1 sólo en esa ventana de scroll.
-       * easeOut() → deceleración premium (siente pesado y lujoso).
+       * Timelines individuales dentro del rango 0→1 de la ventana comprimida.
+       * Texto: completa en el tercio inferior del viewport (p ≈ 0.35-0.42).
+       * FAQ:   diferido a [0.40, 0.90] — entra cuando el usuario scrolleó más.
        */
-      var p0   = easeOut(mapRange(p, 0.05, 0.30));  /* layer-outline  */
-      var p1   = easeOut(mapRange(p, 0.10, 0.35));  /* layer-solid    */
-      var p2   = easeOut(mapRange(p, 0.15, 0.40));  /* layer-accent   */
-      var p3   = easeOut(mapRange(p, 0.03, 0.25));  /* layer-base     */
-      var pFaq = easeOut(mapRange(p, 0.10, 0.48));  /* faq-module     */
+      var p0   = easeOut(mapRange(p, 0.05, 0.35));  /* layer-outline  */
+      var p1   = easeOut(mapRange(p, 0.10, 0.38));  /* layer-solid    */
+      var p2   = easeOut(mapRange(p, 0.15, 0.42));  /* layer-accent   */
+      var p3   = easeOut(mapRange(p, 0.02, 0.28));  /* layer-base     */
+      var pFaq = easeOut(mapRange(p, 0.40, 0.90));  /* faq-module     */
 
       if (isMobile) {
-        /*
-         * ── Mobile Tetris — distancias cortas, efecto completo ────────
-         * Misma dirección que desktop, valores escalados al viewport estrecho.
-         * overflow: hidden en .ops recorta el desbordamiento visual.
-         *
-         * layer-outline  → baja desde arriba    translateY(-30 → 0)
-         * layer-solid    → entra desde izquierda translateX(-40 → 0)
-         * layer-accent   → entra desde derecha   translateX( 40 → 0)
-         * layer-base     → opacity solo (ancla)
-         * faq-module     → derrape desde derecha translateX(20vw → 0)
-         */
+        /* Mobile Tetris — distancias cortas, overflow recortado por section */
         lOutline.style.opacity   = p0.toFixed(3);
         lOutline.style.transform = 'translateY(' + lerp(-30, 0, p0).toFixed(1) + 'px)';
 
@@ -679,12 +676,13 @@ const faqItems = [
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
         faqModule.style.opacity   = pFaq.toFixed(3);
-        /* 20vw calculado en cada frame respeta cambios de orientación */
-        faqModule.style.transform = 'translateX(' + lerp(Math.round(window.innerWidth * 0.20), 0, pFaq).toFixed(1) + 'px)';
+        /* 20vw calculado por frame — respeta cambios de orientación */
+        faqModule.style.transform = 'translateX('
+          + lerp(Math.round(window.innerWidth * 0.20), 0, pFaq).toFixed(1)
+          + 'px)';
 
       } else {
-        /* ── Desktop: efecto Tetris direccional completo ──────────────── */
-
+        /* Desktop — efecto Tetris direccional completo */
         lOutline.style.opacity   = p0.toFixed(3);
         lOutline.style.transform = 'translateY(' + lerp(-60, 0, p0).toFixed(2) + 'px)';
 
@@ -697,16 +695,14 @@ const faqItems = [
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
         faqModule.style.opacity   = pFaq.toFixed(3);
-        /*
-         * window.innerWidth: calculado en cada frame para respetar resize.
-         * Funciona con Lenis smooth scroll — window.scrollY refleja posición real.
-         */
-        faqModule.style.transform = 'translateX(' + lerp(window.innerWidth, 0, pFaq).toFixed(1) + 'px)';
+        faqModule.style.transform = 'translateX('
+          + lerp(window.innerWidth, 0, pFaq).toFixed(1)
+          + 'px)';
       }
     }
 
 
-    /* ── Loop rAF — un único frame encolado por tick de scroll ──────────── */
+    /* ── Loop rAF — un frame por tick de scroll ─────────────────────────── */
 
     var scrollPending = false;
 
@@ -722,29 +718,22 @@ const faqItems = [
 
 
     /* ── IntersectionObserver ───────────────────────────────────────────── */
-    /*
-     * Activa el scroll listener SOLO mientras la sección es visible.
-     * Evita N listeners activos simultáneos en páginas largas.
-     * threshold: 0 → activa en cuanto cualquier píxel entra en el viewport.
-     */
 
-    var observer = new IntersectionObserver(
+    new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
             window.addEventListener('scroll', onScroll, { passive: true });
-            applyFrame();   /* frame inmediato al entrar */
+            applyFrame();
           } else {
             window.removeEventListener('scroll', onScroll);
           }
         });
       },
       { rootMargin: '0px', threshold: 0 }
-    );
+    ).observe(section);
 
-    observer.observe(section);
-
-    /* Frame inicial: si la página carga con la sección ya visible */
+    /* Frame inicial — por si la página carga con la sección ya visible */
     applyFrame();
 
   })();
