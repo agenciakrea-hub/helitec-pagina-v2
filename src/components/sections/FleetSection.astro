@@ -163,7 +163,7 @@ const faqItems = [
     background-color: var(--c-bg);
     border-top:       1px solid var(--c-line);
     padding-block:    clamp(72px, 11vh, 120px);
-    overflow:         hidden;     /* recorta el FAQ durante su slide-in */
+    overflow:         hidden;     /* recorta translateX de todas las capas — mobile y desktop */
   }
 
 
@@ -590,33 +590,29 @@ const faqItems = [
      */
 
     function setInitialState() {
-      /* Desktop: desplazamientos direccionales */
-      var yOut  = isMobile ? -18  : -60;
-      var xSol  = isMobile ? -24  : -100;
-      var xAcc  = isMobile ?  18  :  60;
-      var xFaq  = isMobile ?  0   : window.innerWidth;  /* mobile: sin translateX */
-      var yFaq  = isMobile ?  28  : 0;                  /* mobile: desde abajo */
-
+      /*
+       * Mobile y desktop comparten la misma lógica direccional (Tetris).
+       * La diferencia es la DISTANCIA del desplazamiento: más corta en mobile
+       * para que el recorrido sea proporcional al viewport estrecho.
+       * overflow: hidden en .ops recorta cualquier overflow visual.
+       */
       lOutline.style.opacity   = '0';
-      lOutline.style.transform = 'translateY(' + yOut + 'px)';
+      lOutline.style.transform = isMobile ? 'translateY(-30px)' : 'translateY(-60px)';
 
       lSolid.style.opacity     = '0';
-      lSolid.style.transform   = isMobile
-        ? 'translateY(-14px)'
-        : 'translateX(' + xSol + 'px)';
+      lSolid.style.transform   = isMobile ? 'translateX(-40px)' : 'translateX(-100px)';
 
       lAccent.style.opacity    = '0';
-      lAccent.style.transform  = isMobile
-        ? 'translateY(-10px)'
-        : 'translateX(' + xAcc + 'px)';
+      lAccent.style.transform  = isMobile ? 'translateX(40px)' : 'translateX(60px)';
 
       lBase.style.opacity      = '0';
-      lBase.style.transform    = 'none';  /* ancla: sin translate */
+      lBase.style.transform    = 'none';  /* ancla estática */
 
       faqModule.style.opacity   = '0';
-      faqModule.style.transform = isMobile
-        ? 'translateY(' + yFaq + 'px)'
-        : 'translateX(' + xFaq + 'px)';
+      /* FAQ: entra desde la derecha.
+         Mobile → 20vw (derrape suave proporcional al ancho de pantalla).
+         Desktop → 100vw (entrada dramática desde fuera del viewport). */
+      faqModule.style.transform = 'translateX(' + Math.round(window.innerWidth * (isMobile ? 0.20 : 1.0)) + 'px)';
     }
 
     setInitialState();
@@ -660,21 +656,31 @@ const faqItems = [
       var pFaq = easeOut(mapRange(p, 0.10, 0.48));  /* faq-module     */
 
       if (isMobile) {
-        /* ── Mobile: solo movimiento vertical sutil + opacity ────────── */
-
+        /*
+         * ── Mobile Tetris — distancias cortas, efecto completo ────────
+         * Misma dirección que desktop, valores escalados al viewport estrecho.
+         * overflow: hidden en .ops recorta el desbordamiento visual.
+         *
+         * layer-outline  → baja desde arriba    translateY(-30 → 0)
+         * layer-solid    → entra desde izquierda translateX(-40 → 0)
+         * layer-accent   → entra desde derecha   translateX( 40 → 0)
+         * layer-base     → opacity solo (ancla)
+         * faq-module     → derrape desde derecha translateX(20vw → 0)
+         */
         lOutline.style.opacity   = p0.toFixed(3);
-        lOutline.style.transform = 'translateY(' + lerp(-18, 0, p0).toFixed(1) + 'px)';
+        lOutline.style.transform = 'translateY(' + lerp(-30, 0, p0).toFixed(1) + 'px)';
 
         lSolid.style.opacity     = p1.toFixed(3);
-        lSolid.style.transform   = 'translateY(' + lerp(-14, 0, p1).toFixed(1) + 'px)';
+        lSolid.style.transform   = 'translateX(' + lerp(-40, 0, p1).toFixed(1) + 'px)';
 
         lAccent.style.opacity    = p2.toFixed(3);
-        lAccent.style.transform  = 'translateY(' + lerp(-10, 0, p2).toFixed(1) + 'px)';
+        lAccent.style.transform  = 'translateX(' + lerp(40, 0, p2).toFixed(1) + 'px)';
 
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
         faqModule.style.opacity   = pFaq.toFixed(3);
-        faqModule.style.transform = 'translateY(' + lerp(28, 0, pFaq).toFixed(1) + 'px)';
+        /* 20vw calculado en cada frame respeta cambios de orientación */
+        faqModule.style.transform = 'translateX(' + lerp(Math.round(window.innerWidth * 0.20), 0, pFaq).toFixed(1) + 'px)';
 
       } else {
         /* ── Desktop: efecto Tetris direccional completo ──────────────── */
