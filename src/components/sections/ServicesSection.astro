@@ -191,10 +191,12 @@ const services = [
   /* ── Sección ────────────────────────────────────────────────────────────── */
 
   .sgrid {
+    position:         relative; /* contexto para el recurso rojo absoluto en mobile */
     background-color: var(--c-bg);
+    border-top:       none;     /* elimina línea gris de separación con sección anterior */
     padding-block:    clamp(48px, 7vh, 80px);
     padding-inline:   calc(var(--sidebar-w) + var(--gutter));
-    overflow-x:       hidden; /* evita scroll horizontal durante el slide del recurso rojo */
+    overflow-x:       hidden; /* recorta el recurso rojo durante el dibujado */
   }
 
 
@@ -205,9 +207,9 @@ const services = [
     flex-direction:  column;
     gap:             var(--sp-2);
 
-    padding-bottom:  var(--sp-8);
+    padding-bottom:  var(--sp-4);      /* reducido: menos espacio bajo la línea roja */
 
-    margin-bottom:   clamp(20px, 3vh, 32px);
+    margin-bottom:   clamp(10px, 1.5vh, 18px);   /* reducido: cards más cerca del heading */
   }
 
   /*
@@ -260,15 +262,22 @@ const services = [
     height:          auto;
     object-fit:      contain;
     object-position: left center;
-    margin-top:      var(--sp-1);   /* pegado al título */
+    margin-top:      4px;          /* pegado al título */
 
-    transform:  translateX(-100vw);
-    transition: transform 0s;
+    /*
+     * Animación "dibujado" L→R con clip-path.
+     * inset(0 100% 0 0) = recorta todo desde la derecha → imagen invisible.
+     * inset(0 0%   0 0) = sin recorte → imagen completa.
+     * La transición anima el "trazado" de izquierda a derecha, muy lento.
+     * SIN transform: ya no se desliza desde fuera — nace en su posición.
+     */
+    clip-path:  inset(0 100% 0 0);
+    transition: clip-path 0s;
   }
 
   .sgrid__header.is-revealed .sgrid__heading-deco {
-    transform:  translateX(0);
-    transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+    clip-path:  inset(0 0% 0 0);
+    transition: clip-path 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
   }
 
 
@@ -464,6 +473,26 @@ const services = [
   }
 
   @media (max-width: 767px) {
+    .sgrid {
+      padding-block-start: clamp(32px, 5vh, 48px); /* menos espacio arriba en móvil */
+    }
+
+    /*
+     * Full-bleed en portrait mobile: la línea roja nace en left:0 del viewport.
+     * Técnica: left negativo = −var(--gutter), width = 100% + 2×gutter = 100vw.
+     * overflow-x:hidden en .sgrid recorta lo que excede.
+     */
+    .sgrid__heading-deco {
+      position:   relative;
+      left:       calc(-1 * var(--gutter));
+      width:      calc(100% + 2 * var(--gutter));
+      max-width:  calc(100% + 2 * var(--gutter));
+      height:     44px;
+      object-fit: fill;       /* estira el PNG al 100vw — trazo completo */
+      margin-top: 2px;
+      margin-bottom: 0;
+    }
+
     .sgrid__grid {
       gap: 10px;
     }
@@ -500,7 +529,7 @@ const services = [
 
   @media (max-width: 479px) {
     .sgrid__header {
-      padding-bottom: var(--sp-5);
+      padding-bottom: var(--sp-2); /* mínimo — línea roja pegada a las cards */
     }
 
     .sgrid__frame {

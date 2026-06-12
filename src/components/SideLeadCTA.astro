@@ -996,6 +996,24 @@
     visibility:     hidden;
     pointer-events: none;
   }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     MOBILE — Alineación con el grupo de FABs de ContactSheet
+     right: 16px → se alinea con el borde izquierdo del grupo de iconos.
+     border-right + border-radius: ya no es flush contra el borde — bordes completos.
+     translateX inicial aumentado para quedar totalmente off-screen con right: 16px.
+  ════════════════════════════════════════════════════════════════════════ */
+
+  @media (max-width: 767px) {
+    .slcta__trigger {
+      right:         16px;                              /* alineado con los FABs */
+      border-right:  1px solid rgba(88, 181, 240, 0.22); /* restaurar borde derecho */
+      border-radius: 4px;                               /* todas las esquinas */
+
+      /* off-screen: 100% propio (44px) + right (16px) + 2px margen = 62px */
+      transform:     translateX(calc(100% + 18px));
+    }
+  }
 </style>
 
 
