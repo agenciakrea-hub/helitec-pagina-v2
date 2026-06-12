@@ -251,8 +251,9 @@ const faqItems = [
   }
 
   .ops__title-layer {
-    display:    block;
-    will-change: transform, opacity;
+    display:        block;
+    will-change:    transform, opacity;
+    pointer-events: none; /* defensa táctil: los spans no interceptan toques */
   }
 
   .layer-outline {
@@ -546,12 +547,29 @@ const faqItems = [
 
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 2 — Motor de Scroll V5
+   * PARTE 2 — Motor de Scroll V6 (Anti-Layout-Thrash)
    *
-   * Ventana: vh/2.
-   * p=0: tope de la sección toca el borde inferior del viewport.
-   * p=1: tope de la sección llega al centro del viewport (50vh).
-   * El usuario ve el ensamblaje completo mientras la sección entra en pantalla.
+   * Cambios críticos vs V5:
+   *
+   *   1. getBoundingClientRect() ELIMINADO del render path.
+   *      Se sustituye por sectionDocTop (cacheado) + window.scrollY (no reflow).
+   *      Cero lecturas de layout dentro del rAF.
+   *
+   *   2. Loop rAF CONTINUO activado/desactivado por IntersectionObserver.
+   *      Cuando la sección no es visible, el loop no corre.
+   *      Cuando es visible, corre a 60fps pero el work es O(1) sin DOM reads.
+   *
+   *   3. updateCache() calcula sectionDocTop via offsetTop traversal.
+   *      Se llama en init y en resize — nunca dentro del loop.
+   *
+   *   4. vw cacheado: el faqModule desktop usa vw (cacheado) en vez de
+   *      window.innerWidth en cada frame.
+   *
+   * Matemática (sin cambios vs V5):
+   *   p=0: borde superior de la sección = borde inferior del viewport (relTop = vh)
+   *   p=1: borde superior de la sección = mitad del viewport (relTop = vh/2)
+   *   relTop = sectionDocTop - window.scrollY   ← ambos sin reflow
+   *   p = clamp01((vh - relTop) / (vh × 0.5))
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
@@ -582,6 +600,44 @@ const faqItems = [
     }
 
 
+    /* ── Caché de layout — actualizado en resize, NUNCA en el loop ─────── */
+
+    var vh           = window.innerHeight;
+    var vw           = window.innerWidth;
+    var isMobile     = vw < 768;
+    var sectionDocTop = 0;
+    var lastP         = -1;
+
+    function updateCache() {
+      vh       = window.innerHeight;
+      vw       = window.innerWidth;
+      isMobile = vw < 768;
+
+      /*
+       * Calcular sectionDocTop sumando offsetTop a través de la cadena
+       * offsetParent. offsetTop NO fuerza un layout flush (es una propiedad
+       * ya calculada por el browser cuando el layout está limpio).
+       * Al llamarlo en resize (fuera del loop), el layout siempre está limpio.
+       */
+      var el  = section;
+      var top = 0;
+      while (el) {
+        top += el.offsetTop;
+        el   = /** @type {HTMLElement|null} */ (el.offsetParent);
+      }
+      sectionDocTop = top;
+
+      /*
+       * Forzar re-render en el próximo frame: el resize puede cambiar
+       * la posición del section o el vh, lo que altera el progreso.
+       */
+      lastP = -1;
+    }
+
+    updateCache();
+    window.addEventListener('resize', updateCache, { passive: true });
+
+
     /* ── Utilidades ────────────────────────────────────────────────────── */
 
     /** @param {number} v */
@@ -597,18 +653,9 @@ const faqItems = [
     function lerp(a, b, t) { return a + (b - a) * t; }
 
 
-    /* ── Mobile detection ──────────────────────────────────────────────── */
-
-    var isMobile = false;
-    function detectMobile() { isMobile = window.innerWidth < 768; }
-    detectMobile();
-    window.addEventListener('resize', detectMobile, { passive: true });
-
-
     /* ── Estado inicial ────────────────────────────────────────────────── */
 
     function setInitialState() {
-      /* SOBRE NUESTRAS — baja desde arriba (rojo sólido) */
       lOutline.style.opacity   = '0';
       lOutline.style.transform = isMobile ? 'translateY(-30px)' : 'translateY(-50px)';
 
@@ -624,21 +671,15 @@ const faqItems = [
       faqModule.style.opacity   = '0';
       /*
        * FIX SCROLL FREEZE TÁCTIL — en mobile NO hay translateX para faqModule.
-       *
-       * Desktop: translateX(100vw) clipeado por overflow:hidden. El slide-in
-       * desde la derecha funciona. No hay scroll táctil → no hay freeze.
-       *
-       * Mobile: translateX(20vw) ≈ 75-90px combinado con will-change:transform
-       * creaba una GPU compositing layer que excedía los bounds del contenedor.
-       * El compositor de iOS la "veía" fuera del overflow:hidden boundary antes
-       * del clip stage → scrollHeight colapsaba momentáneamente → scroll se
-       * congelaba. Solución: solo opacity en mobile. Sin translateX, sin overflow.
+       * Desktop: translateX(vw) clipeado por overflow:hidden → slide-in funciona.
+       * Mobile: translateX + will-change:transform creaba GPU layer que excedía
+       * bounds del overflow:hidden → scrollHeight colapsaba → freeze en iOS.
+       * Solución definitiva: solo opacity en mobile. Sin translateX.
        */
       faqModule.style.transform = isMobile
         ? 'none'
-        : 'translateX(' + Math.round(window.innerWidth) + 'px)';
+        : 'translateX(' + Math.round(vw) + 'px)';
 
-      /* Avión — entra desde la derecha como pieza final */
       planeDeco.style.opacity   = '0';
       planeDeco.style.transform = 'translateX(100px)';
     }
@@ -646,24 +687,22 @@ const faqItems = [
     setInitialState();
 
 
-    /* ── Progreso ─────────────────────────────────────────────────────── */
+    /* ── Progreso — SIN getBoundingClientRect ───────────────────────────── */
 
     function getProgress() {
-      var rect = section.getBoundingClientRect();
-      var vh   = window.innerHeight;
       /*
-       * Ventana = vh / 2.
-       * p=0: tope de la sección en el borde inferior del viewport (rect.top = vh).
-       * p=1: tope de la sección en el centro del viewport (rect.top = vh/2).
-       * El ensamblaje completo es visible mientras la sección entra en pantalla.
+       * window.scrollY: propiedad ligera, NO fuerza reflow.
+       * sectionDocTop: cacheado en updateCache(), cero acceso al DOM.
+       *
+       * relTop = posición del borde superior del section relativa al viewport.
+       * Equivalente a getBoundingClientRect().top pero sin el reflow.
        */
-      return clamp01((vh - rect.top) / (vh * 0.5));
+      var relTop = sectionDocTop - window.scrollY;
+      return clamp01((vh - relTop) / (vh * 0.5));
     }
 
 
-    /* ── Escritura de animaciones ───────────────────────────────────────── */
-
-    var lastP = -1;
+    /* ── applyFrame ─────────────────────────────────────────────────────── */
 
     function applyFrame() {
       var p = getProgress();
@@ -678,8 +717,8 @@ const faqItems = [
       var p1     = easeOut(mapRange(p, 0.08, 0.68));  /* OPERACIONES (izquierda)     */
       var p2     = easeOut(mapRange(p, 0.15, 0.75));  /* FLOTA (derecha)             */
       var p3     = easeOut(mapRange(p, 0.02, 0.52));  /* Y SERVICIOS (fade)          */
-      var pFaq   = easeOut(mapRange(p, 0.20, 0.92));  /* FAQ module (derecha)        */
-      var pPlane = easeOut(mapRange(p, 0.12, 0.80));  /* Logo avión (derecha)        */
+      var pFaq   = easeOut(mapRange(p, 0.20, 0.92));  /* FAQ module                  */
+      var pPlane = easeOut(mapRange(p, 0.12, 0.80));  /* Logo avión                  */
 
       if (isMobile) {
         lOutline.style.opacity   = p0.toFixed(3);
@@ -693,10 +732,7 @@ const faqItems = [
 
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
-        /* FIX: en mobile faqModule solo anima opacity — sin translateX.
-         * Elimina el overflow que causaba el Layout Collapse en iOS Safari.
-         * transform ya está en 'none' desde setInitialState() — no se escribe aquí
-         * para no crear un valor que el compositor pueda malinterpretar. */
+        /* Mobile: solo opacity en faqModule — ver setInitialState() */
         faqModule.style.opacity  = pFaq.toFixed(3);
 
       } else {
@@ -712,44 +748,41 @@ const faqItems = [
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
         faqModule.style.opacity   = pFaq.toFixed(3);
-        faqModule.style.transform = 'translateX('
-          + lerp(window.innerWidth, 0, pFaq).toFixed(1)
-          + 'px)';
+        /* vw cacheado — sin window.innerWidth en el loop */
+        faqModule.style.transform = 'translateX(' + lerp(vw, 0, pFaq).toFixed(1) + 'px)';
       }
 
-      /* Avión: siempre desde la derecha — igual en mobile y desktop */
       planeDeco.style.opacity   = lerp(0, 0.4, pPlane).toFixed(3);
       planeDeco.style.transform = 'translateX(' + lerp(100, 0, pPlane).toFixed(2) + 'px)';
     }
 
 
-    /* ── Loop rAF — un frame por tick de scroll ─────────────────────────── */
+    /* ── Loop rAF continuo — activado/desactivado por IO ───────────────── */
 
-    var scrollPending = false;
+    var rafId = null;
 
-    function onScroll() {
-      if (!scrollPending) {
-        scrollPending = true;
-        requestAnimationFrame(function () {
-          applyFrame();
-          scrollPending = false;
-        });
+    function startLoop() {
+      if (rafId !== null) return;
+      (function tick() {
+        applyFrame();
+        rafId = requestAnimationFrame(tick);
+      })();
+    }
+
+    function stopLoop() {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
     }
 
-
-    /* ── IntersectionObserver ───────────────────────────────────────────── */
-
     new IntersectionObserver(
       function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            window.addEventListener('scroll', onScroll, { passive: true });
-            applyFrame();
-          } else {
-            window.removeEventListener('scroll', onScroll);
-          }
-        });
+        if (entries[0].isIntersecting) {
+          startLoop();
+        } else {
+          stopLoop();
+        }
       },
       { rootMargin: '0px', threshold: 0 }
     ).observe(section);
