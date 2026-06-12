@@ -160,35 +160,7 @@ const { lang = 'es' } = Astro.props;
 
 </div>
 
-<!-- ── FAB Cotización — scroll-triggered, solo aparece al salir del Hero ──── -->
-<!--
-  Elemento fijo independiente del grupo estático de abajo.
-  Solo el COTIZACIÓN FAB tiene comportamiento de scroll trigger.
-  #slcta-trigger: localizado por SideLeadCTA.astro para abrir el panel.
--->
-<button
-  class="csheet__fab csheet__fab--cotizar"
-  id="slcta-trigger"
-  type="button"
-  aria-expanded="false"
-  aria-controls="slcta-panel"
-  aria-label="Solicitar cotización de vuelo privado"
->
-  <!-- Ícono avión (estado cerrado) -->
-  <span class="csheet__fab-icon" aria-hidden="true">
-    <svg width="17" height="15" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 1L17 8L1 15V9.5L11 8L1 6.5V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
-    </svg>
-  </span>
-  <!-- Texto vertical permanente (estado cerrado) -->
-  <span class="csheet__fab-strip-text" aria-hidden="true">COTIZACIÓN</span>
-  <!-- ✕ (estado abierto) -->
-  <span class="csheet__fab-close" aria-hidden="true">
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
-    </svg>
-  </span>
-</button>
+<!-- TRIGGER MOVIDO A SideLeadCTA.astro — autocontenido con su CSS y scroll-trigger JS -->
 
 <!-- ── FABs siempre visibles — Linktree + fila inferior ──────────────────── -->
 <!--
@@ -847,65 +819,7 @@ const { lang = 'es' } = Astro.props;
 
 
 <script>
-  /**
-   * FAB Cotización — Scroll visibility controller
-   *
-   * SOLO el strip de Cotización tiene comportamiento de scroll trigger.
-   * Los demás FABs (Linktree, LinkedIn, Instagram, Contacto) son siempre visibles.
-   *
-   * El FAB cotización permanece oculto mientras el usuario ve el Hero.
-   * Se desliza desde la derecha cuando el Hero sale del viewport (> 40% scrolleado).
-   *
-   * Estrategia:
-   *   1. IntersectionObserver sobre la sección Hero (si existe).
-   *   2. Fallback: scroll event con umbral = 60vh.
-   */
-  (function () {
-    var cotizar = document.querySelector('.csheet__fab--cotizar');
-    if (!cotizar) return;
-
-    var THRESHOLD_PX = window.innerHeight * 0.60;
-
-    /* ── Opción 1: IntersectionObserver sobre el Hero ── */
-    var heroSection = document.querySelector('.hero__section, .hero, [data-section="hero"], section:first-of-type');
-
-    if (heroSection && 'IntersectionObserver' in window) {
-      var heroObs = new IntersectionObserver(
-        function (entries) {
-          /* Si el Hero sigue visible → ocultar cotización; si salió → mostrar */
-          if (entries[0].isIntersecting) {
-            cotizar.classList.remove('is-visible');
-          } else {
-            cotizar.classList.add('is-visible');
-          }
-        },
-        {
-          threshold:  0,
-          rootMargin: '-40% 0px 0px 0px',
-        }
-      );
-      heroObs.observe(heroSection);
-
-    } else {
-      /* ── Fallback: scroll event ── */
-      var ticking = false;
-      function checkScroll() {
-        if (window.scrollY > THRESHOLD_PX) {
-          cotizar.classList.add('is-visible');
-        } else {
-          cotizar.classList.remove('is-visible');
-        }
-        ticking = false;
-      }
-      window.addEventListener('scroll', function () {
-        if (!ticking) {
-          requestAnimationFrame(checkScroll);
-          ticking = true;
-        }
-      }, { passive: true });
-      checkScroll(); /* estado inicial */
-    }
-  })();
+  /* Scroll trigger de COTIZACIÓN movido a SideLeadCTA.astro */
 
   /**
    * ContactSheet — Controller

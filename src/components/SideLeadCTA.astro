@@ -297,11 +297,34 @@
   </form>
 </div>
 
-<!--
-  TRIGGER MOVIDO — el botón #slcta-trigger ahora vive en ContactSheet.astro
-  junto al grupo de FABs (ContactSheet + Linktree + Cotización).
-  El controller JS de este archivo sigue encontrándolo por document.getElementById('slcta-trigger').
--->
+<!-- ── TRIGGER — strip vertical "COTIZACIÓN" ─────────────────────────────
+  position: fixed · right: 0 · encima del grupo de FABs de ContactSheet.
+  Scroll trigger: oculto sobre el Hero, visible al salir (IntersectionObserver).
+  Todo el CSS y el scroll-trigger JS viven en este mismo archivo (autocontenido).
+──────────────────────────────────────────────────────────────────────────── -->
+<button
+  class="slcta__trigger"
+  id="slcta-trigger"
+  type="button"
+  aria-expanded="false"
+  aria-controls="slcta-panel"
+  aria-label="Solicitar cotización de vuelo privado"
+>
+  <!-- Ícono avión (estado cerrado) -->
+  <span class="slcta__trigger-icon" aria-hidden="true">
+    <svg width="17" height="15" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L17 8L1 15V9.5L11 8L1 6.5V1Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+    </svg>
+  </span>
+  <!-- Texto vertical permanente (estado cerrado) -->
+  <span class="slcta__trigger-text" aria-hidden="true">COTIZACIÓN</span>
+  <!-- ✕ (estado abierto) -->
+  <span class="slcta__trigger-close" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
+    </svg>
+  </span>
+</button>
 
 
 <style>
@@ -855,10 +878,124 @@
     padding-bottom: 8px;
   }
 
-  /*
-   * TRIGGER CSS MOVIDO — ver ContactSheet.astro (.csheet__fab--cotizar).
-   * El estilo del botón #slcta-trigger ahora vive donde el HTML.
-   */
+  /* ════════════════════════════════════════════════════════════════════════
+     TRIGGER — strip vertical fijo · borde derecho
+     position: fixed; right: 0 → flush contra el borde derecho.
+     z-index: 850 — sobre el panel (848) y bajo el backdrop ContactSheet (898).
+     Scroll trigger: oculto en el Hero, visible fuera.
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .slcta__trigger {
+    position: fixed;
+    right:    0;
+    bottom:   calc(clamp(16px, 3vh, 24px) + 112px); /* encima del grupo de FABs */
+    z-index:  850;
+
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    justify-content: center;
+    gap:            8px;
+
+    width:       44px;
+    height:      auto;
+    min-height:  134px;
+    padding:     12px 0;
+
+    background:   rgba(5, 50, 130, 0.55);
+    border:       1px solid rgba(88, 181, 240, 0.22);
+    border-right: none;                  /* flush contra el borde derecho */
+    border-radius: 4px 0 0 4px;         /* solo esquinas izquierdas */
+    color:        rgba(255, 255, 255, 0.88);
+    cursor:       pointer;
+
+    /* Scroll trigger: inicial → off-screen derecha */
+    transform:      translateX(calc(100% + 2px));
+    opacity:        0;
+    visibility:     hidden;
+    pointer-events: none;
+
+    transition:
+      transform  0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity    0.40s ease-out,
+      visibility 0s   linear  0.40s,
+      background 0.2s ease-out,
+      border-color 0.2s ease-out;
+  }
+
+  .slcta__trigger.is-visible {
+    transform:      translateX(0);
+    opacity:        1;
+    visibility:     visible;
+    pointer-events: auto;
+
+    transition:
+      transform  0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity    0.40s ease-out,
+      visibility 0s   linear  0s,
+      background 0.2s ease-out,
+      border-color 0.2s ease-out;
+  }
+
+  .slcta__trigger:hover {
+    background:   rgba(10, 77, 158, 0.70);
+    border-color: rgba(88, 181, 240, 0.45);
+    color:        var(--c-white);
+  }
+
+  .slcta__trigger:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 2px;
+  }
+
+  .slcta__trigger[aria-expanded="true"] {
+    background:   rgba(10, 77, 158, 0.80);
+    border-color: rgba(88, 181, 240, 0.55);
+  }
+
+  /* Texto vertical */
+  .slcta__trigger-text {
+    writing-mode:     vertical-rl;
+    text-orientation: mixed;
+    transform:        rotate(180deg);
+
+    font-family:    var(--font-sans);
+    font-size:      8.5px;
+    font-weight:    var(--fw-medium);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color:          inherit;
+    white-space:    nowrap;
+
+    opacity:    1;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .slcta__trigger[aria-expanded="true"] .slcta__trigger-text { opacity: 0; }
+
+  /* Ícono avión / ✕ swap */
+  .slcta__trigger-icon,
+  .slcta__trigger-close {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+    transition:      opacity 0.15s ease-out;
+  }
+
+  .slcta__trigger-icon  { opacity: 1; }
+  .slcta__trigger-close { opacity: 0; }
+
+  .slcta__trigger[aria-expanded="true"] .slcta__trigger-icon  { opacity: 0; }
+  .slcta__trigger[aria-expanded="true"] .slcta__trigger-close { opacity: 1; }
+
+  /* Ocultar cuando el menú modal está abierto */
+  :global(body.menu-is-open)   .slcta__trigger,
+  :global(body.menu-is-closing) .slcta__trigger {
+    opacity:        0;
+    visibility:     hidden;
+    pointer-events: none;
+  }
 </style>
 
 
@@ -1217,6 +1354,48 @@
       }
     });
 
+  })();
+
+  /* ════════════════════════════════════════════════════════════════════════
+     SCROLL TRIGGER — visibilidad del strip COTIZACIÓN
+     Oculto mientras el Hero es visible; slide-in desde la derecha al salir.
+     IntersectionObserver con fallback a scroll event.
+  ════════════════════════════════════════════════════════════════════════ */
+  (function () {
+    var strip = document.querySelector('.slcta__trigger');
+    if (!strip) return;
+
+    var THRESHOLD_PX = window.innerHeight * 0.60;
+
+    var heroSection = document.querySelector('.hero__section, .hero, [data-section="hero"], section:first-of-type');
+
+    if (heroSection && 'IntersectionObserver' in window) {
+      var heroObs = new IntersectionObserver(
+        function (entries) {
+          if (entries[0].isIntersecting) {
+            strip.classList.remove('is-visible');
+          } else {
+            strip.classList.add('is-visible');
+          }
+        },
+        { threshold: 0, rootMargin: '-40% 0px 0px 0px' }
+      );
+      heroObs.observe(heroSection);
+    } else {
+      var ticking = false;
+      function checkScroll() {
+        if (window.scrollY > THRESHOLD_PX) {
+          strip.classList.add('is-visible');
+        } else {
+          strip.classList.remove('is-visible');
+        }
+        ticking = false;
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) { requestAnimationFrame(checkScroll); ticking = true; }
+      }, { passive: true });
+      checkScroll();
+    }
   })();
 
   /* ════════════════════════════════════════════════════════════════════════

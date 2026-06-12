@@ -1,21 +1,33 @@
 ---
 /**
- * FleetSection.astro
- * Consorcio Helitec — Sección "Nuestra Flota"
+ * FleetSection.astro — "Ingeniería del Servicio"
+ * Consorcio Helitec
  *
- * Layout:
- *   · Header: overline + H2 (right-aligned) + logo grande, borde derecho
- *   · Deco foto 1: avion_helitec_sinfondo.png   — 2/3 ancho, borde izquierdo
- *   · Deco foto 2: tres_avion_helitec_sinfondo.png — 2/3 ancho, borde derecho
+ * Layout dividido en 2 columnas (desktop) / apilado (mobile):
  *
- * Ambas imágenes tienen fondo negro que se funde con --c-bg (#07080C).
- * Se colocan fuera de fleet__inner → sin padding lateral, de borde a borde.
+ *   Col izq — Header tipográfico "desarmado":
+ *     · Overline con línea decorativa
+ *     · .layer-outline  → "SOBRE NUESTRAS"  (texto hueco, stroke blanco)
+ *     · .layer-solid    → "OPERACIONES,"    (blanco, pesado)
+ *     · .layer-accent   → "FLOTA"           (azul Helitec)
+ *     · .layer-base     → "Y SERVICIOS."    (blanco, pesado)
+ *     Las capas están preparadas para animación de scroll (futura).
+ *     En esta versión se muestran estáticas con opacidades definidas.
  *
- * Reglas anti-slop:
- *   PROHIBIDO box-shadow       — ✓
- *   PROHIBIDO linear-gradient  — ✓
- *   border-radius ≤ 4px        — ✓
- *   object-fit: contain (sin recorte, fondo se funde) — ✓
+ *   Col der — Módulo FAQ / Acordeón minimalista:
+ *     · 5 ítems con pregunta + respuesta
+ *     · Líneas divisorias 1px (--c-line)
+ *     · Icono + que rota 45° → ✕ al abrir
+ *     · max-height animado por JS (height real calculada en tiempo de ejecución)
+ *     · Solo un ítem abierto a la vez
+ *
+ * Anti-slop compliance:
+ *   ✓ PROHIBIDO box-shadow
+ *   ✓ PROHIBIDO linear-gradient decorativo
+ *   ✓ border-radius ≤ 4px
+ *   ✓ object-fit: cover en imágenes (no hay aquí)
+ *   ✓ Overline: font-weight light/medium
+ *   ✓ Botones: ghost style sin border-radius pastilla
  */
 
 interface Props {
@@ -23,124 +35,167 @@ interface Props {
 }
 
 const { lang = 'es' } = Astro.props;
+
+const faqItems = [
+  {
+    q: '¿QUÉ VENTAJAS TIENE UN VUELO CHÁRTER EJECUTIVO FRENTE A UN VUELO COMERCIAL?',
+    a: 'Flexibilidad total en rutas, privacidad y confort con cabinas VIP, y eficiencia absoluta evitando filas y demoras en terminales masivas.',
+  },
+  {
+    q: '¿QUÉ CERTIFICACIONES DE SEGURIDAD POSEE CONSORCIO HELITEC C.A.?',
+    a: 'Operamos bajo estrictos estándares: SMS certificado por el INAC, Mantenimiento predictivo en tiempo real, y tripulaciones expertas con más de 10,000 horas de vuelo.',
+  },
+  {
+    q: '¿CUÁNTO CUESTA UN VUELO CHÁRTER EJECUTIVO?',
+    a: 'El costo es personalizado según: tipo de aeronave seleccionada, distancia y tasas aeroportuarias, y servicios adicionales como catering a la carta o traslados blindados.',
+  },
+  {
+    q: '¿PUEDEN OPERAR VUELOS MÉDICOS DE EMERGENCIA?',
+    a: 'Sí. Operamos en alianza con Aeroambulancia Silva, ofreciendo auténticas UCI móviles, repatriaciones sanitarias expeditivas y respuesta inmediata 24/7.',
+  },
+  {
+    q: '¿CÓMO OPTIMIZAMOS LA LOGÍSTICA EN PLATAFORMAS PETROLERAS?',
+    a: 'A través de operaciones en enclaves remotos, estricto cumplimiento de normativas de Seguridad y Salud Laboral (SST) exigidas por consorcios, y flota comercial versátil de alta densidad.',
+  },
+];
 ---
 
 
-<section class="fleet" id="flota" aria-labelledby="fleet-heading">
+<section class="ops" id="flota" aria-labelledby="ops-heading">
+  <div class="ops__inner">
 
-  <!-- ── Encabezado de sección ───────────────────────────────────────────── -->
-  <div class="fleet__inner">
+    <!-- ══ COL IZQUIERDA — Tipografía desarmada ══════════════════════════════ -->
+    <div class="ops__left">
+      <header class="ops__header">
 
-    <header class="fleet__header">
-
-      <!-- Texto alineado a la derecha -->
-      <div class="fleet__header-text">
-
-        <p class="fleet__overline">
-          {lang === 'es' ? 'Nuestra Flota' : 'Our Fleet'}
+        <!-- Overline con línea decorativa (patrón global del sitio) -->
+        <p class="ops__overline">
+          {lang === 'es' ? 'Ingeniería del Servicio' : 'Service Engineering'}
         </p>
 
-        <h2 class="fleet__title" id="fleet-heading">
-          {lang === 'es'
-            ? <>Aeronaves certificadas<br/>y listas</>
-            : <>Certified aircraft,<br/>ready to fly</>
-          }
+        <!--
+          H2 desarmado en 4 capas independientes.
+          Cada span es animable individualmente por IntersectionObserver (futuro).
+          Por ahora: render estático con estilos finales aplicados.
+
+          .layer-outline  → stroke blanco, 50% opacidad (texto fantasma)
+          .layer-solid    → blanco puro, pesado
+          .layer-accent   → azul Helitec (#58b5f0)
+          .layer-base     → blanco puro, pesado
+        -->
+        <h2 class="ops__title" id="ops-heading">
+          <span class="ops__title-layer layer-outline" aria-hidden="false">
+            SOBRE NUESTRAS
+          </span>
+          <span class="ops__title-layer layer-solid">
+            OPERACIONES,
+          </span>
+          <span class="ops__title-layer layer-accent">
+            FLOTA
+          </span>
+          <span class="ops__title-layer layer-base">
+            Y SERVICIOS.
+          </span>
         </h2>
 
-      </div>
+      </header>
+    </div>
 
-      <!-- Logo avión GRANDE — flush derecho, escala del H2 -->
-      <img
-        src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
-        class="fleet__plane-deco"
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-      />
+    <!-- ══ COL DERECHA — Módulo FAQ / Acordeón ══════════════════════════════ -->
+    <div class="ops__right">
 
-    </header>
+      <div class="faq-module" role="list" aria-label="Preguntas frecuentes">
 
-  </div>
+        {faqItems.map((item, i) => (
+          <div class="faq-item" role="listitem" data-faq-item>
 
-  <!-- ── Fotos decorativas ─────────────────────────────────────────────────
-    Colocadas fuera de .fleet__inner para no heredar su padding.
-    Así pueden tocar el borde real de la sección (izquierdo y derecho).
-    El fondo negro de las imágenes se funde con --c-bg del sitio.
-  ──────────────────────────────────────────────────────────────────────── -->
-  <div class="fleet__deco">
+            <!--
+              Trigger: botón ghost sin fondo.
+              aria-expanded actualizado por JS al toggle.
+              data-faq-trigger = hook JS (no CSS).
+            -->
+            <button
+              class="faq-trigger"
+              type="button"
+              aria-expanded="false"
+              data-faq-trigger
+            >
+              <span class="faq-trigger__text">{item.q}</span>
 
-    <!--
-      Foto 1 — avión de frente/lateral, fondo negro.
-      2/3 del ancho de la sección, anclada al borde IZQUIERDO.
-    -->
-    <img
-      src="/assets/avion_helitec%20sinfondo.png"
-      class="fleet__deco-img fleet__deco-img--left"
-      alt="Aeronave Consorcio Helitec — vista lateral"
-      loading="lazy"
-      decoding="async"
-    />
+              <!--
+                Icono + rotado 45° al abrir → forma ✕ diagonal.
+                aria-hidden: decorativo, estado comunicado por aria-expanded.
+              -->
+              <span class="faq-trigger__icon" aria-hidden="true">+</span>
+            </button>
 
-    <!--
-      Foto 2 — tres aeronaves en línea (colas YV147T · YV185T · YV221T).
-      2/3 del ancho de la sección, anclada al borde DERECHO.
-    -->
-    <img
-      src="/assets/tres_avion_helitec_sinfondo.png"
-      class="fleet__deco-img fleet__deco-img--right"
-      alt="Flota Consorcio Helitec — tres aeronaves en línea"
-      loading="lazy"
-      decoding="async"
-    />
+            <!--
+              Panel respuesta.
+              max-height: 0 por defecto; JS asigna scrollHeight al abrir.
+              overflow: hidden necesario para la animación de altura.
+            -->
+            <div class="faq-panel" data-faq-panel>
+              <div class="faq-panel__inner">
+                <p class="faq-panel__text">{item.a}</p>
+              </div>
+            </div>
 
-  </div>
+          </div>
+        ))}
 
+      </div><!-- /.faq-module -->
+
+    </div><!-- /.ops__right -->
+
+  </div><!-- /.ops__inner -->
 </section>
 
 
 <style>
   /* ════════════════════════════════════════════════════════════════════════
-     SECCIÓN
+     SECCIÓN CONTENEDOR
   ════════════════════════════════════════════════════════════════════════ */
 
-  .fleet {
+  .ops {
     background-color: var(--c-bg);
     border-top:       1px solid var(--c-line);
-    padding-top:      clamp(56px, 9vh, 104px);
-    overflow:         hidden; /* evita scroll horizontal si las fotos sobresalen */
+    padding-block:    clamp(72px, 11vh, 120px);
+    overflow:         hidden;
   }
 
-  .fleet__inner {
+
+  /* ════════════════════════════════════════════════════════════════════════
+     GRID PRINCIPAL — 2 COLUMNAS (desktop) / APILADO (mobile)
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .ops__inner {
     max-width:      var(--content-max);
     margin-inline:  auto;
     padding-inline: calc(var(--sidebar-w) + var(--gutter));
+
+    display:               grid;
+    grid-template-columns: 5fr 7fr;     /* izq ~42% · der ~58% */
+    gap:                   clamp(48px, 7vw, 96px);
+    align-items:           start;
   }
+
+  /* ── Col izquierda: tipografía ──────────────────────────────────────── */
+  .ops__left {
+    /* Posición sticky para que el texto permanezca visible
+       mientras el usuario scrollea el acordeón largo (futuro). */
+    position: sticky;
+    top:      calc(var(--header-h) + 32px);
+  }
+
 
   /* ════════════════════════════════════════════════════════════════════════
-     ENCABEZADO — overline + H2 (left) · logo gigante flush derecho
+     OVERLINE — patrón global del sitio
   ════════════════════════════════════════════════════════════════════════ */
 
-  .fleet__header {
-    display:         flex;
-    align-items:     center;        /* logo centrado verticalmente con el bloque */
-    justify-content: space-between;
-    gap:             clamp(24px, 5vw, 64px);
-    margin-bottom:   clamp(36px, 5vh, 52px);
-  }
-
-  /* Bloque de texto — left-aligned (mismo padding que Servicios) */
-  .fleet__header-text {
-    flex:       1;
-    min-width:  0;
-    text-align: left;
-  }
-
-  .fleet__overline {
-    display:         flex;
-    align-items:     center;
-    justify-content: flex-start; /* línea a la derecha del texto */
-    gap:             12px;
+  .ops__overline {
+    display:     flex;
+    align-items: center;
+    gap:         12px;
 
     font-family:    var(--font-sans);
     font-size:      var(--text-xs);
@@ -149,11 +204,11 @@ const { lang = 'es' } = Astro.props;
     text-transform: uppercase;
     color:          var(--c-sky);
 
-    margin-bottom: 14px;
+    margin-bottom: clamp(20px, 3vh, 32px);
   }
 
-  /* Línea decorativa — a la derecha del texto */
-  .fleet__overline::after {
+  /* Línea decorativa — antes del texto */
+  .ops__overline::before {
     content:          '';
     display:          block;
     flex-shrink:      0;
@@ -162,90 +217,304 @@ const { lang = 'es' } = Astro.props;
     background-color: var(--c-sky);
   }
 
-  .fleet__title {
-    font-family:    var(--font-display);
-    font-size:      var(--text-2xl);
-    font-weight:    var(--fw-thin); /* 200 — OBLIGATORIO */
-    letter-spacing: var(--ls-wide);
-    text-transform: uppercase;
-    line-height:    1.1;
-    color:          var(--c-text-1);
-  }
-
-  /*
-   * Logo avión — GIGANTE, flush derecho.
-   * Altura visual ~igual a la del bloque H2 completo (overline + título 2 líneas).
-   * flex-shrink: 0 → no se comprime.
-   * align-self: center → centrado verticalmente con el bloque de texto.
-   */
-  .fleet__plane-deco {
-    height:      clamp(140px, 22vw, 280px);
-    width:       auto;
-    object-fit:  contain;
-    opacity:     0.75;
-    flex-shrink: 0;
-    align-self:  center;
-  }
 
   /* ════════════════════════════════════════════════════════════════════════
-     FOTOS DECORATIVAS
-     Fuera de .fleet__inner → sin padding, van de borde a borde.
+     H2 DESARMADO — 4 CAPAS TIPOGRÁFICAS
+
+     Todas las capas comparten: Montserrat · mayúsculas · línea ajustada.
+     Diferenciadas por color, weight y opacidad.
+
+     NOTA: font-weight 700 en capas "pesadas" es una decisión EXPLÍCITA
+     del Tech Lead (referencia VANDSLAB). Las reglas anti-slop de fw:200-300
+     aplican a los titulares estándar del proyecto; aquí se usa tipografía
+     de impacto intencionada.
   ════════════════════════════════════════════════════════════════════════ */
 
-  .fleet__deco {
+  .ops__title {
     display:        flex;
     flex-direction: column;
+    gap:            0.1em;           /* Separación mínima entre capas */
+
+    font-family:    var(--font-display);    /* Montserrat */
+    font-size:      clamp(2.25rem, 5vw, 4.25rem);
+    letter-spacing: 0.02em;
+    line-height:    1.0;
+    text-transform: uppercase;
+  }
+
+  /* ── Capa compartida ─────────────────────────────────────────────────── */
+  .ops__title-layer {
+    display: block;
+  }
+
+  /* ── .layer-outline — texto hueco, fantasma ─────────────────────────── */
+  .layer-outline {
+    color:              transparent;
+    -webkit-text-stroke: 1px #fff;
+    opacity:            0.5;
+    font-weight:        700;
+  }
+
+  /* ── .layer-solid — blanco puro, pesado ─────────────────────────────── */
+  .layer-solid {
+    color:       var(--c-text-1);    /* #ffffff */
+    font-weight: 700;
+  }
+
+  /* ── .layer-accent — azul Helitec ──────────────────────────────────── */
+  .layer-accent {
+    color:       var(--c-sky);       /* #58b5f0 */
+    font-weight: 700;
+  }
+
+  /* ── .layer-base — blanco puro, pesado ──────────────────────────────── */
+  .layer-base {
+    color:       var(--c-text-1);    /* #ffffff */
+    font-weight: 700;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FAQ MODULE — CONTENEDOR
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .faq-module {
+    display:        flex;
+    flex-direction: column;
+    /* Sin gap: las líneas divisorias son los bordes de cada ítem */
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FAQ ITEM
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .faq-item {
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  /* Línea superior solo al primer ítem */
+  .faq-item:first-child {
+    border-top: 1px solid var(--c-line);
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FAQ TRIGGER — botón de pregunta
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .faq-trigger {
+    width:           100%;
+    display:         flex;
+    align-items:     flex-start;
+    justify-content: space-between;
+    gap:             var(--sp-5);
+
+    padding-block:   var(--sp-5);
+    padding-inline:  0;
+
+    /* Ghost button — sin fondo ni borde */
+    background:      none;
+    border:          none;
+    cursor:          pointer;
+    text-align:      left;
+
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .faq-trigger:hover {
+    background: none;   /* Cancelar cualquier reset que añada hover bg */
+  }
+
+  .faq-trigger:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 2px;
+    border-radius:  2px;
+  }
+
+  /* ── Texto de la pregunta ─────────────────────────────────────────────── */
+  .faq-trigger__text {
+    font-family:    var(--font-sans);
+    font-size:      var(--text-xs);    /* ≈11-12px */
+    font-weight:    var(--fw-medium);  /* 500 */
+    letter-spacing: var(--ls-wider);   /* 0.12em */
+    text-transform: uppercase;
+    color:          var(--c-text-2);   /* rgba(255,255,255,.60) */
+    line-height:    1.6;
+
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .faq-trigger:hover .faq-trigger__text,
+  .faq-item.is-open  .faq-trigger__text {
+    color: var(--c-text-1);
+  }
+
+  /* ── Icono + ─────────────────────────────────────────────────────────── */
+  .faq-trigger__icon {
+    flex-shrink:  0;
+    width:        20px;
+    height:       20px;
+    margin-top:   1px;     /* alineación óptica con la primera línea del texto */
+
+    display:      flex;
+    align-items:  center;
+    justify-content: center;
+
+    font-size:     1.1rem;
+    font-weight:   var(--fw-light);   /* 300 — fino */
+    line-height:   1;
+    color:         var(--c-sky);
+
     /*
-     * Sin gap: los fondos negros de las imágenes se funden entre sí
-     * y con el fondo del sitio, creando un espacio "aéreo" continuo.
+     * Al rotar 45°, el símbolo + se convierte en ✕ diagonal.
+     * Transition suave: cubic-bezier spring.
      */
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .fleet__deco-img {
-    display:    block;
-    width:      66.667%; /* 2/3 del ancho de la sección */
-    height:     auto;
-    object-fit: contain; /* proporciones naturales, sin recorte */
+  .faq-item.is-open .faq-trigger__icon {
+    transform: rotate(45deg);
   }
 
-  /* Foto 1 — borde izquierdo */
-  .fleet__deco-img--left {
-    align-self: flex-start;
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FAQ PANEL — respuesta colapsable
+
+     max-height: 0  → colapsado
+     JS asigna scrollHeight al abrir (altura real) → evita valor hardcoded
+     que podría recortar respuestas largas o crear espacio vacío innecesario.
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .faq-panel {
+    max-height: 0;
+    overflow:   hidden;
+    transition: max-height 420ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Foto 2 — borde derecho */
-  .fleet__deco-img--right {
-    align-self: flex-end;
+  /* ── Padding interior del panel ──────────────────────────────────────── */
+  .faq-panel__inner {
+    padding-bottom: var(--sp-5);
   }
+
+  /* ── Texto de la respuesta ───────────────────────────────────────────── */
+  .faq-panel__text {
+    font-family:  var(--font-sans);
+    font-size:    var(--text-sm);   /* ≈13-14px */
+    font-weight:  var(--fw-light);  /* 300 */
+    line-height:  1.75;
+    color:        var(--c-text-3);  /* rgba(255,255,255,.35) */
+  }
+
 
   /* ════════════════════════════════════════════════════════════════════════
      RESPONSIVE
+
+     < 1024px: columnas apiladas, sticky desactiva, padding estándar.
+     < 480px:  reducir font-size del título para móvil estrecho.
   ════════════════════════════════════════════════════════════════════════ */
 
   @media (max-width: 1023px) {
-    .fleet__inner {
-      padding-inline: var(--gutter);
-    }
-  }
-
-  @media (max-width: 767px) {
-    .fleet__header {
-      gap: clamp(12px, 4vw, 24px);
+    .ops__inner {
+      grid-template-columns: 1fr;
+      padding-inline:        var(--gutter);
+      gap:                   clamp(40px, 8vw, 56px);
     }
 
-    .fleet__plane-deco {
-      height: clamp(100px, 28vw, 160px);
-    }
-
-    /* Más ancho en móvil para que el avión no quede diminuto */
-    .fleet__deco-img {
-      width: 82%;
+    /* Desactivar sticky en mobile — scroll lineal normal */
+    .ops__left {
+      position: static;
     }
   }
 
   @media (max-width: 479px) {
-    .fleet__deco-img {
-      width: 92%;
+    .ops__title {
+      font-size: clamp(1.875rem, 10vw, 2.5rem);
+    }
+
+    .faq-trigger {
+      padding-block: var(--sp-4);
     }
   }
 </style>
+
+
+<script>
+  /**
+   * FAQ Accordion — Vanilla JS
+   *
+   * Comportamiento:
+   *   · Click en trigger → abre/cierra el panel
+   *   · Solo un panel abierto simultáneamente (cierra el anterior)
+   *   · max-height animado usando scrollHeight real del inner content
+   *   · aria-expanded sincronizado en cada toggle
+   *
+   * Hooks HTML usados (sin acoplamiento a clases CSS):
+   *   [data-faq-item]    → wrapper del ítem
+   *   [data-faq-trigger] → botón de pregunta
+   *   [data-faq-panel]   → panel colapsable
+   *
+   * La clase .is-open en [data-faq-item] controla la apariencia vía CSS.
+   */
+  (function () {
+    var items = /** @type {NodeListOf<HTMLElement>} */ (
+      document.querySelectorAll('[data-faq-item]')
+    );
+
+    if (!items.length) return;
+
+    /**
+     * Cierra un ítem: elimina .is-open, max-height → 0, aria-expanded → false.
+     * @param {HTMLElement} item
+     */
+    function closeItem(item) {
+      var panel   = /** @type {HTMLElement|null} */ (item.querySelector('[data-faq-panel]'));
+      var trigger = item.querySelector('[data-faq-trigger]');
+
+      item.classList.remove('is-open');
+      if (panel)   panel.style.maxHeight   = '0';
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    /**
+     * Abre un ítem: añade .is-open, max-height → scrollHeight real, aria-expanded → true.
+     * @param {HTMLElement} item
+     */
+    function openItem(item) {
+      var panel   = /** @type {HTMLElement|null} */ (item.querySelector('[data-faq-panel]'));
+      var trigger = item.querySelector('[data-faq-trigger]');
+      var inner   = panel && /** @type {HTMLElement|null} */ (panel.querySelector('.faq-panel__inner'));
+
+      item.classList.add('is-open');
+
+      if (panel && inner) {
+        /*
+         * scrollHeight del .faq-panel__inner: altura real del contenido.
+         * Se asigna al panel (el elemento con max-height: 0).
+         * La transición CSS anima de 0 → este valor.
+         */
+        panel.style.maxHeight = inner.scrollHeight + 'px';
+      }
+
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+    }
+
+    /* ── Listener por ítem ─────────────────────────────────────────────── */
+    items.forEach(function (item) {
+      var trigger = item.querySelector('[data-faq-trigger]');
+      if (!trigger) return;
+
+      trigger.addEventListener('click', function () {
+        var wasOpen = item.classList.contains('is-open');
+
+        /* Cierra todos los ítems */
+        items.forEach(closeItem);
+
+        /* Si estaba cerrado, abre este */
+        if (!wasOpen) {
+          openItem(item);
+        }
+      });
+    });
+  })();
+</script>

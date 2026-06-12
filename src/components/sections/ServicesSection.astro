@@ -37,8 +37,6 @@ const services = [
     alt:       lang === 'es'
       ? 'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium'
       : 'Helitec executive cabin — premium leather seating',
-    /* object-position: center 35% — cabina y asientos centrados */
-    imgStyle: 'object-position: center 35%',
   },
   {
     num:   '02',
@@ -52,11 +50,6 @@ const services = [
     alt:       lang === 'es'
       ? 'Helicóptero Helitec en operación petrolera'
       : 'Helitec helicopter on petroleum operations',
-    /*
-     * Foco hacia la izquierda: el helicóptero está en el lado derecho de la foto
-     * pero se recorta. Moviendo object-position hacia 15% el sujeto entra en cuadro.
-     */
-    imgStyle: 'object-position: 15% center',
   },
   {
     num:   '03',
@@ -71,8 +64,6 @@ const services = [
       ? 'Metro III Helitec junto a ambulancia — servicio aeromédico'
       : 'Helitec Metro III alongside ambulance — aeromedical service',
     isExternal: true,
-    /* object-position: centrado — avión + ambulancia completos en cuadro */
-    imgStyle: 'object-position: center center',
   },
   {
     num:   '04',
@@ -86,7 +77,6 @@ const services = [
     alt:       lang === 'es'
       ? 'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación'
       : 'Helitec MD helicopter with external sling load over vegetation',
-    imgStyle: 'object-position: center 40%',
   },
 ];
 ---
@@ -321,26 +311,20 @@ const services = [
 
   .sgrid__photo {
     /*
-     * height: 150%, top: -25% → margen de 25% por lado para STRENGTH=0.40.
-     * maxOffset = 0.5 × 0.40 × frameH → < 25% × frameH → sin clipping.
-     * El parallax JS aplica translateY; la CSS scale actúa por separado
-     * (propiedad CSS `scale` es independiente de `transform`).
+     * top: -20% / height: 140% → colchón de 20% por lado para el parallax JS.
+     * maxOffset = 0.5 × 0.40 × frameH = 20% × frameH → sin clipping.
+     * Reducido desde el original -25% / 150% para un encuadre inicial más ajustado.
      */
-    position:        absolute;
-    left:            0;
-    top:             -25%;
-    width:           100%;
-    height:          150%;
+    position: absolute;
+    left:     0;
+    top:      -20%;
+    width:    100%;
+    height:   140%;
 
     object-fit:      cover;
     object-position: center;
     will-change:     transform;
 
-    /*
-     * CSS `scale` es una propiedad separada de `transform` (CSS Transforms L2).
-     * El JS del parallax escribe `style.transform = 'translateY(Xpx)'`.
-     * CSS controla `scale`; JS controla `transform` — sin interferencia.
-     */
     scale:      1;
     transition: scale var(--dur-slow) var(--ease-out);
   }

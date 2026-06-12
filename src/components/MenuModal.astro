@@ -302,7 +302,20 @@ const services = [
     height:     calc(100% - var(--header-h));
 
     gap:              1px;
-    background-color: var(--c-line);      /* rgba(255,255,255,.10) */
+
+    /*
+     * BUG FIX — Gris fantasma al cerrar:
+     * background-color: transparent por defecto.
+     * Al cerrar (se quita menu-is-open), el grid bg snappea a transparent
+     * inmediatamente, evitando el filtro gris/blanco durante la salida.
+     * Solo se activa el color (gap visual 1px) cuando el menú está abierto.
+     */
+    background-color: transparent;
+  }
+
+  /* Grid gap visible solo con menú abierto */
+  :global(body.menu-is-open) .menu-modal__grid {
+    background-color: var(--c-line);   /* rgba(255,255,255,.10) */
   }
 
 
