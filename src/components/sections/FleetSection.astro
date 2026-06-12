@@ -1,33 +1,35 @@
 ---
 /**
- * FleetSection.astro — "Ingeniería del Servicio"
+ * FleetSection.astro — "Ingeniería del Servicio"  v3 (Motor Scroll VANDSLAB)
  * Consorcio Helitec
  *
- * Layout dividido en 2 columnas (desktop) / apilado (mobile):
+ * Layout: 2 columnas desktop / apilado mobile
+ *   · Col izq (sticky): H2 de 4 capas animadas por scroll
+ *   · Col der:           FAQ acordeón, entra desde el borde derecho
+ *   · Fondo:             Logo avión gigante absolute right
  *
- *   Col izq — Header tipográfico "desarmado":
- *     · Overline con línea decorativa
- *     · .layer-outline  → "SOBRE NUESTRAS"  (texto hueco, stroke blanco)
- *     · .layer-solid    → "OPERACIONES,"    (blanco, pesado)
- *     · .layer-accent   → "FLOTA"           (azul Helitec)
- *     · .layer-base     → "Y SERVICIOS."    (blanco, pesado)
- *     Las capas están preparadas para animación de scroll (futura).
- *     En esta versión se muestran estáticas con opacidades definidas.
+ * Motor de animación (scroll-driven, 60fps):
+ *   IntersectionObserver → activa scroll listener solo cuando la sección
+ *   está en el viewport (performance). requestAnimationFrame suaviza la
+ *   escritura de transforms. progreso 0→1 mapeado a través de la sección.
  *
- *   Col der — Módulo FAQ / Acordeón minimalista:
- *     · 5 ítems con pregunta + respuesta
- *     · Líneas divisorias 1px (--c-line)
- *     · Icono + que rota 45° → ✕ al abrir
- *     · max-height animado por JS (height real calculada en tiempo de ejecución)
- *     · Solo un ítem abierto a la vez
+ *   Timelines (todos completos ≈ progress 0.48 = "centro del scroll"):
+ *     layer-outline  0.05–0.30 → translateY(-60px → 0) + opacity
+ *     layer-solid    0.10–0.35 → translateX(-100px → 0) + opacity
+ *     layer-accent   0.15–0.40 → translateX(+60px → 0) + opacity
+ *     layer-base     0.03–0.25 → opacity solo (ancla estática)
+ *     faq-module     0.10–0.48 → translateX(100vw → 0) + opacity
+ *
+ *   Mobile (<768px):
+ *     Sólo movimiento vertical sutil + opacity (sin horizontales)
+ *     para evitar overflow lateral en pantallas estrechas.
  *
  * Anti-slop compliance:
  *   ✓ PROHIBIDO box-shadow
  *   ✓ PROHIBIDO linear-gradient decorativo
  *   ✓ border-radius ≤ 4px
- *   ✓ object-fit: cover en imágenes (no hay aquí)
- *   ✓ Overline: font-weight light/medium
- *   ✓ Botones: ghost style sin border-radius pastilla
+ *   ✓ font-weight 700 en capas "pesadas" — decisión explícita del Tech Lead
+ *     (referencia VANDSLAB); regla fw:200-300 aplica a titulares estándar
  */
 
 interface Props {
@@ -61,39 +63,49 @@ const faqItems = [
 ---
 
 
-<section class="ops" id="flota" aria-labelledby="ops-heading">
+<section class="ops" id="flota" aria-labelledby="ops-heading" data-ops-section>
+
+  <!--
+    Logo avión gigante — decorativo, fondo absoluto.
+    right: 0 → toca el borde real del viewport (section = 100% ancho).
+    z-index: 0 + pointer-events: none → bajo todo el contenido interactivo.
+  -->
+  <img
+    src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
+    class="ops__plane-deco"
+    alt=""
+    aria-hidden="true"
+    loading="lazy"
+    decoding="async"
+  />
+
   <div class="ops__inner">
 
-    <!-- ══ COL IZQUIERDA — Tipografía desarmada ══════════════════════════════ -->
+    <!-- ══ COL IZQUIERDA — Tipografía desarmada (sticky) ═══════════════════ -->
     <div class="ops__left">
       <header class="ops__header">
 
-        <!-- Overline con línea decorativa (patrón global del sitio) -->
         <p class="ops__overline">
           {lang === 'es' ? 'Ingeniería del Servicio' : 'Service Engineering'}
         </p>
 
         <!--
-          H2 desarmado en 4 capas independientes.
-          Cada span es animable individualmente por IntersectionObserver (futuro).
-          Por ahora: render estático con estilos finales aplicados.
-
-          .layer-outline  → stroke blanco, 50% opacidad (texto fantasma)
-          .layer-solid    → blanco puro, pesado
-          .layer-accent   → azul Helitec (#58b5f0)
-          .layer-base     → blanco puro, pesado
+          H2 en 4 capas independientes. Cada span tiene:
+          · data-layer="*"   → hook JS (sin acoplamiento a clases)
+          · will-change en CSS → hint al compositor GPU
+          JS sobreescribe transform/opacity mediante rAF en cada scroll tick.
         -->
         <h2 class="ops__title" id="ops-heading">
-          <span class="ops__title-layer layer-outline" aria-hidden="false">
+          <span class="ops__title-layer layer-outline" data-layer="outline">
             SOBRE NUESTRAS
           </span>
-          <span class="ops__title-layer layer-solid">
+          <span class="ops__title-layer layer-solid" data-layer="solid">
             OPERACIONES,
           </span>
-          <span class="ops__title-layer layer-accent">
+          <span class="ops__title-layer layer-accent" data-layer="accent">
             FLOTA
           </span>
-          <span class="ops__title-layer layer-base">
+          <span class="ops__title-layer layer-base" data-layer="base">
             Y SERVICIOS.
           </span>
         </h2>
@@ -101,19 +113,19 @@ const faqItems = [
       </header>
     </div>
 
-    <!-- ══ COL DERECHA — Módulo FAQ / Acordeón ══════════════════════════════ -->
+    <!-- ══ COL DERECHA — FAQ Acordeón ══════════════════════════════════════ -->
     <div class="ops__right">
 
-      <div class="faq-module" role="list" aria-label="Preguntas frecuentes">
+      <div
+        class="faq-module"
+        data-faq-module
+        role="list"
+        aria-label="Preguntas frecuentes"
+      >
 
         {faqItems.map((item, i) => (
           <div class="faq-item" role="listitem" data-faq-item>
 
-            <!--
-              Trigger: botón ghost sin fondo.
-              aria-expanded actualizado por JS al toggle.
-              data-faq-trigger = hook JS (no CSS).
-            -->
             <button
               class="faq-trigger"
               type="button"
@@ -121,19 +133,9 @@ const faqItems = [
               data-faq-trigger
             >
               <span class="faq-trigger__text">{item.q}</span>
-
-              <!--
-                Icono + rotado 45° al abrir → forma ✕ diagonal.
-                aria-hidden: decorativo, estado comunicado por aria-expanded.
-              -->
               <span class="faq-trigger__icon" aria-hidden="true">+</span>
             </button>
 
-            <!--
-              Panel respuesta.
-              max-height: 0 por defecto; JS asigna scrollHeight al abrir.
-              overflow: hidden necesario para la animación de altura.
-            -->
             <div class="faq-panel" data-faq-panel>
               <div class="faq-panel__inner">
                 <p class="faq-panel__text">{item.a}</p>
@@ -157,10 +159,33 @@ const faqItems = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops {
+    position:         relative;   /* anchor para el logo absolute */
     background-color: var(--c-bg);
     border-top:       1px solid var(--c-line);
     padding-block:    clamp(72px, 11vh, 120px);
-    overflow:         hidden;
+    overflow:         hidden;     /* recorta el FAQ durante su slide-in */
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     LOGO AVIÓN DE FONDO
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .ops__plane-deco {
+    position:         absolute;
+    right:            0;
+    top:              clamp(180px, 26vh, 240px);
+
+    height:           clamp(420px, 58vw, 720px);
+    width:            auto;
+
+    object-fit:       contain;
+    object-position:  right top;
+
+    opacity:          0.18;
+    z-index:          0;
+    pointer-events:   none;
+    user-select:      none;
   }
 
 
@@ -169,27 +194,29 @@ const faqItems = [
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops__inner {
+    position:       relative;  /* stacking context sobre el logo (z:0) */
+    z-index:        1;
+
     max-width:      var(--content-max);
     margin-inline:  auto;
     padding-inline: calc(var(--sidebar-w) + var(--gutter));
 
     display:               grid;
-    grid-template-columns: 5fr 7fr;     /* izq ~42% · der ~58% */
+    grid-template-columns: 5fr 7fr;
     gap:                   clamp(48px, 7vw, 96px);
     align-items:           start;
   }
 
-  /* ── Col izquierda: tipografía ──────────────────────────────────────── */
+  /* Col izquierda sticky — el título permanece visible
+     mientras el usuario scrollea el acordeón */
   .ops__left {
-    /* Posición sticky para que el texto permanezca visible
-       mientras el usuario scrollea el acordeón largo (futuro). */
     position: sticky;
-    top:      calc(var(--header-h) + 32px);
+    top:      calc(var(--header-h) + 32px);  /* 68px header + margen */
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     OVERLINE — patrón global del sitio
+     OVERLINE
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops__overline {
@@ -207,7 +234,6 @@ const faqItems = [
     margin-bottom: clamp(20px, 3vh, 32px);
   }
 
-  /* Línea decorativa — antes del texto */
   .ops__overline::before {
     content:          '';
     display:          block;
@@ -220,87 +246,81 @@ const faqItems = [
 
   /* ════════════════════════════════════════════════════════════════════════
      H2 DESARMADO — 4 CAPAS TIPOGRÁFICAS
-
-     Todas las capas comparten: Montserrat · mayúsculas · línea ajustada.
-     Diferenciadas por color, weight y opacidad.
-
-     NOTA: font-weight 700 en capas "pesadas" es una decisión EXPLÍCITA
-     del Tech Lead (referencia VANDSLAB). Las reglas anti-slop de fw:200-300
-     aplican a los titulares estándar del proyecto; aquí se usa tipografía
-     de impacto intencionada.
   ════════════════════════════════════════════════════════════════════════ */
 
   .ops__title {
     display:        flex;
     flex-direction: column;
-    gap:            0.1em;           /* Separación mínima entre capas */
+    gap:            0.1em;
 
-    font-family:    var(--font-display);    /* Montserrat */
+    font-family:    var(--font-display);
     font-size:      clamp(2.25rem, 5vw, 4.25rem);
     letter-spacing: 0.02em;
     line-height:    1.0;
     text-transform: uppercase;
   }
 
-  /* ── Capa compartida ─────────────────────────────────────────────────── */
   .ops__title-layer {
-    display: block;
+    display:    block;
+    /*
+     * GPU compositing hint: el motor JS actualiza transform/opacity en rAF.
+     * will-change promueve cada capa a su propia layer del compositor,
+     * garantizando actualizaciones sin reflow (60fps incluso en mobile).
+     */
+    will-change: transform, opacity;
   }
 
-  /* ── .layer-outline — texto hueco, fantasma ─────────────────────────── */
+  /* Rojo Helitec sólido */
   .layer-outline {
-    color:              transparent;
-    -webkit-text-stroke: 1px #fff;
-    opacity:            0.5;
-    font-weight:        700;
+    color:       var(--c-red);   /* #e53b1c */
+    font-weight: 700;
   }
 
-  /* ── .layer-solid — blanco puro, pesado ─────────────────────────────── */
+  /* Blanco puro, pesado */
   .layer-solid {
-    color:       var(--c-text-1);    /* #ffffff */
+    color:       var(--c-text-1);
     font-weight: 700;
   }
 
-  /* ── .layer-accent — azul Helitec ──────────────────────────────────── */
+  /* Azul Helitec */
   .layer-accent {
-    color:       var(--c-sky);       /* #58b5f0 */
+    color:       var(--c-sky);   /* #58b5f0 */
     font-weight: 700;
   }
 
-  /* ── .layer-base — blanco puro, pesado ──────────────────────────────── */
+  /* Blanco puro, pesado — ancla estática (solo opacity) */
   .layer-base {
-    color:       var(--c-text-1);    /* #ffffff */
+    color:       var(--c-text-1);
     font-weight: 700;
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     FAQ MODULE — CONTENEDOR
+     FAQ MODULE — hint GPU para el slide-in desde el borde derecho
   ════════════════════════════════════════════════════════════════════════ */
 
   .faq-module {
     display:        flex;
     flex-direction: column;
-    /* Sin gap: las líneas divisorias son los bordes de cada ítem */
+    will-change:    transform, opacity;
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     FAQ ITEM
+     FAQ ITEMS
   ════════════════════════════════════════════════════════════════════════ */
 
   .faq-item {
     border-bottom: 1px solid var(--c-line);
   }
 
-  /* Línea superior solo al primer ítem */
   .faq-item:first-child {
     border-top: 1px solid var(--c-line);
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     FAQ TRIGGER — botón de pregunta
+     FAQ TRIGGER
   ════════════════════════════════════════════════════════════════════════ */
 
   .faq-trigger {
@@ -313,17 +333,14 @@ const faqItems = [
     padding-block:   var(--sp-5);
     padding-inline:  0;
 
-    /* Ghost button — sin fondo ni borde */
     background:      none;
     border:          none;
     cursor:          pointer;
     text-align:      left;
-
-    transition: background-color var(--dur-fast) var(--ease-out);
   }
 
   .faq-trigger:hover {
-    background: none;   /* Cancelar cualquier reset que añada hover bg */
+    background: none;
   }
 
   .faq-trigger:focus-visible {
@@ -332,14 +349,13 @@ const faqItems = [
     border-radius:  2px;
   }
 
-  /* ── Texto de la pregunta ─────────────────────────────────────────────── */
   .faq-trigger__text {
     font-family:    var(--font-sans);
-    font-size:      var(--text-xs);    /* ≈11-12px */
-    font-weight:    var(--fw-medium);  /* 500 */
-    letter-spacing: var(--ls-wider);   /* 0.12em */
+    font-size:      var(--text-xs);
+    font-weight:    var(--fw-medium);
+    letter-spacing: var(--ls-wider);
     text-transform: uppercase;
-    color:          var(--c-text-2);   /* rgba(255,255,255,.60) */
+    color:          var(--c-text-2);
     line-height:    1.6;
 
     transition: color var(--dur-fast) var(--ease-out);
@@ -350,26 +366,21 @@ const faqItems = [
     color: var(--c-text-1);
   }
 
-  /* ── Icono + ─────────────────────────────────────────────────────────── */
   .faq-trigger__icon {
-    flex-shrink:  0;
-    width:        20px;
-    height:       20px;
-    margin-top:   1px;     /* alineación óptica con la primera línea del texto */
+    flex-shrink:     0;
+    width:           20px;
+    height:          20px;
+    margin-top:      1px;
 
-    display:      flex;
-    align-items:  center;
+    display:         flex;
+    align-items:     center;
     justify-content: center;
 
-    font-size:     1.1rem;
-    font-weight:   var(--fw-light);   /* 300 — fino */
-    line-height:   1;
-    color:         var(--c-sky);
+    font-size:   1.1rem;
+    font-weight: var(--fw-light);
+    line-height: 1;
+    color:       var(--c-sky);
 
-    /*
-     * Al rotar 45°, el símbolo + se convierte en ✕ diagonal.
-     * Transition suave: cubic-bezier spring.
-     */
     transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -379,11 +390,7 @@ const faqItems = [
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     FAQ PANEL — respuesta colapsable
-
-     max-height: 0  → colapsado
-     JS asigna scrollHeight al abrir (altura real) → evita valor hardcoded
-     que podría recortar respuestas largas o crear espacio vacío innecesario.
+     FAQ PANEL
   ════════════════════════════════════════════════════════════════════════ */
 
   .faq-panel {
@@ -392,26 +399,21 @@ const faqItems = [
     transition: max-height 420ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* ── Padding interior del panel ──────────────────────────────────────── */
   .faq-panel__inner {
     padding-bottom: var(--sp-5);
   }
 
-  /* ── Texto de la respuesta ───────────────────────────────────────────── */
   .faq-panel__text {
     font-family:  var(--font-sans);
-    font-size:    var(--text-sm);   /* ≈13-14px */
-    font-weight:  var(--fw-light);  /* 300 */
+    font-size:    var(--text-sm);
+    font-weight:  var(--fw-light);
     line-height:  1.75;
-    color:        var(--c-text-3);  /* rgba(255,255,255,.35) */
+    color:        var(--c-text-3);
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
      RESPONSIVE
-
-     < 1024px: columnas apiladas, sticky desactiva, padding estándar.
-     < 480px:  reducir font-size del título para móvil estrecho.
   ════════════════════════════════════════════════════════════════════════ */
 
   @media (max-width: 1023px) {
@@ -421,9 +423,8 @@ const faqItems = [
       gap:                   clamp(40px, 8vw, 56px);
     }
 
-    /* Desactivar sticky en mobile — scroll lineal normal */
     .ops__left {
-      position: static;
+      position: static;  /* Sin sticky en mobile */
     }
   }
 
@@ -441,80 +442,304 @@ const faqItems = [
 
 <script>
   /**
-   * FAQ Accordion — Vanilla JS
+   * ══════════════════════════════════════════════════════════════════════════
+   * PARTE 1 — FAQ Acordeón (Vanilla JS)
    *
-   * Comportamiento:
-   *   · Click en trigger → abre/cierra el panel
-   *   · Solo un panel abierto simultáneamente (cierra el anterior)
-   *   · max-height animado usando scrollHeight real del inner content
-   *   · aria-expanded sincronizado en cada toggle
-   *
-   * Hooks HTML usados (sin acoplamiento a clases CSS):
-   *   [data-faq-item]    → wrapper del ítem
-   *   [data-faq-trigger] → botón de pregunta
-   *   [data-faq-panel]   → panel colapsable
-   *
-   * La clase .is-open en [data-faq-item] controla la apariencia vía CSS.
+   * · Click → abre/cierra panel con max-height real (scrollHeight)
+   * · Solo un panel abierto a la vez
+   * · aria-expanded sincronizado
+   * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
     var items = /** @type {NodeListOf<HTMLElement>} */ (
       document.querySelectorAll('[data-faq-item]')
     );
-
     if (!items.length) return;
 
-    /**
-     * Cierra un ítem: elimina .is-open, max-height → 0, aria-expanded → false.
-     * @param {HTMLElement} item
-     */
+    /** @param {HTMLElement} item */
     function closeItem(item) {
       var panel   = /** @type {HTMLElement|null} */ (item.querySelector('[data-faq-panel]'));
       var trigger = item.querySelector('[data-faq-trigger]');
-
       item.classList.remove('is-open');
-      if (panel)   panel.style.maxHeight   = '0';
+      if (panel)   panel.style.maxHeight = '0';
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
     }
 
-    /**
-     * Abre un ítem: añade .is-open, max-height → scrollHeight real, aria-expanded → true.
-     * @param {HTMLElement} item
-     */
+    /** @param {HTMLElement} item */
     function openItem(item) {
       var panel   = /** @type {HTMLElement|null} */ (item.querySelector('[data-faq-panel]'));
       var trigger = item.querySelector('[data-faq-trigger]');
       var inner   = panel && /** @type {HTMLElement|null} */ (panel.querySelector('.faq-panel__inner'));
-
       item.classList.add('is-open');
-
-      if (panel && inner) {
-        /*
-         * scrollHeight del .faq-panel__inner: altura real del contenido.
-         * Se asigna al panel (el elemento con max-height: 0).
-         * La transición CSS anima de 0 → este valor.
-         */
-        panel.style.maxHeight = inner.scrollHeight + 'px';
-      }
-
+      if (panel && inner) panel.style.maxHeight = inner.scrollHeight + 'px';
       if (trigger) trigger.setAttribute('aria-expanded', 'true');
     }
 
-    /* ── Listener por ítem ─────────────────────────────────────────────── */
     items.forEach(function (item) {
       var trigger = item.querySelector('[data-faq-trigger]');
       if (!trigger) return;
-
       trigger.addEventListener('click', function () {
         var wasOpen = item.classList.contains('is-open');
-
-        /* Cierra todos los ítems */
         items.forEach(closeItem);
-
-        /* Si estaba cerrado, abre este */
-        if (!wasOpen) {
-          openItem(item);
-        }
+        if (!wasOpen) openItem(item);
       });
     });
+  })();
+
+
+  /**
+   * ══════════════════════════════════════════════════════════════════════════
+   * PARTE 2 — Motor de Scroll VANDSLAB
+   *
+   * Arquitectura:
+   *   · IntersectionObserver observa [data-ops-section]
+   *   · Al entrar en viewport → activa scroll listener
+   *   · Al salir → remueve scroll listener (performance)
+   *   · scroll handler → encola un requestAnimationFrame (un frame por tick)
+   *   · applyFrame() calcula progress y escribe transforms/opacity
+   *
+   * Progress (p):
+   *   p = 0  → tope de la sección toca el borde inferior del viewport
+   *   p = 0.5 → centro de la sección = centro del viewport (≈ fully assembled)
+   *   p = 1  → sección sale completamente por arriba del viewport
+   *
+   * Timelines (start, end):
+   *   layer-outline  → [0.05, 0.30]  translateY(-60→0) + opacity
+   *   layer-solid    → [0.10, 0.35]  translateX(-100→0) + opacity
+   *   layer-accent   → [0.15, 0.40]  translateX(+60→0) + opacity
+   *   layer-base     → [0.03, 0.25]  opacity solo (ancla)
+   *   faq-module     → [0.10, 0.48]  translateX(vw→0) + opacity
+   *
+   * Mobile (<768px):
+   *   Solo movimiento vertical sutil + opacity (sin horizontales).
+   *   Evita overflow lateral en pantallas estrechas.
+   *
+   * prefers-reduced-motion:
+   *   Si el usuario prefiere movimiento reducido, se muestran todos los
+   *   elementos en su estado final sin animación.
+   * ══════════════════════════════════════════════════════════════════════════
+   */
+  (function () {
+
+    /* ── Selección de elementos ──────────────────────────────────────────── */
+
+    var section   = /** @type {HTMLElement|null} */ (document.querySelector('[data-ops-section]'));
+    var faqModule = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-faq-module]'));
+    var lOutline  = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="outline"]'));
+    var lSolid    = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="solid"]'));
+    var lAccent   = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="accent"]'));
+    var lBase     = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="base"]'));
+
+    if (!section || !faqModule || !lOutline || !lSolid || !lAccent || !lBase) return;
+
+
+    /* ── Reducción de movimiento (accesibilidad) ────────────────────────── */
+
+    var mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (mql.matches) {
+      /* Mostrar todo en estado final sin animación */
+      [lOutline, lSolid, lAccent, lBase, faqModule].forEach(function (el) {
+        el.style.opacity   = '1';
+        el.style.transform = 'none';
+      });
+      return;
+    }
+
+
+    /* ── Utilidades matemáticas ─────────────────────────────────────────── */
+
+    /** @param {number} v */
+    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+    /**
+     * Mapea v del rango [lo, hi] a [0, 1] con clamping.
+     * @param {number} v @param {number} lo @param {number} hi
+     */
+    function mapRange(v, lo, hi) { return clamp01((v - lo) / (hi - lo)); }
+
+    /**
+     * easeOutCubic: rápido al inicio, deceleración premium al final.
+     * @param {number} t
+     */
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    /**
+     * Interpolación lineal.
+     * @param {number} a @param {number} b @param {number} t
+     */
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+
+    /* ── Detección de mobile ─────────────────────────────────────────────── */
+
+    var isMobile = false;
+
+    function detectMobile() {
+      isMobile = window.innerWidth < 768;
+    }
+    detectMobile();
+    window.addEventListener('resize', detectMobile, { passive: true });
+
+
+    /* ── Estado inicial — JS escribe antes del primer paint ─────────────── */
+    /*
+     * Las capas empiezan ocultas/desplazadas. JS las anima al estado final.
+     * Se establece ANTES del primer frame visible para evitar FOUC.
+     * Si JS no carga: el CSS muestra los elementos sin opacity (legibles).
+     */
+
+    function setInitialState() {
+      /* Desktop: desplazamientos direccionales */
+      var yOut  = isMobile ? -18  : -60;
+      var xSol  = isMobile ? -24  : -100;
+      var xAcc  = isMobile ?  18  :  60;
+      var xFaq  = isMobile ?  0   : window.innerWidth;  /* mobile: sin translateX */
+      var yFaq  = isMobile ?  28  : 0;                  /* mobile: desde abajo */
+
+      lOutline.style.opacity   = '0';
+      lOutline.style.transform = 'translateY(' + yOut + 'px)';
+
+      lSolid.style.opacity     = '0';
+      lSolid.style.transform   = isMobile
+        ? 'translateY(-14px)'
+        : 'translateX(' + xSol + 'px)';
+
+      lAccent.style.opacity    = '0';
+      lAccent.style.transform  = isMobile
+        ? 'translateY(-10px)'
+        : 'translateX(' + xAcc + 'px)';
+
+      lBase.style.opacity      = '0';
+      lBase.style.transform    = 'none';  /* ancla: sin translate */
+
+      faqModule.style.opacity   = '0';
+      faqModule.style.transform = isMobile
+        ? 'translateY(' + yFaq + 'px)'
+        : 'translateX(' + xFaq + 'px)';
+    }
+
+    setInitialState();
+
+
+    /* ── Cálculo de progreso ────────────────────────────────────────────── */
+
+    function getProgress() {
+      var rect  = section.getBoundingClientRect();
+      var vh    = window.innerHeight;
+      /*
+       * Fórmula: (vh - rect.top) / (sectionHeight + vh)
+       * · p = 0 cuando rect.top = vh  (sección justo entrando por abajo)
+       * · p = 0.5 cuando el centro de la sección = centro del viewport
+       * · p = 1 cuando rect.bottom = 0 (sección completamente arriba)
+       */
+      return clamp01((vh - rect.top) / (rect.height + vh));
+    }
+
+
+    /* ── Escritura de animaciones ───────────────────────────────────────── */
+
+    var lastP = -1;  /* evita escrituras innecesarias al DOM */
+
+    function applyFrame() {
+      var p = getProgress();
+
+      /* Saltar si el progreso no cambió significativamente */
+      if (Math.abs(p - lastP) < 0.0005) return;
+      lastP = p;
+
+      /*
+       * Progresiones individuales por timeline.
+       * mapRange(p, start, end) → 0→1 sólo en esa ventana de scroll.
+       * easeOut() → deceleración premium (siente pesado y lujoso).
+       */
+      var p0   = easeOut(mapRange(p, 0.05, 0.30));  /* layer-outline  */
+      var p1   = easeOut(mapRange(p, 0.10, 0.35));  /* layer-solid    */
+      var p2   = easeOut(mapRange(p, 0.15, 0.40));  /* layer-accent   */
+      var p3   = easeOut(mapRange(p, 0.03, 0.25));  /* layer-base     */
+      var pFaq = easeOut(mapRange(p, 0.10, 0.48));  /* faq-module     */
+
+      if (isMobile) {
+        /* ── Mobile: solo movimiento vertical sutil + opacity ────────── */
+
+        lOutline.style.opacity   = p0.toFixed(3);
+        lOutline.style.transform = 'translateY(' + lerp(-18, 0, p0).toFixed(1) + 'px)';
+
+        lSolid.style.opacity     = p1.toFixed(3);
+        lSolid.style.transform   = 'translateY(' + lerp(-14, 0, p1).toFixed(1) + 'px)';
+
+        lAccent.style.opacity    = p2.toFixed(3);
+        lAccent.style.transform  = 'translateY(' + lerp(-10, 0, p2).toFixed(1) + 'px)';
+
+        lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
+
+        faqModule.style.opacity   = pFaq.toFixed(3);
+        faqModule.style.transform = 'translateY(' + lerp(28, 0, pFaq).toFixed(1) + 'px)';
+
+      } else {
+        /* ── Desktop: efecto Tetris direccional completo ──────────────── */
+
+        lOutline.style.opacity   = p0.toFixed(3);
+        lOutline.style.transform = 'translateY(' + lerp(-60, 0, p0).toFixed(2) + 'px)';
+
+        lSolid.style.opacity     = p1.toFixed(3);
+        lSolid.style.transform   = 'translateX(' + lerp(-100, 0, p1).toFixed(2) + 'px)';
+
+        lAccent.style.opacity    = p2.toFixed(3);
+        lAccent.style.transform  = 'translateX(' + lerp(60, 0, p2).toFixed(2) + 'px)';
+
+        lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
+
+        faqModule.style.opacity   = pFaq.toFixed(3);
+        /*
+         * window.innerWidth: calculado en cada frame para respetar resize.
+         * Funciona con Lenis smooth scroll — window.scrollY refleja posición real.
+         */
+        faqModule.style.transform = 'translateX(' + lerp(window.innerWidth, 0, pFaq).toFixed(1) + 'px)';
+      }
+    }
+
+
+    /* ── Loop rAF — un único frame encolado por tick de scroll ──────────── */
+
+    var scrollPending = false;
+
+    function onScroll() {
+      if (!scrollPending) {
+        scrollPending = true;
+        requestAnimationFrame(function () {
+          applyFrame();
+          scrollPending = false;
+        });
+      }
+    }
+
+
+    /* ── IntersectionObserver ───────────────────────────────────────────── */
+    /*
+     * Activa el scroll listener SOLO mientras la sección es visible.
+     * Evita N listeners activos simultáneos en páginas largas.
+     * threshold: 0 → activa en cuanto cualquier píxel entra en el viewport.
+     */
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            window.addEventListener('scroll', onScroll, { passive: true });
+            applyFrame();   /* frame inmediato al entrar */
+          } else {
+            window.removeEventListener('scroll', onScroll);
+          }
+        });
+      },
+      { rootMargin: '0px', threshold: 0 }
+    );
+
+    observer.observe(section);
+
+    /* Frame inicial: si la página carga con la sección ya visible */
+    applyFrame();
+
   })();
 </script>
