@@ -1,16 +1,12 @@
 ---
 /**
- * FleetSection.astro — "Ingeniería del Servicio"  v4
+ * FleetSection.astro — "Ingeniería del Servicio"
  * Consorcio Helitec
  *
- * FIX v4:
- *   1. Timing scroll comprimido: animación completa mientras la sección
- *      está en el tercio inferior del viewport (progress formula = vh en
- *      lugar de sectionHeight+vh). Texto visible al animarse.
- *   2. Legibilidad FAQ: opacidad del logo reducida a 0.15 + backdrop
- *      semitransparente en .faq-module para separar texto del fondo.
- *   3. Highlight sweeps en frases clave del FAQ: <span class="hl">
- *      activados con delay al abrir cada panel del acordeón.
+ * Motor scroll: ventana (sectionHeight + vh) — fórmula original.
+ * Mobile Tetris: translateY(-30) / translateX(±40) / translateX(20vw).
+ * Legibilidad FAQ: opacidad logo 0.15 + backdrop blur en .faq-module.
+ * Highlight sweeps: <span class="hl"> con delay al abrir acordeón.
  */
 
 interface Props {
@@ -533,27 +529,10 @@ const faqItems = [
 
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 2 — Motor de Scroll VANDSLAB  (v4 — timing comprimido)
+   * PARTE 2 — Motor de Scroll VANDSLAB
    *
-   * FIX TIMING v4:
-   * La fórmula de progreso anterior usaba (sectionHeight + vh) como ventana,
-   * lo que hacía que en secciones altas (especialmente mobile apilado) la
-   * animación completara cuando el usuario ya había pasado el texto.
-   *
-   * Nueva fórmula: ventana = 1 × vh (un viewport de scroll).
-   * · p=0: sección entra por el borde inferior del viewport
-   * · p=1: tope de la sección llega al borde superior del viewport
-   * Esto garantiza que la animación del TEXTO completa mientras está visible.
-   *
-   * El FAQ tiene un timeline diferido ([0.40, 0.90]) para que su entrada
-   * ocurra cuando el usuario ha scrolleado lo suficiente para verlo.
-   *
-   * Timelines (start, end) con ventana 1×vh:
-   *   layer-outline [0.05, 0.35] → completa con section top a ~65% del viewport
-   *   layer-solid   [0.10, 0.38] → completa con section top a ~62% del viewport
-   *   layer-accent  [0.15, 0.42] → completa con section top a ~58% del viewport
-   *   layer-base    [0.02, 0.28] → opacity, ancla
-   *   faq-module    [0.40, 0.90] → entra cuando section está más avanzada en view
+   * Ventana: (sectionHeight + vh). p=0 al entrar el borde inferior;
+   * p=1 al salir el borde superior. Timelines escalonados para efecto Tetris.
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
@@ -628,17 +607,17 @@ const faqItems = [
     setInitialState();
 
 
-    /* ── Progreso (ventana comprimida: 1×vh) ───────────────────────────── */
+    /* ── Progreso ─────────────────────────────────────────────────────── */
 
     function getProgress() {
       var rect = section.getBoundingClientRect();
       var vh   = window.innerHeight;
       /*
-       * Ventana = vh (un viewport de scroll).
-       * Efecto: la animación del texto completa cuando el tope de la sección
-       * alcanza el borde superior del viewport — siempre frente al usuario.
+       * Ventana = sectionHeight + vh.
+       * p=0: sección entra por borde inferior del viewport.
+       * p=1: sección sale completamente por borde superior.
        */
-      return clamp01((vh - rect.top) / vh);
+      return clamp01((vh - rect.top) / (rect.height + vh));
     }
 
 
@@ -651,16 +630,11 @@ const faqItems = [
       if (Math.abs(p - lastP) < 0.0005) return;
       lastP = p;
 
-      /*
-       * Timelines individuales dentro del rango 0→1 de la ventana comprimida.
-       * Texto: completa en el tercio inferior del viewport (p ≈ 0.35-0.42).
-       * FAQ:   diferido a [0.40, 0.90] — entra cuando el usuario scrolleó más.
-       */
-      var p0   = easeOut(mapRange(p, 0.05, 0.35));  /* layer-outline  */
-      var p1   = easeOut(mapRange(p, 0.10, 0.38));  /* layer-solid    */
-      var p2   = easeOut(mapRange(p, 0.15, 0.42));  /* layer-accent   */
-      var p3   = easeOut(mapRange(p, 0.02, 0.28));  /* layer-base     */
-      var pFaq = easeOut(mapRange(p, 0.40, 0.90));  /* faq-module     */
+      var p0   = easeOut(mapRange(p, 0.05, 0.30));  /* layer-outline  */
+      var p1   = easeOut(mapRange(p, 0.10, 0.35));  /* layer-solid    */
+      var p2   = easeOut(mapRange(p, 0.15, 0.40));  /* layer-accent   */
+      var p3   = easeOut(mapRange(p, 0.03, 0.25));  /* layer-base     */
+      var pFaq = easeOut(mapRange(p, 0.10, 0.48));  /* faq-module     */
 
       if (isMobile) {
         /* Mobile Tetris — distancias cortas, overflow recortado por section */
