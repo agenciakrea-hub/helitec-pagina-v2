@@ -66,6 +66,33 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!--
+    ── Scroll-reset bloqueante ─────────────────────────────────────────────
+    Posición: inmediatamente tras el viewport, ANTES de cualquier recurso.
+    Propósito: forzar que cada carga (refresh, back/forward, primer hit)
+    arranque siempre desde el Hero (scroll 0,0), sin importar dónde
+    estuviera el usuario cuando abandonó la página.
+
+    history.scrollRestoration = 'manual'
+      → Desactiva la restauración automática de posición del navegador
+        (Chrome, Firefox, Safari). Sin esto el browser puede recordar el
+        scroll de la visita anterior y saltarse el Hero al recargar.
+
+    window.scrollTo(0, 0)
+      → Reset explícito al tope. Se ejecuta de forma síncrona antes del
+        primer paint, eliminando cualquier "flash" del contenido desplazado.
+
+    is:inline → Astro renderiza el <script> literal (no bundled, no deferred).
+    No usa defer ni async → es BLOQUEANTE por diseño: debe correr antes que
+    el DOM se pinte para que el usuario nunca vea la página a mitad de scroll.
+  -->
+  <script is:inline>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  </script>
+
   <!-- ── SEO Básico ──────────────────────────────────────────────────────── -->
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -233,22 +260,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     · window.lenisInstance expuesto globalmente para que Header.astro
       pueda pausar/reanudar Lenis cuando el menú modal esté abierto.
   ──────────────────────────────────────────────────────────────────────────── -->
-  <!--
-    ── SCROLL RESTORATION ─────────────────────────────────────────────────────
-    Forza scroll al tope en cada carga/recarga (F5).
-    · history.scrollRestoration = "manual" → el browser NO restaura la posición
-      del scroll anterior (evita el "saltón" al recargar).
-    · window.scrollTo(0, 0) → garantiza posición 0 incluso en SPA/View Transitions.
-    · is:inline → se ejecuta de forma síncrona antes de que cualquier otro script
-      intente animar o leer window.scrollY.
-  ──────────────────────────────────────────────────────────────────────────── -->
-  <script is:inline>
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
-    }
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  </script>
-
   <script is:inline type="module">
     import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs';
 

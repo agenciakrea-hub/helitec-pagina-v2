@@ -350,9 +350,10 @@ const stats: StatCell[] = [
      * eliminando la franja gris/blanca visible cuando SERVICIOS entra en pantalla.
      * La transición termina 5% antes del borde para garantizar costura limpia.
      */
-    background:    linear-gradient(to bottom, #ffffff 0%, #ffffff 82%, #000000 95%);
-    border-top:    none; /* sin línea separadora — el cambio de color crea la separación visual */
-    padding-block: clamp(56px, 9vh, 104px);
+    background:   linear-gradient(to bottom, #ffffff 0%, #ffffff 78%, #1a1a1a 94%, #000000 100%);
+    border-top:   none; /* sin línea separadora — el cambio de color crea la separación visual */
+    padding-top:  clamp(56px, 9vh, 104px);
+    padding-bottom: clamp(140px, 18vh, 200px);
   }
 
   .stats__inner {

@@ -198,9 +198,7 @@ const { lang = 'es' } = Astro.props;
   <!-- [DATO: reemplazar href con la URL real del Linktree de Consorcio Helitec] -->
   <a
     class="csheet__fab csheet__linktree-btn"
-    href="https://linktr.ee/helitec"
-    target="_blank"
-    rel="noopener noreferrer"
+    href="/"
     aria-label="Ver todas las redes de Consorcio Helitec en Linktree"
   >
     <!-- Tooltip onboarding: aparece 0.85s tras carga (cascada con Cotización) -->
@@ -738,22 +736,30 @@ const { lang = 'es' } = Astro.props;
   .csheet__fab--cotizar[aria-expanded="true"] .csheet__fab-close { opacity: 1; }
 
   /* ── FABs cristal blanco: LinkedIn + Instagram ───────────────────────────── */
-  .csheet__fab--linkedin,
+  /* Estado reposo: tinte sutil de marca — visible pero no garish */
+  .csheet__fab--linkedin {
+    background: rgba(10, 102, 194, 0.16);
+    border:     1px solid rgba(10, 102, 194, 0.32);
+    color:      rgba(255, 255, 255, 0.82);
+  }
+
   .csheet__fab--instagram {
-    background: rgba(255, 255, 255, 0.08);
-    border:     1px solid rgba(255, 255, 255, 0.14);
-    color:      rgba(255, 255, 255, 0.75);
+    background: rgba(225, 48, 108, 0.14);
+    border:     1px solid rgba(225, 48, 108, 0.30);
+    color:      rgba(255, 255, 255, 0.82);
   }
 
-  .csheet__fab--linkedin:hover,
+  .csheet__fab--linkedin:hover {
+    background:   rgba(10, 102, 194, 0.28);
+    border-color: rgba(10, 102, 194, 0.55);
+    color:        rgba(255, 255, 255, 1);
+  }
+
   .csheet__fab--instagram:hover {
-    background: rgba(255, 255, 255, 0.16);
-    color:      rgba(255, 255, 255, 1);
+    background:   rgba(225, 48, 108, 0.26);
+    border-color: rgba(225, 48, 108, 0.50);
+    color:        rgba(255, 255, 255, 1);
   }
-
-  /* Hover border accent por identidad de red */
-  .csheet__fab--linkedin:hover  { border-color: rgba(10, 102, 194, 0.55); } /* Azul LinkedIn */
-  .csheet__fab--instagram:hover { border-color: rgba(225, 48, 108, 0.45); } /* Rosa IG */
 
   .csheet__fab--linkedin:focus-visible,
   .csheet__fab--instagram:focus-visible {
