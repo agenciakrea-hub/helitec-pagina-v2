@@ -350,10 +350,27 @@ const stats: StatCell[] = [
      * eliminando la franja gris/blanca visible cuando SERVICIOS entra en pantalla.
      * La transición termina 5% antes del borde para garantizar costura limpia.
      */
-    background:   linear-gradient(to bottom, #ffffff 0%, #ffffff 78%, #1a1a1a 94%, #000000 100%);
-    border-top:   none; /* sin línea separadora — el cambio de color crea la separación visual */
-    padding-top:  clamp(56px, 9vh, 104px);
-    padding-bottom: clamp(140px, 18vh, 200px);
+    /*
+     * Gradiente ease-in simulado con múltiples paradas:
+     * blanco puro hasta el 86%, luego desaceleración suave
+     * a través de grises intermedios antes de llegar al negro.
+     * La curva comienza muy despacio y acelera al final
+     * → imperceptible en el área del cert block.
+     */
+    background: linear-gradient(
+      to bottom,
+      #ffffff  0%,
+      #ffffff 86%,
+      #eeeeee 88%,
+      #cccccc 90%,
+      #999999 92%,
+      #555555 95%,
+      #1a1a1a 98%,
+      #000000 100%
+    );
+    border-top:     none;
+    padding-top:    clamp(56px, 9vh, 104px);
+    padding-bottom: clamp(200px, 26vh, 260px);
   }
 
   .stats__inner {

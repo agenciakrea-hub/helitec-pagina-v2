@@ -260,6 +260,26 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     · window.lenisInstance expuesto globalmente para que Header.astro
       pueda pausar/reanudar Lenis cuando el menú modal esté abierto.
   ──────────────────────────────────────────────────────────────────────────── -->
+  <!--
+    ── data-no-nav — Interceptor de enlaces placeholder ───────────────────────
+    Problema: los links con href="/" en una web de página única disparan
+    Astro View Transitions → relanza el Preloader → se queda clavado en negro.
+
+    Solución: listener en FASE CAPTURE (antes de que VT vea el evento).
+    Astro VT comprueba event.defaultPrevented antes de navegar; si es true,
+    descarta la navegación. No llamamos stopPropagation → los demás handlers
+    (ej: data-open-slcta en el Hero CTA) siguen disparándose normalmente.
+
+    Cualquier <a data-no-nav> queda inerte para navegación pero interactivo
+    para otros listeners JS.
+  -->
+  <script is:inline>
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest('[data-no-nav]');
+      if (a) e.preventDefault();
+    }, true /* capture: true → dispara ANTES que Astro VT */);
+  </script>
+
   <script is:inline type="module">
     import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs';
 

@@ -733,14 +733,26 @@ const faqItems = [
       });
     });
 
-    /* -- 2. IntersectionObserver - trigger unico */
-
+    /* ── 2. IntersectionObserver + doble-rAF ──────────────────────────────
+     *
+     * El doble requestAnimationFrame garantiza que el browser haya pintado
+     * al menos un frame con el estado inicial (opacity:0 + transform offset)
+     * antes de añadir la clase trigger.
+     *
+     * Sin esto: si el IO dispara antes del primer paint (race condition al
+     * cargar la página, especialmente con threshold:0), el browser nunca
+     * observa el estado inicial → no hay transición visible, sección estática.
+     */
     new IntersectionObserver(
       function (entries, observer) {
-        if (entries[0].isIntersecting) {
-          section.classList.add('ops--in-view');
-          observer.disconnect();
-        }
+        if (!entries[0].isIntersecting) return;
+        observer.disconnect();
+
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            section.classList.add('ops--in-view');
+          });
+        });
       },
       { threshold: 0 }
     ).observe(section);
