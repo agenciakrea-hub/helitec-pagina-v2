@@ -173,11 +173,25 @@ const faqItems = [
     object-fit:      contain;
     object-position: right top;
 
-    opacity:         0;   /* JS anima: 0 → 0.4 durante el ensamblaje */
+    /* Estado inicial — motor V7: CSS transition, no JS */
+    opacity:         0;
+    transform:       translateX(60px);
     z-index:         0;
     pointer-events:  none;
     user-select:     none;
     will-change:     transform, opacity;
+    transition:
+      opacity   800ms var(--ease-out) 250ms,
+      transform 800ms var(--ease-out) 250ms;
+  }
+
+  .ops--in-view .ops__plane-deco {
+    opacity:   0.4;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ops__plane-deco { transition: none; opacity: 0.4; transform: none; }
   }
 
 
@@ -222,6 +236,18 @@ const faqItems = [
     color:          var(--c-sky);
 
     margin-bottom: clamp(20px, 3vh, 32px);
+
+    /* Entrada: fade-in rápido — aparece antes que los chars del título */
+    opacity:    0;
+    transition: opacity 450ms var(--ease-out);
+  }
+
+  .ops--in-view .ops__overline {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ops__overline { transition: none; opacity: 1; }
   }
 
   .ops__overline::before {
@@ -252,8 +278,8 @@ const faqItems = [
 
   .ops__title-layer {
     display:        block;
-    will-change:    transform, opacity;
     pointer-events: none; /* defensa táctil: los spans no interceptan toques */
+    /* will-change eliminado — motor V7 anima .char, no el layer */
   }
 
   .layer-outline {
@@ -274,6 +300,49 @@ const faqItems = [
   .layer-base {
     color:       var(--c-text-1);
     font-weight: 700;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     CHARS — SplitText motor V7
+     Cada letra del título queda envuelta en <span class="char"> por JS.
+     --char-i: índice global continuo (acumulado entre las 4 capas) → el
+     cascade fluye sin cortes entre "SOBRE NUESTRAS" → "Y SERVICIOS."
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .char {
+    display:     inline-block;
+    opacity:     0;
+    will-change: transform, opacity;
+    transition:
+      opacity   380ms var(--ease-out),
+      transform 380ms var(--ease-out);
+    /*
+     * 15ms por carácter → 42 chars × 15ms = 630ms de stagger total.
+     * Transitión de 380ms → último char completa a ~1 010ms desde el trigger.
+     * Asignado en JS: span.style.setProperty('--char-i', globalIdx).
+     */
+    transition-delay: calc(var(--char-i, 0) * 15ms);
+  }
+
+  /* Dirección de entrada por capa — cada grupo llega de un eje distinto */
+  .layer-outline .char { transform: translateY(-20px);  } /* SOBRE NUESTRAS: cae arriba  */
+  .layer-solid   .char { transform: translateX(-18px);  } /* OPERACIONES,:  desliza izq  */
+  .layer-accent  .char { transform: translateX(18px);   } /* FLOTA:         desliza der  */
+  .layer-base    .char { transform: translateY(16px);   } /* Y SERVICIOS.:  sube         */
+
+  /* Estado VISIBLE — añadido por IntersectionObserver cuando la sección entra */
+  .ops--in-view .char {
+    opacity:   1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .char {
+      transition: none;
+      opacity:    1;
+      transform:  none;
+    }
   }
 
 
@@ -315,7 +384,27 @@ const faqItems = [
       background:              rgba(0, 0, 0, 0.42);
       backdrop-filter:         blur(10px);
       -webkit-backdrop-filter: blur(10px);
+
+      /*
+       * Slide-in desde la derecha — solo desktop.
+       * translateX(100vw) está clipado por .ops { overflow: hidden };
+       * el módulo aparece deslizándose desde el borde derecho de la sección.
+       */
+      opacity:   0;
+      transform: translateX(100vw);
+      transition:
+        opacity   700ms var(--ease-out) 550ms,
+        transform 700ms var(--ease-out) 550ms;
     }
+
+    .ops--in-view .faq-module {
+      opacity:   1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) and (min-width: 768px) {
+    .faq-module { transition: none; opacity: 1; transform: none; }
   }
 
 
@@ -569,277 +658,85 @@ const faqItems = [
 
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 2 — Motor de Scroll V6.1 (Anti-Layout-Thrash + Cache Fiable)
+   * PARTE 2 — SplitText + IntersectionObserver (Motor V7)
    *
-   * Cambios V6.1 vs V6.0:
+   * Reemplaza el motor RAF V6.1 (scroll math con sectionDocTop) por un
+   * sistema IO+CSS más robusto:
    *
-   *   1. sectionDocTop ahora se calcula con getBoundingClientRect().top +
-   *      window.scrollY en lugar de offsetTop traversal.
-   *      — getBoundingClientRect() da la posición RENDERIZADA real, incluyendo
-   *        márgenes, paddings y transforms de ancestros que offsetTop ignoraba.
-   *      — La lectura ocurre FUERA del rAF (en updateCache), por lo que no
-   *        hay layout thrash. El rAF solo lee window.scrollY (no-reflow).
+   *   • SplitText: cada carácter del título queda en <span class="char">
+   *     con --char-i (índice global continuo entre las 4 capas).
+   *     El CSS anima cada char con transition-delay calculado desde ese índice
+   *     → cascade fluido de "S" hasta "." sin cortes entre líneas.
    *
-   *   2. Se añade window.addEventListener('load', updateCache, { once: true }).
-   *      — A DOMContentLoaded, imágenes en Hero/StatsSection/ServicesSection
-   *        pueden no tener dimensiones (height: auto). Eso hace que el offsetTop
-   *        de FleetSection sea menor que el valor real post-carga → getProgress()
-   *        devuelve p > 0 cuando el usuario ni ha llegado a la sección →
-   *        la animación nunca arranca correctamente.
-   *      — Con window.load, una vez que todas las imágenes están cargadas y el
-   *        layout es estable, recalculamos sectionDocTop con el valor correcto.
+   *   • IntersectionObserver añade .ops--in-view a la sección en el primer
+   *     frame en que entra en el viewport → las CSS transitions se disparan.
+   *     Se desconecta después (una sola vez — no re-anima al scrollear arriba).
    *
-   *   3. IntersectionObserver con rootMargin '0px 0px 200px 0px':
-   *      — El loop arranca 200px antes de que la sección entre por abajo.
-   *        Da tiempo al rAF de ejecutarse al menos 12 frames antes de que la
-   *        animación sea visible, eliminando el "flash" de estado inicial.
-   *
-   * Invariante del rAF (sin cambios):
-   *   relTop = sectionDocTop - window.scrollY   ← sin acceso al DOM
-   *   p = clamp01((vh - relTop) / (vh × 0.5))
-   *   p=0: sección 1vh por debajo del viewport
-   *   p=1: borde superior de sección en vh/2 (centro del viewport)
+   * Ventaja vs motor RAF+scroll math:
+   *   · Sin dependencia de sectionDocTop (causa del bug "animación muerta"):
+   *     a DOMContentLoaded las imágenes de secciones anteriores aún no han
+   *     cargado → su height es 0 → sectionDocTop demasiado pequeño → p=1
+   *     en el primer applyFrame() → sobreescribe setInitialState() antes de
+   *     que el usuario llegue a la sección → texto visible y estático.
+   *   · Cero acceso al DOM en el render path.
+   *   · Funciona con imágenes lazy-loaded, fuentes tardías y View Transitions.
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
 
-    /* ── Elementos ─────────────────────────────────────────────────────── */
+    var section = /** @type {HTMLElement|null} */ (document.querySelector('[data-ops-section]'));
+    if (!section) return;
 
-    var section   = /** @type {HTMLElement|null} */ (document.querySelector('[data-ops-section]'));
-    var faqModule = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-faq-module]'));
-    var lOutline  = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="outline"]'));
-    var lSolid    = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="solid"]'));
-    var lAccent   = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="accent"]'));
-    var lBase     = /** @type {HTMLElement|null} */ (section && section.querySelector('[data-layer="base"]'));
-    var planeDeco = /** @type {HTMLElement|null} */ (section && section.querySelector('.ops__plane-deco'));
+    /* ── 1. SplitText ──────────────────────────────────────────────────── */
 
-    if (!section || !faqModule || !lOutline || !lSolid || !lAccent || !lBase || !planeDeco) return;
+    var layers = section.querySelectorAll('.ops__title-layer');
+    var globalCharIdx = 0; /* Índice continuo acumulado entre capas */
 
-
-    /* ── prefers-reduced-motion ────────────────────────────────────────── */
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      [lOutline, lSolid, lAccent, lBase, faqModule].forEach(function (el) {
-        el.style.opacity   = '1';
-        el.style.transform = 'none';
-      });
-      planeDeco.style.opacity   = '0.4';
-      planeDeco.style.transform = 'none';
-      return;
-    }
-
-
-    /* ── Caché de layout — actualizado en resize, NUNCA en el loop ─────── */
-
-    var vh           = window.innerHeight;
-    var vw           = window.innerWidth;
-    var isMobile     = vw < 768;
-    var sectionDocTop = 0;
-    var lastP         = -1;
-
-    function updateCache() {
-      vh       = window.innerHeight;
-      vw       = window.innerWidth;
-      isMobile = vw < 768;
+    layers.forEach(function (layer) {
+      var text = (layer.textContent || '').trim();
+      if (!text) return;
 
       /*
-       * getBoundingClientRect().top + window.scrollY = Y absoluta del section
-       * en el documento (no relativa al viewport).
-       *
-       * Ventajas vs offsetTop traversal:
-       *   · Refleja la posición RENDERIZADA real (margenes, transforms, gaps).
-       *   · Es inmune al bug donde imágenes con height:auto en secciones
-       *     anteriores aún no han cargado → offsetTop devuelve un valor menor
-       *     que el real → getProgress() siempre retorna p > 0 → animación
-       *     pasa de largo antes de que el usuario llegue a la sección.
-       *
-       * Costo: fuerza un layout flush sincrónico — aceptable porque updateCache()
-       * se llama FUERA del rAF (en resize/load), nunca dentro del loop.
+       * Accesibilidad:
+       *   · role="text" → impide que lectores de pantalla desciendad a los
+       *     <span class="char"> individuales y lean letra por letra.
+       *   · aria-label → el layer anuncia el texto completo como una unidad.
        */
-      var r = section.getBoundingClientRect();
-      sectionDocTop = r.top + window.scrollY;
+      layer.setAttribute('role', 'text');
+      layer.setAttribute('aria-label', text);
+      layer.textContent = '';
 
-      /* Forzar re-render en el próximo frame */
-      lastP = -1;
-    }
-
-    updateCache();
-    window.addEventListener('resize', updateCache, { passive: true });
-    /*
-     * window.load: recalcular después de que todas las imágenes y fuentes
-     * hayan cargado y el layout final esté estabilizado.
-     * Sin esto, el sectionDocTop calculado a DOMContentLoaded puede ser incorrecto
-     * si Hero/StatsSection/ServicesSection tienen imágenes de height:auto aún vacías.
-     */
-    window.addEventListener('load', updateCache, { once: true });
-
-
-    /* ── Utilidades ────────────────────────────────────────────────────── */
-
-    /** @param {number} v */
-    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-
-    /** @param {number} v @param {number} lo @param {number} hi */
-    function mapRange(v, lo, hi) { return clamp01((v - lo) / (hi - lo)); }
-
-    /** easeOutCubic — rápido → deceleración premium @param {number} t */
-    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-
-    /** @param {number} a @param {number} b @param {number} t */
-    function lerp(a, b, t) { return a + (b - a) * t; }
-
-
-    /* ── Estado inicial ────────────────────────────────────────────────── */
-
-    function setInitialState() {
-      lOutline.style.opacity   = '0';
-      lOutline.style.transform = isMobile ? 'translateY(-30px)' : 'translateY(-50px)';
-
-      lSolid.style.opacity     = '0';
-      lSolid.style.transform   = isMobile ? 'translateX(-40px)' : 'translateX(-100px)';
-
-      lAccent.style.opacity    = '0';
-      lAccent.style.transform  = isMobile ? 'translateX(40px)' : 'translateX(60px)';
-
-      lBase.style.opacity      = '0';
-      lBase.style.transform    = 'none';
-
-      /*
-       * FAQ MODULE — comportamiento diferenciado por dispositivo:
-       *
-       * DESKTOP: opacity:0 + translateX(vw) → slide-in animado desde la derecha.
-       *   La GPU layer (will-change) está activa y body no tiene overflow:clip
-       *   en el eje Y, por lo que backdrop-filter funciona correctamente.
-       *
-       * MOBILE: sin animación. El FAQ arranca visible (opacity no se toca).
-       *   Razón: body { overflow-x:clip } → axis-pairing → overflow-y:clip (computed).
-       *   En iOS Safari, will-change + backdrop-filter dentro de overflow:clip
-       *   causa que el elemento se pinte como completamente transparente incluso
-       *   cuando opacity > 0 (bug de compositing en WebKit). Como el FAQ en mobile
-       *   no tiene translateX de todos modos, no hay pérdida de animación.
-       */
-      if (!isMobile) {
-        faqModule.style.opacity   = '0';
-        faqModule.style.transform = 'translateX(' + Math.round(vw) + 'px)';
-      }
-      /* Mobile: faqModule queda con sus valores CSS por defecto (visible, sin transform) */
-
-      planeDeco.style.opacity   = '0';
-      planeDeco.style.transform = 'translateX(100px)';
-    }
-
-    setInitialState();
-
-
-    /* ── Progreso — SIN getBoundingClientRect ───────────────────────────── */
-
-    function getProgress() {
-      /*
-       * window.scrollY: propiedad ligera, NO fuerza reflow.
-       * sectionDocTop: cacheado en updateCache(), cero acceso al DOM.
-       *
-       * relTop = posición del borde superior del section relativa al viewport.
-       * Equivalente a getBoundingClientRect().top pero sin el reflow.
-       */
-      var relTop = sectionDocTop - window.scrollY;
-      return clamp01((vh - relTop) / (vh * 0.5));
-    }
-
-
-    /* ── applyFrame ─────────────────────────────────────────────────────── */
-
-    function applyFrame() {
-      var p = getProgress();
-      if (Math.abs(p - lastP) < 0.0005) return;
-      lastP = p;
-
-      /*
-       * Timelines escalonados — cada pieza llega en secuencia.
-       * Rangos distribuidos sobre todo el 0..1 para aprovechar la ventana vh/2.
-       */
-      var p0     = easeOut(mapRange(p, 0.00, 0.60));  /* SOBRE NUESTRAS (rojo, baja) */
-      var p1     = easeOut(mapRange(p, 0.08, 0.68));  /* OPERACIONES (izquierda)     */
-      var p2     = easeOut(mapRange(p, 0.15, 0.75));  /* FLOTA (derecha)             */
-      var p3     = easeOut(mapRange(p, 0.02, 0.52));  /* Y SERVICIOS (fade)          */
-      var pFaq   = easeOut(mapRange(p, 0.20, 0.92));  /* FAQ module                  */
-      var pPlane = easeOut(mapRange(p, 0.12, 0.80));  /* Logo avión                  */
-
-      if (isMobile) {
-        lOutline.style.opacity   = p0.toFixed(3);
-        lOutline.style.transform = 'translateY(' + lerp(-30, 0, p0).toFixed(1) + 'px)';
-
-        lSolid.style.opacity     = p1.toFixed(3);
-        lSolid.style.transform   = 'translateX(' + lerp(-40, 0, p1).toFixed(1) + 'px)';
-
-        lAccent.style.opacity    = p2.toFixed(3);
-        lAccent.style.transform  = 'translateX(' + lerp(40, 0, p2).toFixed(1) + 'px)';
-
-        lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
-
+      text.split('').forEach(function (char) {
+        var span = document.createElement('span');
+        span.className = 'char';
+        span.setAttribute('aria-hidden', 'true');
         /*
-         * Mobile: FAQ NO se anima — siempre visible.
-         * No escribir faqModule.style.opacity aquí. Ver setInitialState().
+         * --char-i: indice global, CSS calcula el stagger individual.
+         * El contador no se reinicia entre capas: cascade continuo.
          */
+        span.style.setProperty('--char-i', String(globalCharIdx));
+        /* Espacio: usar \u00A0 para que display:inline-block no colapse */
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        layer.appendChild(span);
+        globalCharIdx++;
+      });
+    });
 
-      } else {
-        lOutline.style.opacity   = p0.toFixed(3);
-        lOutline.style.transform = 'translateY(' + lerp(-50, 0, p0).toFixed(2) + 'px)';
-
-        lSolid.style.opacity     = p1.toFixed(3);
-        lSolid.style.transform   = 'translateX(' + lerp(-100, 0, p1).toFixed(2) + 'px)';
-
-        lAccent.style.opacity    = p2.toFixed(3);
-        lAccent.style.transform  = 'translateX(' + lerp(60, 0, p2).toFixed(2) + 'px)';
-
-        lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
-
-        faqModule.style.opacity   = pFaq.toFixed(3);
-        /* vw cacheado — sin window.innerWidth en el loop */
-        faqModule.style.transform = 'translateX(' + lerp(vw, 0, pFaq).toFixed(1) + 'px)';
-      }
-
-      planeDeco.style.opacity   = lerp(0, 0.4, pPlane).toFixed(3);
-      planeDeco.style.transform = 'translateX(' + lerp(100, 0, pPlane).toFixed(2) + 'px)';
-    }
-
-
-    /* ── Loop rAF continuo — activado/desactivado por IO ───────────────── */
-
-    var rafId = null;
-
-    function startLoop() {
-      if (rafId !== null) return;
-      (function tick() {
-        applyFrame();
-        rafId = requestAnimationFrame(tick);
-      })();
-    }
-
-    function stopLoop() {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-    }
+    /* -- 2. IntersectionObserver - trigger unico */
 
     new IntersectionObserver(
-      function (entries) {
+      function (entries, observer) {
         if (entries[0].isIntersecting) {
-          startLoop();
-        } else {
-          stopLoop();
+          section.classList.add('ops--in-view');
+          observer.disconnect();
         }
       },
-      /*
-       * rootMargin '0px 0px 200px 0px': expande el root 200px hacia abajo.
-       * El loop arranca cuando la sección está a 200px de entrar por abajo,
-       * dando ~12 frames de precalentamiento antes de que sea visible.
-       */
-      { rootMargin: '0px 0px 200px 0px', threshold: 0 }
+      { threshold: 0 }
     ).observe(section);
 
-    /* Frame inicial — por si la página carga con la sección ya visible */
-    applyFrame();
-
   })();
+
+
+  /* [Motor V6.1 eliminado - migrado a Motor V7 arriba] */
+
 </script>
