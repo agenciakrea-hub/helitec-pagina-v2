@@ -326,14 +326,14 @@ const faqItems = [
     opacity:     0;
     will-change: transform, opacity;
     transition:
-      opacity   380ms var(--ease-out),
-      transform 380ms var(--ease-out);
+      transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity   1.2s ease;
     /*
-     * 15ms por carácter → 42 chars × 15ms = 630ms de stagger total.
-     * Transitión de 380ms → último char completa a ~1 010ms desde el trigger.
-     * Asignado en JS: span.style.setProperty('--char-i', globalIdx).
+     * 60ms por carácter → caída lenta y majestuosa.
+     * ~43 chars × 60ms = 2 580ms de stagger + 1 200ms de duración
+     * → el último char completa a ~3 780ms desde el trigger.
      */
-    transition-delay: calc(var(--char-i, 0) * 15ms);
+    transition-delay: calc(var(--char-i, 0) * 60ms);
   }
 
   /* Dirección de entrada por capa — cada grupo llega de un eje distinto */
@@ -717,19 +717,35 @@ const faqItems = [
       layer.setAttribute('aria-label', text);
       layer.textContent = '';
 
-      text.split('').forEach(function (char) {
-        var span = document.createElement('span');
-        span.className = 'char';
-        span.setAttribute('aria-hidden', 'true');
-        /*
-         * --char-i: indice global, CSS calcula el stagger individual.
-         * El contador no se reinicia entre capas: cascade continuo.
-         */
-        span.style.setProperty('--char-i', String(globalCharIdx));
-        /* Espacio: usar \u00A0 para que display:inline-block no colapse */
-        span.textContent = char === ' ' ? '\u00A0' : char;
-        layer.appendChild(span);
-        globalCharIdx++;
+      /*
+       * Word-wrap guard: divide por palabras primero, luego por chars.
+       * Cada palabra queda en un <span> con white-space:nowrap \u2192 el browser
+       * puede romper l\u00EDnea ENTRE palabras (text node ' '), nunca dentro
+       * de una palabra (bug en m\u00F3vil: "NUESTR" / "AS").
+       */
+      text.split(' ').forEach(function (word, wordIdx) {
+        /* Espacio inter-palabras como text node \u2192 permite line-break aqu\u00ED */
+        if (wordIdx > 0) layer.appendChild(document.createTextNode(' '));
+        if (!word) return;
+
+        var wordSpan = document.createElement('span');
+        wordSpan.style.cssText = 'display:inline-block;white-space:nowrap;';
+
+        word.split('').forEach(function (char) {
+          var span = document.createElement('span');
+          span.className = 'char';
+          span.setAttribute('aria-hidden', 'true');
+          /*
+           * --char-i: \u00EDndice global continuo entre capas.
+           * CSS calcula el stagger: calc(var(--char-i) * 60ms).
+           */
+          span.style.setProperty('--char-i', String(globalCharIdx));
+          span.textContent = char;
+          wordSpan.appendChild(span);
+          globalCharIdx++;
+        });
+
+        layer.appendChild(wordSpan);
       });
     });
 
