@@ -310,7 +310,18 @@ const faqItems = [
      cascade fluye sin cortes entre "SOBRE NUESTRAS" → "Y SERVICIOS."
   ════════════════════════════════════════════════════════════════════════ */
 
-  .char {
+  /*
+   * :global(.char) — OBLIGATORIO para spans creados dinámicamente por JS.
+   *
+   * Astro compila el CSS con scope: `.char[data-astro-cid-xxx]`.
+   * Los <span class="char"> generados en runtime por SplitText NO tienen
+   * ese atributo → el CSS no los alcanza → display:inline, opacity:1 siempre.
+   *
+   * :global() elimina el scope → el selector aplica a cualquier .char del DOM,
+   * independientemente de si fue renderizado por Astro o creado por JS.
+   * Mismo patrón que :global(.hl) / :global(.hl.is-highlighted) en este componente.
+   */
+  :global(.char) {
     display:     inline-block;
     opacity:     0;
     will-change: transform, opacity;
@@ -326,19 +337,19 @@ const faqItems = [
   }
 
   /* Dirección de entrada por capa — cada grupo llega de un eje distinto */
-  .layer-outline .char { transform: translateY(-20px);  } /* SOBRE NUESTRAS: cae arriba  */
-  .layer-solid   .char { transform: translateX(-18px);  } /* OPERACIONES,:  desliza izq  */
-  .layer-accent  .char { transform: translateX(18px);   } /* FLOTA:         desliza der  */
-  .layer-base    .char { transform: translateY(16px);   } /* Y SERVICIOS.:  sube         */
+  .layer-outline :global(.char) { transform: translateY(-20px);  } /* SOBRE NUESTRAS: cae arriba  */
+  .layer-solid   :global(.char) { transform: translateX(-18px);  } /* OPERACIONES,:  desliza izq  */
+  .layer-accent  :global(.char) { transform: translateX(18px);   } /* FLOTA:         desliza der  */
+  .layer-base    :global(.char) { transform: translateY(16px);   } /* Y SERVICIOS.:  sube         */
 
   /* Estado VISIBLE — añadido por IntersectionObserver cuando la sección entra */
-  .ops--in-view .char {
+  .ops--in-view :global(.char) {
     opacity:   1;
     transform: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .char {
+    :global(.char) {
       transition: none;
       opacity:    1;
       transform:  none;
