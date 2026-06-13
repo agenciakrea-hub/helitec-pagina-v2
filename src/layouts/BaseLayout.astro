@@ -273,6 +273,28 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     const isTouch = window.matchMedia('(pointer: coarse)').matches
                   || ('ontouchstart' in window);
 
+    /*
+     * FIX MÚLTIPLES RAF LOOPS — View Transitions
+     * ─────────────────────────────────────────────────────────────────────────
+     * Con Astro View Transitions, este script se re-ejecuta en cada navegación.
+     * Sin limpieza, cada ejecución crea un nuevo RAF loop que nunca se cancela,
+     * acumulando loops concurrentes que degradan el rendimiento del scroll.
+     *
+     * Solución:
+     *   1. Cancelar el RAF loop anterior (window._lenisRafId)
+     *   2. Destruir la instancia anterior (lenis.destroy() limpia listeners)
+     *   3. Crear la nueva instancia limpia
+     * ─────────────────────────────────────────────────────────────────────────
+     */
+    if (window._lenisRafId) {
+      cancelAnimationFrame(window._lenisRafId);
+      window._lenisRafId = null;
+    }
+    if (window.lenisInstance) {
+      window.lenisInstance.destroy();
+      window.lenisInstance = null;
+    }
+
     if (!isTouch) {
       const lenis = new Lenis({
         duration:    1.35,
@@ -285,12 +307,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
       /* Exponer globalmente — Header.astro llama stop()/start() al toggle del menú */
       window.lenisInstance = lenis;
 
-      /* RAF loop */
+      /* RAF loop — el ID se guarda para poder cancelarlo en la próxima navegación */
       function raf(time) {
         lenis.raf(time);
-        requestAnimationFrame(raf);
+        window._lenisRafId = requestAnimationFrame(raf);
       }
-      requestAnimationFrame(raf);
+      window._lenisRafId = requestAnimationFrame(raf);
 
     } else {
       /* Touch device: scroll 100% nativo — sin Lenis */

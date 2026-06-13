@@ -750,6 +750,16 @@ const services = [
       menuBtn?.setAttribute('aria-expanded', 'false');
       menuBtn?.setAttribute('aria-label', 'Abrir menú de navegación');
       menuBtn?.focus();
+
+      /*
+       * FIX SCROLL BLOQUEADO — reanudar Lenis aquí también.
+       *
+       * Header.astro llama lenisInstance.start() solo en el click del hamburguesa.
+       * Esta función (closeMenu) se invoca desde la tecla Escape y desde links
+       * ancla (/#servicios, /#contacto…) que NO disparan View Transition.
+       * Sin este start(), Lenis queda en estado stopped y el scroll se bloquea.
+       */
+      if (window.lenisInstance) window.lenisInstance.start();
     }
 
     /* ── Tecla Escape ───────────────────────────────────────────────────── */
@@ -765,6 +775,13 @@ const services = [
         document.body.classList.remove('menu-is-open');
         menuBtn?.setAttribute('aria-expanded', 'false');
         menuBtn?.setAttribute('aria-label', 'Abrir menú de navegación');
+        /*
+         * FIX SCROLL BLOQUEADO — reanudar Lenis al navegar por link.
+         * Si el link es ancla (/#servicios, etc.) no hay View Transition:
+         * la página no recarga y Lenis nunca se reinicializa.
+         * Sin este start(), el scroll queda bloqueado.
+         */
+        if (window.lenisInstance) window.lenisInstance.start();
         /* No devolver foco: la página navega */
       });
     });

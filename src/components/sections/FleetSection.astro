@@ -285,15 +285,37 @@ const faqItems = [
   .faq-module {
     display:        flex;
     flex-direction: column;
-    will-change:    transform, opacity;
 
-    /* Legibilidad: fondo oscuro sutil + desenfoque del logo detrás */
-    background:            rgba(0, 0, 0, 0.42);
-    backdrop-filter:       blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border:                1px solid var(--c-line);
-    border-radius:         4px;   /* máx anti-slop: 4px */
-    padding:               var(--sp-3) var(--sp-5);
+    /*
+     * will-change y backdrop-filter SOLO en desktop (≥ 768px).
+     *
+     * En mobile, body { overflow-x: clip } desencadena el axis-pairing del
+     * CSS spec: overflow-y también se computa como `clip`, cambiando el
+     * compositing root del documento. En iOS Safari / WebKit, un elemento
+     * con will-change: transform/opacity + backdrop-filter dentro de un
+     * contexto overflow:clip pierde su "backdrop source" → el elemento se
+     * renderiza completamente transparente aunque opacity sea > 0.
+     *
+     * Solución: en mobile quitamos ambas propiedades. El efecto visual
+     * (blur + glassmorphism) solo se aplica en desktop donde el compositing
+     * es estable y la animación translateX justifica la GPU layer.
+     */
+
+    /* Mobile: fondo sólido — sin GPU layer, sin backdrop */
+    background: rgba(2, 3, 10, 0.88); /* más opaco para compensar la ausencia de blur */
+    border:     1px solid var(--c-line);
+    border-radius: 4px;               /* máx anti-slop: 4px */
+    padding:    var(--sp-3) var(--sp-5);
+  }
+
+  @media (min-width: 768px) {
+    .faq-module {
+      /* Desktop: GPU layer para el slide-in translateX + blur premium */
+      will-change:             transform, opacity;
+      background:              rgba(0, 0, 0, 0.42);
+      backdrop-filter:         blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
   }
 
 
@@ -547,29 +569,36 @@ const faqItems = [
 
   /**
    * ══════════════════════════════════════════════════════════════════════════
-   * PARTE 2 — Motor de Scroll V6 (Anti-Layout-Thrash)
+   * PARTE 2 — Motor de Scroll V6.1 (Anti-Layout-Thrash + Cache Fiable)
    *
-   * Cambios críticos vs V5:
+   * Cambios V6.1 vs V6.0:
    *
-   *   1. getBoundingClientRect() ELIMINADO del render path.
-   *      Se sustituye por sectionDocTop (cacheado) + window.scrollY (no reflow).
-   *      Cero lecturas de layout dentro del rAF.
+   *   1. sectionDocTop ahora se calcula con getBoundingClientRect().top +
+   *      window.scrollY en lugar de offsetTop traversal.
+   *      — getBoundingClientRect() da la posición RENDERIZADA real, incluyendo
+   *        márgenes, paddings y transforms de ancestros que offsetTop ignoraba.
+   *      — La lectura ocurre FUERA del rAF (en updateCache), por lo que no
+   *        hay layout thrash. El rAF solo lee window.scrollY (no-reflow).
    *
-   *   2. Loop rAF CONTINUO activado/desactivado por IntersectionObserver.
-   *      Cuando la sección no es visible, el loop no corre.
-   *      Cuando es visible, corre a 60fps pero el work es O(1) sin DOM reads.
+   *   2. Se añade window.addEventListener('load', updateCache, { once: true }).
+   *      — A DOMContentLoaded, imágenes en Hero/StatsSection/ServicesSection
+   *        pueden no tener dimensiones (height: auto). Eso hace que el offsetTop
+   *        de FleetSection sea menor que el valor real post-carga → getProgress()
+   *        devuelve p > 0 cuando el usuario ni ha llegado a la sección →
+   *        la animación nunca arranca correctamente.
+   *      — Con window.load, una vez que todas las imágenes están cargadas y el
+   *        layout es estable, recalculamos sectionDocTop con el valor correcto.
    *
-   *   3. updateCache() calcula sectionDocTop via offsetTop traversal.
-   *      Se llama en init y en resize — nunca dentro del loop.
+   *   3. IntersectionObserver con rootMargin '0px 0px 200px 0px':
+   *      — El loop arranca 200px antes de que la sección entre por abajo.
+   *        Da tiempo al rAF de ejecutarse al menos 12 frames antes de que la
+   *        animación sea visible, eliminando el "flash" de estado inicial.
    *
-   *   4. vw cacheado: el faqModule desktop usa vw (cacheado) en vez de
-   *      window.innerWidth en cada frame.
-   *
-   * Matemática (sin cambios vs V5):
-   *   p=0: borde superior de la sección = borde inferior del viewport (relTop = vh)
-   *   p=1: borde superior de la sección = mitad del viewport (relTop = vh/2)
-   *   relTop = sectionDocTop - window.scrollY   ← ambos sin reflow
+   * Invariante del rAF (sin cambios):
+   *   relTop = sectionDocTop - window.scrollY   ← sin acceso al DOM
    *   p = clamp01((vh - relTop) / (vh × 0.5))
+   *   p=0: sección 1vh por debajo del viewport
+   *   p=1: borde superior de sección en vh/2 (centro del viewport)
    * ══════════════════════════════════════════════════════════════════════════
    */
   (function () {
@@ -614,28 +643,35 @@ const faqItems = [
       isMobile = vw < 768;
 
       /*
-       * Calcular sectionDocTop sumando offsetTop a través de la cadena
-       * offsetParent. offsetTop NO fuerza un layout flush (es una propiedad
-       * ya calculada por el browser cuando el layout está limpio).
-       * Al llamarlo en resize (fuera del loop), el layout siempre está limpio.
+       * getBoundingClientRect().top + window.scrollY = Y absoluta del section
+       * en el documento (no relativa al viewport).
+       *
+       * Ventajas vs offsetTop traversal:
+       *   · Refleja la posición RENDERIZADA real (margenes, transforms, gaps).
+       *   · Es inmune al bug donde imágenes con height:auto en secciones
+       *     anteriores aún no han cargado → offsetTop devuelve un valor menor
+       *     que el real → getProgress() siempre retorna p > 0 → animación
+       *     pasa de largo antes de que el usuario llegue a la sección.
+       *
+       * Costo: fuerza un layout flush sincrónico — aceptable porque updateCache()
+       * se llama FUERA del rAF (en resize/load), nunca dentro del loop.
        */
-      var el  = section;
-      var top = 0;
-      while (el) {
-        top += el.offsetTop;
-        el   = /** @type {HTMLElement|null} */ (el.offsetParent);
-      }
-      sectionDocTop = top;
+      var r = section.getBoundingClientRect();
+      sectionDocTop = r.top + window.scrollY;
 
-      /*
-       * Forzar re-render en el próximo frame: el resize puede cambiar
-       * la posición del section o el vh, lo que altera el progreso.
-       */
+      /* Forzar re-render en el próximo frame */
       lastP = -1;
     }
 
     updateCache();
     window.addEventListener('resize', updateCache, { passive: true });
+    /*
+     * window.load: recalcular después de que todas las imágenes y fuentes
+     * hayan cargado y el layout final esté estabilizado.
+     * Sin esto, el sectionDocTop calculado a DOMContentLoaded puede ser incorrecto
+     * si Hero/StatsSection/ServicesSection tienen imágenes de height:auto aún vacías.
+     */
+    window.addEventListener('load', updateCache, { once: true });
 
 
     /* ── Utilidades ────────────────────────────────────────────────────── */
@@ -668,17 +704,25 @@ const faqItems = [
       lBase.style.opacity      = '0';
       lBase.style.transform    = 'none';
 
-      faqModule.style.opacity   = '0';
       /*
-       * FIX SCROLL FREEZE TÁCTIL — en mobile NO hay translateX para faqModule.
-       * Desktop: translateX(vw) clipeado por overflow:hidden → slide-in funciona.
-       * Mobile: translateX + will-change:transform creaba GPU layer que excedía
-       * bounds del overflow:hidden → scrollHeight colapsaba → freeze en iOS.
-       * Solución definitiva: solo opacity en mobile. Sin translateX.
+       * FAQ MODULE — comportamiento diferenciado por dispositivo:
+       *
+       * DESKTOP: opacity:0 + translateX(vw) → slide-in animado desde la derecha.
+       *   La GPU layer (will-change) está activa y body no tiene overflow:clip
+       *   en el eje Y, por lo que backdrop-filter funciona correctamente.
+       *
+       * MOBILE: sin animación. El FAQ arranca visible (opacity no se toca).
+       *   Razón: body { overflow-x:clip } → axis-pairing → overflow-y:clip (computed).
+       *   En iOS Safari, will-change + backdrop-filter dentro de overflow:clip
+       *   causa que el elemento se pinte como completamente transparente incluso
+       *   cuando opacity > 0 (bug de compositing en WebKit). Como el FAQ en mobile
+       *   no tiene translateX de todos modos, no hay pérdida de animación.
        */
-      faqModule.style.transform = isMobile
-        ? 'none'
-        : 'translateX(' + Math.round(vw) + 'px)';
+      if (!isMobile) {
+        faqModule.style.opacity   = '0';
+        faqModule.style.transform = 'translateX(' + Math.round(vw) + 'px)';
+      }
+      /* Mobile: faqModule queda con sus valores CSS por defecto (visible, sin transform) */
 
       planeDeco.style.opacity   = '0';
       planeDeco.style.transform = 'translateX(100px)';
@@ -732,8 +776,10 @@ const faqItems = [
 
         lBase.style.opacity      = lerp(0, 1, p3).toFixed(3);
 
-        /* Mobile: solo opacity en faqModule — ver setInitialState() */
-        faqModule.style.opacity  = pFaq.toFixed(3);
+        /*
+         * Mobile: FAQ NO se anima — siempre visible.
+         * No escribir faqModule.style.opacity aquí. Ver setInitialState().
+         */
 
       } else {
         lOutline.style.opacity   = p0.toFixed(3);
@@ -784,7 +830,12 @@ const faqItems = [
           stopLoop();
         }
       },
-      { rootMargin: '0px', threshold: 0 }
+      /*
+       * rootMargin '0px 0px 200px 0px': expande el root 200px hacia abajo.
+       * El loop arranca cuando la sección está a 200px de entrar por abajo,
+       * dando ~12 frames de precalentamiento antes de que sea visible.
+       */
+      { rootMargin: '0px 0px 200px 0px', threshold: 0 }
     ).observe(section);
 
     /* Frame inicial — por si la página carga con la sección ya visible */
