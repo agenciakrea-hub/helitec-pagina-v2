@@ -91,6 +91,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
       history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
+    /*
+     * Belt-and-suspenders: Safari iOS aplica su restauración de scroll
+     * POST-LAYOUT (después de este script). Forzar de nuevo en 'load'
+     * garantiza que siempre arranquemos desde el Hero tras F5 o pull-to-refresh.
+     * { once: true } → el listener se auto-destruye después de disparar una vez.
+     */
+    window.addEventListener('load', function () {
+      window.scrollTo(0, 0);
+    }, { once: true });
   </script>
 
   <!-- ── SEO Básico ──────────────────────────────────────────────────────── -->
@@ -276,7 +285,20 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
   <script is:inline>
     document.addEventListener('click', function (e) {
       var a = e.target.closest('[data-no-nav]');
-      if (a) e.preventDefault();
+      if (!a) return;
+
+      e.preventDefault(); /* Bloquea Astro VT: comprueba defaultPrevented */
+
+      /*
+       * Scroll al Hero (tope de la página).
+       * Usa Lenis en desktop (fluido) o scroll nativo en móvil.
+       * window.lenisInstance puede ser null en touch devices — siempre verificar.
+       */
+      if (window.lenisInstance) {
+        window.lenisInstance.scrollTo(0, { duration: 0.9 });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }, true /* capture: true → dispara ANTES que Astro VT */);
   </script>
 
