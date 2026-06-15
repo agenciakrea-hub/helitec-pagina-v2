@@ -416,7 +416,7 @@ const stats: StatCell[] = [
   .stats__title {
     font-family:    var(--font-display);
     font-size:      var(--text-2xl); /* clamp(2rem, 1.5rem + 2.5vw, 3.5rem) */
-    font-weight:    var(--fw-light); /* 300 — límite superior OBLIGATORIO H2 */
+    font-weight:    500; /* override legibilidad mobile — autorizado v4 */
     letter-spacing: var(--ls-wide);
     text-transform: uppercase;
     line-height:    1.1;
@@ -505,7 +505,7 @@ const stats: StatCell[] = [
   .stats__value {
     font-family:    var(--font-display);
     font-size:      clamp(1.9rem, 3.2vw, 2.75rem);
-    font-weight:    var(--fw-regular); /* 400 — más legible sobre fondo blanco */
+    font-weight:    600; /* v4 — impacto visual en móvil */
     letter-spacing: var(--ls-wide);
     line-height:    1;
     color:          #111111; /* tema claro — fondo blanco */
@@ -718,7 +718,7 @@ const stats: StatCell[] = [
   .stats__cert-body {
     font-family: var(--font-sans);
     font-size:   clamp(0.78rem, 1.3vw, 0.875rem);
-    font-weight: var(--fw-light);
+    font-weight: var(--fw-regular); /* v4: 300→400 para legibilidad */
     color:       var(--c-text-2);
     line-height: 1.65;
     max-width:   72ch;
@@ -1017,10 +1017,12 @@ const stats: StatCell[] = [
 
   /* Cert block — textos en tema claro (fondo blanco/gradiente) */
   .stats__cert-title {
-    color: var(--c-brand);
+    color:       #111111; /* v4: navy → negro — más contraste sobre blanco */
+    font-weight: 700;     /* v4: semibold → bold */
   }
   .stats__cert-body {
-    color: #444444;
+    color:       #222222; /* v4: #444 → #222 — más oscuro, más legible */
+    font-weight: var(--fw-regular); /* v4: light → regular */
   }
 
   /* Palabras resaltadas en cert body */

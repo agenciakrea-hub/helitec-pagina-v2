@@ -1,21 +1,20 @@
 ---
 /**
- * Footer.astro — Consorcio Helitec  v3 (Mobile-First Redesign)
+ * Footer.astro — Consorcio Helitec  v4 (Refactorización final)
  *
- * CAMBIOS v3:
- *   - Layout Mobile bifurcado en 2 mitades:
- *     SUPERIOR: grid 2 columnas (brand | nav+contacto)
- *     INFERIOR: grid 2×2 tarjetas blancas sociales + 2 botones CTA pill
- *   - Social cards: fondo blanco, ícono stroke centrado, label abajo
- *     Referencia: captura adjunta (estilo Awwwards/Clutch cards)
- *   - Botón "SOLICITAR COTIZACIÓN" duplicado del CONTACTAR (mismo ancho/estilo)
- *   - Desktop (≥1024px): grid 3 columnas original vía display:contents en
- *     footer__col-right
+ * ESTRUCTURA v4:
+ *   CABECERA:  Logo + tagline centrados, ancho completo.
+ *   CUERPO:    Grid 2 columnas fijo (nav | contacto B2B) con datos reales.
+ *   INFERIOR:  Grid 2×2 social cards + 2 CTAs blancos con texto negro.
  *
- * Reglas anti-slop:
+ * OVERRIDES autorizados por cliente (v4):
+ *   · .footer__scard   border-radius: 20px  (client override — "más redondas")
+ *   · .footer__pill-cta border-radius: 999px (Tech Lead override previo)
+ *   · .footer__pill-cta background: white / color: black (client override v4)
+ *
+ * Reglas anti-slop respetadas en el resto del componente:
  *   PROHIBIDO box-shadow        — ✓
  *   PROHIBIDO linear-gradient   — ✓
- *   border-radius ≤ 4px         — ✓ (excepto .footer__pill-cta: 999px, override Tech Lead)
  *   object-fit: cover/contain   — ✓
  */
 
@@ -47,151 +46,153 @@ const currentYear = new Date().getFullYear();
 >
 
   <!-- ════════════════════════════════════════════════════════════════════════
-       MITAD SUPERIOR — 2 cols mobile / 3 cols desktop
-       Col-right usa display:contents en desktop para que nav y contacto
-       participen directamente en el grid de 3 columnas.
+       CABECERA — Logo + tagline centrados, ancho completo
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="footer__header" data-anim data-anim-delay="0">
+    <div class="footer__inner footer__header-inner">
+
+      <a
+        href="/"
+        class="footer__logo-link"
+        aria-label="Consorcio Helitec — Inicio"
+      >
+        <img
+          class="footer__logo"
+          src={logoSrc}
+          alt="Consorcio Helitec"
+          width="200"
+          height="52"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+
+      <p class="footer__tagline">
+        {lang === 'es'
+          ? 'Aviación ejecutiva y aeromédica. Venezuela.'
+          : 'Executive and aeromedical aviation. Venezuela.'}
+      </p>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       CUERPO — Grid 2 columnas: NAVEGACIÓN | CONTACTO B2B
+       2 cols fijas incluso en mobile (compact font en col contacto)
   ════════════════════════════════════════════════════════════════════════ -->
   <div class="footer__main">
     <div class="footer__inner">
 
-      <!-- ── COL A: Identidad corporativa ──────────────────────────────── -->
-      <div class="footer__col footer__col--brand">
+      <!-- ── COL 1: Navegación ──────────────────────────────────────────── -->
+      <nav
+        class="footer__col footer__col--nav"
+        aria-label={lang === 'es' ? 'Navegación del footer' : 'Footer navigation'}
+      >
+        <p class="footer__col-heading" data-anim data-anim-delay="60">
+          {lang === 'es' ? 'Navegación' : 'Navigation'}
+        </p>
+        <ul class="footer__nav-list" role="list">
+          {navLinks.map((link, i) => (
+            <li
+              class="footer__nav-item"
+              data-anim
+              data-anim-delay={String(120 + i * 50)}
+            >
+              <a class="footer__nav-link" href={link.href}>{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-        <a
-          href="/"
-          class="footer__logo-link"
-          aria-label="Consorcio Helitec — Inicio"
-          data-anim
-          data-anim-delay="0"
-        >
-          <img
-            class="footer__logo"
-            src={logoSrc}
-            alt="Consorcio Helitec"
-            width="180"
-            height="48"
-            loading="lazy"
-            decoding="async"
-          />
-        </a>
 
-        <!-- Recurso rojo — reveal clip-path de izq → der -->
-        <img
-          src="/assets/recurso%20rojo%20helitec.png"
-          class="footer__logo-deco"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-        />
+      <!-- ── COL 2: Contacto B2B ─────────────────────────────────────────── -->
+      <div class="footer__col footer__col--contact">
 
-        <p class="footer__tagline" data-anim data-anim-delay="80">
-          {lang === 'es'
-            ? 'Aviación ejecutiva y aeromédica. Venezuela.'
-            : 'Executive and aeromedical aviation. Venezuela.'}
+        <p class="footer__col-heading" data-anim data-anim-delay="60">
+          {lang === 'es' ? 'Contacto B2B' : 'B2B Contact'}
         </p>
 
-        <address class="footer__address" data-anim data-anim-delay="160">
-          <p class="footer__address-line">
-            {lang === 'es' ? 'Sede:' : 'HQ:'}
-            &nbsp;<span class="footer__address-value">Caracas, Venezuela</span>
-          </p>
-          <p class="footer__address-line">
-            RIF:&nbsp;<span class="footer__address-value">[DATO: RIF]</span>
-          </p>
-        </address>
+        <ul class="footer__contact-list" role="list" data-anim data-anim-delay="130">
 
-        <div class="footer__certs" data-anim data-anim-delay="200">
-          <span class="footer__cert-tag">INAC</span>
-          <span class="footer__cert-tag">OACI</span>
-        </div>
+          <!-- Dirección -->
+          <li class="footer__contact-item footer__contact-item--top">
+            <span class="footer__contact-icon" aria-hidden="true">
+              <!-- Pin / location -->
+              <svg width="11" height="14" viewBox="0 0 10 14" fill="none">
+                <path d="M5 1C2.79 1 1 2.79 1 5C1 8.5 5 13 5 13C5 13 9 8.5 9 5C9 2.79 7.21 1 5 1Z" stroke="currentColor" stroke-width="1.2"/>
+                <circle cx="5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+            </span>
+            <span class="footer__contact-text">CCCT, Chuao. Caracas, Venezuela.</span>
+          </li>
 
+          <!-- Email -->
+          <li class="footer__contact-item footer__contact-item--top">
+            <span class="footer__contact-icon" aria-hidden="true">
+              <!-- Envelope -->
+              <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+                <rect x="1" y="1" width="12" height="9" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M1 1L7 6.5L13 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
+              </svg>
+            </span>
+            <a
+              class="footer__contact-link"
+              href="mailto:Info@helitec-main.com"
+              aria-label="Email corporativo"
+            >
+              Info@helitec-main.com
+            </a>
+          </li>
+
+          <!-- Teléfono 1 — Oficinas centrales -->
+          <li class="footer__contact-item footer__contact-item--top">
+            <span class="footer__contact-icon" aria-hidden="true">
+              <!-- Phone handset -->
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.77 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.68 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </span>
+            <div class="footer__contact-block">
+              <span class="footer__contact-sublabel">
+                {lang === 'es' ? 'Oficinas centrales' : 'Main office'}
+              </span>
+              <a
+                class="footer__contact-link"
+                href="tel:+582129590401"
+                aria-label="Teléfono oficinas centrales"
+              >
+                +58 (212) 959-0401
+              </a>
+            </div>
+          </li>
+
+          <!-- Teléfono 2 — Central de Emergencias -->
+          <li class="footer__contact-item footer__contact-item--top">
+            <span class="footer__contact-icon footer__contact-icon--alert" aria-hidden="true">
+              <!-- Headset / emergency dispatch -->
+              <svg width="14" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
+                <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+              </svg>
+            </span>
+            <div class="footer__contact-block">
+              <span class="footer__contact-sublabel footer__contact-sublabel--alert">
+                {lang === 'es' ? 'Central de Emergencias y Traslados' : 'Emergency & Transfer Center'}
+              </span>
+              <a
+                class="footer__contact-link"
+                href="tel:+582129596385"
+                aria-label="Central de emergencias y traslados"
+              >
+                +58 212 9596385
+              </a>
+            </div>
+          </li>
+
+        </ul>
       </div>
-
-
-      <!-- ── COL B: Wrapper nav + contacto ─────────────────────────────── -->
-      <!--
-        Mobile: flex-col → nav arriba, contacto abajo (col derecha del grid 2col)
-        Desktop: display:contents → nav y contacto se vuelven hijos directos
-                 del grid de 3 columnas (col 2 y col 3 respectivamente)
-      -->
-      <div class="footer__col-right">
-
-        <!-- Navegación -->
-        <nav
-          class="footer__col footer__col--nav"
-          aria-label={lang === 'es' ? 'Navegación del footer' : 'Footer navigation'}
-        >
-          <p class="footer__col-heading" data-anim data-anim-delay="60">
-            {lang === 'es' ? 'Navegación' : 'Navigation'}
-          </p>
-          <ul class="footer__nav-list" role="list">
-            {navLinks.map((link, i) => (
-              <li
-                class="footer__nav-item"
-                data-anim
-                data-anim-delay={String(120 + i * 55)}
-              >
-                <a class="footer__nav-link" href={link.href}>{link.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <!-- Contacto B2B -->
-        <div class="footer__col footer__col--contact">
-          <p class="footer__col-heading" data-anim data-anim-delay="60">
-            {lang === 'es' ? 'Contacto B2B' : 'B2B Contact'}
-          </p>
-          <ul class="footer__contact-list" role="list" data-anim data-anim-delay="140">
-
-            <li class="footer__contact-item">
-              <span class="footer__contact-icon" aria-hidden="true">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                  <path d="M20.52 3.48A11.9 11.9 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.12.55 4.18 1.6 6L0 24l6.17-1.57A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.22-3.48-8.52ZM12 21.94a9.9 9.9 0 0 1-5.04-1.37l-.36-.22-3.66.94.97-3.56-.24-.37A9.9 9.9 0 0 1 2.06 12C2.06 6.49 6.49 2.06 12 2.06S21.94 6.49 21.94 12 17.51 21.94 12 21.94Z" fill="currentColor"/>
-                </svg>
-              </span>
-              <a
-                class="footer__contact-link"
-                href="https://wa.me/584166235254"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="WhatsApp operativo: +58 416 623 5254"
-              >
-                +58 (416) 623-5254
-              </a>
-            </li>
-
-            <li class="footer__contact-item">
-              <span class="footer__contact-icon" aria-hidden="true">
-                <svg width="13" height="11" viewBox="0 0 14 11" fill="none">
-                  <rect x="1" y="1" width="12" height="9" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M1 1L7 6.5L13 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/>
-                </svg>
-              </span>
-              <a
-                class="footer__contact-link"
-                href="mailto:[DATO: email corporativo]"
-                aria-label={lang === 'es' ? 'Email corporativo' : 'Corporate email'}
-              >
-                [DATO: email corporativo]
-              </a>
-            </li>
-
-            <li class="footer__contact-item footer__contact-item--address">
-              <span class="footer__contact-icon" aria-hidden="true">
-                <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
-                  <path d="M5 1C2.79 1 1 2.79 1 5C1 8.5 5 13 5 13C5 13 9 8.5 9 5C9 2.79 7.21 1 5 1Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="5" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
-                </svg>
-              </span>
-              <span class="footer__contact-text">[DATO: aeropuerto/sede operativa]</span>
-            </li>
-
-          </ul>
-        </div>
-
-      </div><!-- /footer__col-right -->
 
     </div>
   </div>
@@ -203,13 +204,13 @@ const currentYear = new Date().getFullYear();
   <div class="footer__lower">
     <div class="footer__inner">
 
-      <!-- ── Grid 2×2 tarjetas blancas ───────────────────────────────── -->
+      <!-- Grid 2×2 tarjetas blancas redondeadas -->
       <div
         class="footer__social-grid"
         role="list"
         aria-label={lang === 'es' ? 'Redes sociales' : 'Social networks'}
         data-anim
-        data-anim-delay="280"
+        data-anim-delay="300"
       >
 
         <!-- LinkedIn -->
@@ -219,7 +220,7 @@ const currentYear = new Date().getFullYear();
           href="https://www.linkedin.com/company/consorcio-helitec"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="LinkedIn de Consorcio Helitec (abre en nueva pestaña)"
+          aria-label="LinkedIn (abre en nueva pestaña)"
         >
           <span class="footer__scard-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -238,7 +239,7 @@ const currentYear = new Date().getFullYear();
           href="https://www.instagram.com/consorciohtelitec"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Instagram de Consorcio Helitec (abre en nueva pestaña)"
+          aria-label="Instagram (abre en nueva pestaña)"
         >
           <span class="footer__scard-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -257,7 +258,7 @@ const currentYear = new Date().getFullYear();
           href="https://wa.me/584166235254"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="WhatsApp de Consorcio Helitec (abre en nueva pestaña)"
+          aria-label="WhatsApp (abre en nueva pestaña)"
         >
           <span class="footer__scard-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -274,10 +275,9 @@ const currentYear = new Date().getFullYear();
           href="https://linktr.ee/consorciohtelitec"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Linktree de Consorcio Helitec (abre en nueva pestaña)"
+          aria-label="Linktree (abre en nueva pestaña)"
         >
           <span class="footer__scard-icon" aria-hidden="true">
-            <!-- Chain-link icon — representa agregador de links -->
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -289,13 +289,9 @@ const currentYear = new Date().getFullYear();
       </div><!-- /footer__social-grid -->
 
 
-      <!-- ── Botones CTA apilados ──────────────────────────────────────── -->
-      <div class="footer__cta-stack" data-anim data-anim-delay="360">
+      <!-- CTAs apilados — blancos con texto negro (client override v4) -->
+      <div class="footer__cta-stack" data-anim data-anim-delay="380">
 
-        <!--
-          CONTACTAR — ancho y estilo EXACTAMENTE como el original.
-          border-radius: 999px → override intencional por Tech Lead (Licorn-style).
-        -->
         <button
           class="footer__pill-cta"
           id="footer-cta-contactar"
@@ -305,19 +301,11 @@ const currentYear = new Date().getFullYear();
           <span class="footer__pill-cta__label">
             {lang === 'es' ? 'Contactar' : 'Contact us'}
           </span>
-          <svg
-            class="footer__pill-cta__arrow"
-            width="16"
-            height="12"
-            viewBox="0 0 16 12"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg class="footer__pill-cta__arrow" width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
             <path d="M1 6h14M10 1l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
           </svg>
         </button>
 
-        <!-- SOLICITAR COTIZACIÓN — duplicado exacto del anterior -->
         <button
           class="footer__pill-cta"
           id="footer-cta-cotizacion"
@@ -327,26 +315,19 @@ const currentYear = new Date().getFullYear();
           <span class="footer__pill-cta__label">
             {lang === 'es' ? 'Solicitar cotización' : 'Request a quote'}
           </span>
-          <svg
-            class="footer__pill-cta__arrow"
-            width="16"
-            height="12"
-            viewBox="0 0 16 12"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg class="footer__pill-cta__arrow" width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
             <path d="M1 6h14M10 1l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="square"/>
           </svg>
         </button>
 
-      </div><!-- /footer__cta-stack -->
+      </div>
 
     </div>
   </div>
 
 
   <!-- ════════════════════════════════════════════════════════════════════════
-       BOTTOM BAR — copyright + legal
+       BOTTOM BAR
   ════════════════════════════════════════════════════════════════════════ -->
   <div class="footer__bottom" data-anim data-anim-delay="460">
     <div class="footer__inner footer__bottom-inner">
@@ -357,21 +338,11 @@ const currentYear = new Date().getFullYear();
       </p>
 
       <div class="footer__bottom-links">
-        <a
-          class="footer__bottom-link"
-          href="/"
-          data-no-nav
-          aria-label={lang === 'es' ? 'Política de privacidad' : 'Privacy policy'}
-        >
+        <a class="footer__bottom-link" href="/" data-no-nav>
           {lang === 'es' ? 'Privacidad' : 'Privacy'}
         </a>
         <span class="footer__bottom-sep" aria-hidden="true">·</span>
-        <a
-          class="footer__bottom-link"
-          href="/"
-          data-no-nav
-          aria-label={lang === 'es' ? 'Aviso legal' : 'Legal notice'}
-        >
+        <a class="footer__bottom-link" href="/" data-no-nav>
           {lang === 'es' ? 'Aviso legal' : 'Legal'}
         </a>
       </div>
@@ -395,7 +366,7 @@ const currentYear = new Date().getFullYear();
   .footer__inner {
     max-width:      var(--content-max);
     margin-inline:  auto;
-    padding-inline: calc(var(--sidebar-w) + var(--gutter));
+    padding-inline: var(--gutter);
   }
 
 
@@ -412,39 +383,21 @@ const currentYear = new Date().getFullYear();
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     MITAD SUPERIOR — GRID
-     Mobile:  2 columnas (brand | col-right con nav+contacto apilados)
-     Desktop: 3 columnas (brand | nav | contacto) vía display:contents
+     CABECERA — logo + tagline centrados
   ════════════════════════════════════════════════════════════════════════ */
 
-  .footer__main {
-    padding-block: clamp(40px, 7vh, 72px);
+  .footer__header {
+    padding-block: clamp(36px, 6vh, 56px) clamp(24px, 4vh, 36px);
+    border-bottom: 1px solid var(--c-line);
   }
 
-  .footer__main .footer__inner {
-    display:               grid;
-    grid-template-columns: 1fr 1fr;
-    gap:                   clamp(24px, 4vw, 40px);
-    align-items:           start;
-  }
-
-  /* Wrapper mobile: flex-col apila nav encima de contacto */
-  .footer__col-right {
+  .footer__header-inner {
     display:        flex;
     flex-direction: column;
-    gap:            28px;
+    align-items:    center;
+    gap:            14px;
+    text-align:     center;
   }
-
-  .footer__col {
-    display:        flex;
-    flex-direction: column;
-    gap:            16px;
-  }
-
-
-  /* ════════════════════════════════════════════════════════════════════════
-     COL A — IDENTIDAD
-  ════════════════════════════════════════════════════════════════════════ */
 
   .footer__logo-link {
     display:    inline-block;
@@ -452,10 +405,10 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer__logo {
-    width:      clamp(100px, 14vw, 150px);
+    width:      clamp(140px, 30vw, 200px);
     height:     auto;
     object-fit: contain;
-    opacity:    0.90;
+    opacity:    0.92;
     transition: opacity var(--dur-fast) var(--ease-out);
   }
 
@@ -464,72 +417,43 @@ const currentYear = new Date().getFullYear();
     opacity: 1;
   }
 
-  /* Recurso rojo — reveal izq → der */
-  .footer__logo-deco {
-    display:         block;
-    width:           clamp(56px, 38%, 110px);
-    height:          auto;
-    object-fit:      contain;
-    object-position: left center;
-    margin-top:      -10px;
-    clip-path:       inset(0 100% 0 0);
-    transition:      clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
-  }
-
-  .footer__logo-deco.is-revealed {
-    clip-path: inset(0 0% 0 0);
+  .footer__logo-link:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 4px;
+    border-radius:  var(--r-micro);
   }
 
   .footer__tagline {
-    font-family: var(--font-sans);
-    font-size:   clamp(0.6875rem, 1.1vw, 0.8125rem);
-    font-weight: var(--fw-light);
-    color:       var(--c-text-2);
-    line-height: 1.55;
-    margin-top:  -2px;
-  }
-
-  .footer__address {
-    display:        flex;
-    flex-direction: column;
-    gap:            4px;
-    font-style:     normal;
-  }
-
-  .footer__address-line {
     font-family:    var(--font-sans);
-    font-size:      0.6875rem;
-    font-weight:    var(--fw-regular);
+    font-size:      clamp(0.6875rem, 1.4vw, 0.875rem);
+    font-weight:    var(--fw-light);
     letter-spacing: var(--ls-wide);
-    color:          var(--c-text-3);
-  }
-
-  .footer__address-value {
-    color: var(--c-text-2);
-  }
-
-  .footer__certs {
-    display:   flex;
-    gap:       7px;
-    flex-wrap: wrap;
-  }
-
-  .footer__cert-tag {
-    font-family:    var(--font-sans);
-    font-size:      0.5625rem;
-    font-weight:    var(--fw-semibold);
-    letter-spacing: var(--ls-widest);
-    text-transform: uppercase;
-    color:          var(--c-sky);
-    padding:        3px 7px;
-    border:         1px solid rgba(88, 181, 240, 0.30);
-    border-radius:  var(--r-micro);
+    color:          var(--c-text-2);
+    line-height:    1.5;
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     COL NAV
+     CUERPO — Grid 2 columnas fijo
   ════════════════════════════════════════════════════════════════════════ */
+
+  .footer__main {
+    padding-block: clamp(28px, 5vh, 48px);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .footer__main .footer__inner {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    gap:                   clamp(20px, 4vw, 48px);
+    align-items:           start;
+  }
+
+  .footer__col {
+    display:        flex;
+    flex-direction: column;
+    gap:            14px;
+  }
 
   .footer__col-heading {
     font-family:    var(--font-sans);
@@ -541,6 +465,11 @@ const currentYear = new Date().getFullYear();
     margin-bottom:  2px;
   }
 
+
+  /* ════════════════════════════════════════════════════════════════════════
+     COL 1 — NAVEGACIÓN
+  ════════════════════════════════════════════════════════════════════════ */
+
   .footer__nav-list {
     list-style: none;
     padding:    0;
@@ -551,14 +480,14 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer__nav-link {
-    display:     inline-block;
-    padding:     4px 0;
-    font-family: var(--font-sans);
-    font-size:   0.8125rem;
-    font-weight: var(--fw-light);
-    color:       var(--c-text-2);
+    display:         inline-block;
+    padding:         4px 0;
+    font-family:     var(--font-sans);
+    font-size:       clamp(0.75rem, 1.4vw, 0.875rem);
+    font-weight:     var(--fw-light);
+    color:           var(--c-text-2);
     text-decoration: none;
-    transition:  color var(--dur-fast) var(--ease-out);
+    transition:      color var(--dur-fast) var(--ease-out);
   }
 
   .footer__nav-link:hover,
@@ -574,7 +503,7 @@ const currentYear = new Date().getFullYear();
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     COL CONTACTO B2B
+     COL 2 — CONTACTO B2B
   ════════════════════════════════════════════════════════════════════════ */
 
   .footer__contact-list {
@@ -583,33 +512,60 @@ const currentYear = new Date().getFullYear();
     margin:     0;
     display:    flex;
     flex-direction: column;
-    gap:        9px;
+    gap:        12px;
   }
 
   .footer__contact-item {
-    display:     flex;
-    align-items: center;
-    gap:         8px;
+    display:  flex;
+    gap:      8px;
   }
 
-  .footer__contact-item--address {
+  .footer__contact-item--top {
     align-items: flex-start;
   }
 
   .footer__contact-icon {
     display:     flex;
-    align-items: center;
+    align-items: flex-start;
     flex-shrink: 0;
     color:       var(--c-sky);
-    margin-top:  1px;
+    padding-top: 2px;
+  }
+
+  /* Ícono de emergencias — acento rojo */
+  .footer__contact-icon--alert {
+    color: var(--c-red);
+  }
+
+  /* Bloque para items con sublabel + link apilados */
+  .footer__contact-block {
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+  }
+
+  .footer__contact-sublabel {
+    font-family:    var(--font-sans);
+    font-size:      0.5625rem;
+    font-weight:    var(--fw-semibold);
+    letter-spacing: var(--ls-widest);
+    text-transform: uppercase;
+    color:          var(--c-text-3);
+    line-height:    1.3;
+  }
+
+  .footer__contact-sublabel--alert {
+    color: var(--c-red);
+    opacity: 0.8;
   }
 
   .footer__contact-link {
     font-family:     var(--font-sans);
-    font-size:       0.75rem;
+    font-size:       clamp(0.6875rem, 1.3vw, 0.8125rem);
     font-weight:     var(--fw-regular);
     color:           var(--c-text-2);
     text-decoration: none;
+    line-height:     1.4;
     transition:      color var(--dur-fast) var(--ease-out);
   }
 
@@ -626,10 +582,10 @@ const currentYear = new Date().getFullYear();
 
   .footer__contact-text {
     font-family: var(--font-sans);
-    font-size:   0.75rem;
+    font-size:   clamp(0.6875rem, 1.3vw, 0.8125rem);
     font-weight: var(--fw-light);
     color:       var(--c-text-2);
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
 
@@ -638,7 +594,6 @@ const currentYear = new Date().getFullYear();
   ════════════════════════════════════════════════════════════════════════ */
 
   .footer__lower {
-    border-top:    1px solid var(--c-line);
     padding-block: clamp(28px, 5vh, 48px);
   }
 
@@ -646,14 +601,14 @@ const currentYear = new Date().getFullYear();
     display:        flex;
     flex-direction: column;
     align-items:    center;
-    gap:            28px;
+    gap:            24px;
   }
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     TARJETAS SOCIALES — grid 2×2 mobile / 4 col desktop
-     Referencia: captura adjunta — fondo blanco, ícono outline centrado,
-     label abajo, borde muy sutil. Sin box-shadow.
+     TARJETAS SOCIALES
+     CLIENT OVERRIDE v4: border-radius: 20px
+     ("mucho más redondas, similares a los botones de abajo")
   ════════════════════════════════════════════════════════════════════════ */
 
   .footer__social-grid {
@@ -665,27 +620,26 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer__scard {
-    display:        flex;
-    flex-direction: column;
-    align-items:    center;
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
     justify-content: center;
-    gap:            11px;
-    padding:        22px 16px 18px;
+    gap:             11px;
+    padding:         22px 16px 18px;
 
-    /* Fondo blanco — contrasta con bg oscuro del footer */
     background:    #ffffff;
     border:        1px solid rgba(0, 0, 0, 0.07);
-    border-radius: 4px; /* máximo permitido */
+    /* CLIENT OVERRIDE — más redondas que el límite estándar de 4px */
+    border-radius: 20px;
 
     text-decoration: none;
     cursor:          pointer;
-
-    transition: background-color var(--dur-fast) var(--ease-out);
+    transition:      background-color var(--dur-fast) var(--ease-out);
   }
 
   .footer__scard:hover,
   .footer__scard:focus-visible {
-    background: #f2f2f2;
+    background: #f0f0f0;
   }
 
   .footer__scard:focus-visible {
@@ -693,7 +647,6 @@ const currentYear = new Date().getFullYear();
     outline-offset: 2px;
   }
 
-  /* Ícono — stroke fino sobre blanco → color oscuro */
   .footer__scard-icon {
     display:         flex;
     align-items:     center;
@@ -702,7 +655,6 @@ const currentYear = new Date().getFullYear();
     line-height:     0;
   }
 
-  /* Label — tipografía micro uppercase */
   .footer__scard-label {
     font-family:    var(--font-sans);
     font-size:      0.5625rem;
@@ -715,8 +667,9 @@ const currentYear = new Date().getFullYear();
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     CTA STACK — CONTACTAR + SOLICITAR COTIZACIÓN
-     PILL CTA: border-radius 999px → override intencional Tech Lead (Licorn-style)
+     BOTONES CTA — PÍLDORA BLANCA CON TEXTO NEGRO
+     CLIENT OVERRIDE v4: background white / color black
+     Override previo Tech Lead: border-radius 999px (sigue vigente)
   ════════════════════════════════════════════════════════════════════════ */
 
   .footer__cta-stack {
@@ -728,7 +681,6 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer__pill-cta {
-    /* Ancho idéntico al original — centrado */
     width:      100%;
     max-width:  clamp(280px, 55vw, 560px);
 
@@ -739,30 +691,31 @@ const currentYear = new Date().getFullYear();
 
     padding: clamp(16px, 2.2vh, 22px) clamp(28px, 5vw, 48px);
 
-    /* Ghost pill — borde elegante sobre oscuro */
-    background:    transparent;
-    border:        1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 999px; /* Excepción autorizada — Tech Lead */
+    /* CLIENT OVERRIDE v4 — fondo blanco, texto negro */
+    background:    #ffffff;
+    border:        1px solid #ffffff;
+    border-radius: 999px; /* Tech Lead override previo — Licorn-style */
 
     font-family:    var(--font-sans);
     font-size:      clamp(0.6875rem, 1.1vw, 0.8125rem);
     font-weight:    var(--fw-medium);
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
-    color:          var(--c-text-1);
+    /* Negro para contrastar con blanco */
+    color:          #0a0a0a;
     cursor:         pointer;
     text-decoration: none;
 
     transition:
-      border-color     var(--dur-mid) var(--ease-out),
       background-color var(--dur-mid) var(--ease-out),
+      border-color     var(--dur-mid) var(--ease-out),
       color            var(--dur-fast) var(--ease-out);
   }
 
   .footer__pill-cta:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color:     rgba(255, 255, 255, 0.50);
-    color:            var(--c-white);
+    background-color: #e8e8e8;
+    border-color:     #e8e8e8;
+    color:            #0a0a0a;
   }
 
   .footer__pill-cta:focus-visible {
@@ -775,7 +728,7 @@ const currentYear = new Date().getFullYear();
     flex-shrink: 0;
   }
 
-  /* Flecha — desliza a la derecha en hover */
+  /* Flecha — hereda el negro del botón; desliza en hover */
   .footer__pill-cta__arrow {
     flex-shrink: 0;
     transition:  transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -847,7 +800,7 @@ const currentYear = new Date().getFullYear();
 
 
   /* ════════════════════════════════════════════════════════════════════════
-     UX CRÍTICO — OCULTAR BOTONES FLOTANTES CUANDO EL FOOTER ES VISIBLE
+     UX CRÍTICO — OCULTAR BOTONES FLOTANTES CON EL FOOTER VISIBLE
   ════════════════════════════════════════════════════════════════════════ */
 
   :global(body.footer-visible .slcta__trigger) {
@@ -880,48 +833,31 @@ const currentYear = new Date().getFullYear();
       max-width:             600px;
     }
 
-    .footer__bottom-inner {
-      flex-direction: row;
+    .footer__main .footer__inner {
+      gap: clamp(32px, 5vw, 64px);
     }
   }
 
-  /* Desktop ≥1024px: grid 3 columnas original */
+  /* Desktop ≥1024px: padding con sidebar */
   @media (min-width: 1024px) {
     .footer__inner {
       padding-inline: calc(var(--sidebar-w) + var(--gutter));
     }
 
-    .footer__main .footer__inner {
-      grid-template-columns: 1.4fr 1fr 1.2fr;
-      gap:                   clamp(32px, 5vw, 64px);
-    }
-
-    /*
-     * display:contents convierte el wrapper en invisible para el layout:
-     * footer__col--nav y footer__col--contact se vuelven hijos directos
-     * del grid de 3 columnas (col 2 y col 3 respectivamente).
-     */
-    .footer__col-right {
-      display: contents;
-    }
-
     .footer__social-grid {
-      max-width: 100%;
+      max-width: 560px;
     }
 
-    .footer__lower .footer__inner {
-      align-items: center;
+    .footer__main .footer__inner {
+      grid-template-columns: 1fr 1.4fr;
     }
   }
 
-  /* Mobile pequeño <640px: padding reducido, layout 2-col sostenido */
-  @media (max-width: 639px) {
-    .footer__inner {
-      padding-inline: var(--gutter);
-    }
-
-    .footer__main .footer__inner {
-      gap: 18px;
+  /* Mobile pequeño <480px: ajustar tipografía contacto */
+  @media (max-width: 479px) {
+    .footer__contact-link,
+    .footer__contact-text {
+      font-size: 0.6875rem;
     }
 
     .footer__bottom-inner {
@@ -939,13 +875,11 @@ const currentYear = new Date().getFullYear();
 
 <script>
   /**
-   * Footer v3 — Controller unificado
+   * Footer v4 — Controller
    *
-   * 1. Staggered fade-in: IntersectionObserver activa data-anim con delay.
-   * 2. Footer visible → body.footer-visible: oculta botones flotantes.
-   * 3. CONTACTAR → dispara csheet-trigger.
-   * 4. SOLICITAR COTIZACIÓN → dispara csheet-trigger (mismo panel).
-   * 5. Recurso rojo: reveal clip-path al entrar en viewport.
+   * 1. Staggered fade-in por [data-anim].
+   * 2. body.footer-visible → oculta botones flotantes.
+   * 3. CONTACTAR + SOLICITAR COTIZACIÓN → disparan ContactSheet.
    */
   (function () {
     'use strict';
@@ -968,7 +902,6 @@ const currentYear = new Date().getFullYear();
     var animObs = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-
         animEls.forEach(function (el) {
           if (reducedMotion) {
             el.style.opacity   = '1';
@@ -981,7 +914,6 @@ const currentYear = new Date().getFullYear();
             el.style.transform = 'translateY(0)';
           }, delay);
         });
-
         animObs.disconnect();
       });
     }, { threshold: 0.04 });
@@ -989,47 +921,28 @@ const currentYear = new Date().getFullYear();
     animObs.observe(footer);
 
 
-    /* ── 2. body.footer-visible → oculta botones flotantes ─────────── */
+    /* ── 2. body.footer-visible → oculta FABs ───────────────────────── */
 
     var fabsObs = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          document.body.classList.add('footer-visible');
-        } else {
-          document.body.classList.remove('footer-visible');
-        }
+        document.body.classList.toggle('footer-visible', entry.isIntersecting);
       });
     }, { threshold: 0, rootMargin: '0px 0px 0px 0px' });
 
     fabsObs.observe(footer);
 
 
-    /* ── 3 & 4. CTAs → disparan ContactSheet ───────────────────────── */
+    /* ── 3. CTAs → ContactSheet ──────────────────────────────────────── */
 
     function triggerContactSheet() {
-      var csBtn = document.getElementById('csheet-trigger');
-      if (csBtn) csBtn.click();
+      var btn = document.getElementById('csheet-trigger');
+      if (btn) btn.click();
     }
 
-    var btnContactar   = document.getElementById('footer-cta-contactar');
-    var btnCotizacion  = document.getElementById('footer-cta-cotizacion');
-
-    if (btnContactar)  btnContactar.addEventListener('click', triggerContactSheet);
-    if (btnCotizacion) btnCotizacion.addEventListener('click', triggerContactSheet);
-
-
-    /* ── 5. Recurso rojo — reveal clip-path ─────────────────────────── */
-
-    var deco = footer.querySelector('.footer__logo-deco');
-    if (deco) {
-      var decoObs = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) {
-          deco.classList.add('is-revealed');
-          decoObs.disconnect();
-        }
-      }, { threshold: 0.3 });
-      decoObs.observe(deco);
-    }
+    var btnC = document.getElementById('footer-cta-contactar');
+    var btnQ = document.getElementById('footer-cta-cotizacion');
+    if (btnC) btnC.addEventListener('click', triggerContactSheet);
+    if (btnQ) btnQ.addEventListener('click', triggerContactSheet);
 
   })();
 </script>
