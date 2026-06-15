@@ -892,7 +892,7 @@
   .slcta__trigger {
     position: fixed;
     right:    0;
-    bottom:   246px; /* 24px base + 65px Linktree + 8px + 134px Contacto + 8px ≈ 246px */
+    bottom:   251px; /* 24px base + 65px Linktree + 20px gap + 134px Contacto + 8px gap */
     z-index:  991;   /* encima de Linktree (990), por debajo de Contacto (992) */
 
     display:        flex;
@@ -1018,23 +1018,6 @@
       visibility 0s    linear 0.20s;
   }
 
-  /* ════════════════════════════════════════════════════════════════════════
-     MOBILE — Alineación con el grupo de FABs de ContactSheet
-     right: 16px → se alinea con el borde izquierdo del grupo de iconos.
-     border-right + border-radius: ya no es flush contra el borde — bordes completos.
-     translateX inicial aumentado para quedar totalmente off-screen con right: 16px.
-  ════════════════════════════════════════════════════════════════════════ */
-
-  @media (max-width: 767px) {
-    .slcta__trigger {
-      right:         12px;                              /* alineado con los FABs */
-      border-right:  1px solid rgba(88, 181, 240, 0.22); /* restaurar borde derecho */
-      border-radius: 4px;                               /* todas las esquinas */
-
-      /* off-screen: 100% propio (44px) + right (12px) + 2px margen = 58px */
-      transform:     translateX(calc(100% + 14px));
-    }
-  }
 </style>
 
 

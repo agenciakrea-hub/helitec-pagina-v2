@@ -213,7 +213,7 @@ const { lang = 'es' } = Astro.props;
   rel="noopener noreferrer"
   aria-label="Ver todas las redes de Consorcio Helitec en Linktree"
 >
-  <span class="csheet__fab-label" aria-hidden="true">Nuestro Linktree</span>
+  <span class="csheet__fab-label" aria-hidden="true">Ver Linktree&nbsp;<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
   <img
     src="/assets/recurso logo avion helitec (1).png"
     alt=""
@@ -485,7 +485,7 @@ const { lang = 'es' } = Astro.props;
   .csheet__contact-strip {
     position: fixed;
     right:    0;
-    bottom:   104px;
+    bottom:   109px; /* 24px base + 65px Linktree + 20px gap */
     z-index:  992; /* encima de Linktree (990) y Cotización (991) */
 
     width:   44px;
@@ -600,8 +600,8 @@ const { lang = 'es' } = Astro.props;
 
   .csheet__linktree-btn {
     position: fixed;
-    right:    15px;
-    bottom:   5%;
+    right:    0;
+    bottom:   24px;
     z-index:  990; /* por debajo de Contacto (992) y Cotización (991) */
 
     display:         block;
@@ -614,11 +614,12 @@ const { lang = 'es' } = Astro.props;
     height:     65px;
     display:    block;
     object-fit: contain;
+    opacity:    0.80;
 
     transition: opacity var(--dur-fast) var(--ease-out);
   }
 
-  .csheet__linktree-btn:hover .csheet__linktree-img { opacity: 0.80; }
+  .csheet__linktree-btn:hover .csheet__linktree-img { opacity: 1; }
 
   .csheet__linktree-btn:focus-visible {
     outline:        2px solid var(--c-sky);
