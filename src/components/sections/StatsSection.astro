@@ -1336,6 +1336,23 @@ const stats: StatCell[] = [
       });
     }
 
+    /* Auto-apertura: abre el acordeón AOC cuando entra en viewport
+       Se dispara una sola vez — el observer se desconecta tras abrir */
+    if (certItem && 'IntersectionObserver' in window) {
+      var certAutoObserver = new IntersectionObserver(
+        function (entries, obs) {
+          if (entries[0].isIntersecting) {
+            if (certItem && !certItem.classList.contains('is-open')) {
+              openCert();
+            }
+            obs.disconnect();
+          }
+        },
+        { threshold: 0.25 }
+      );
+      certAutoObserver.observe(certItem);
+    }
+
 
     /* ════════════════════════════════════════════════════════════════════
        LIGHTBOX AOC — Zoom & Pan completo
