@@ -258,7 +258,7 @@ const stats: StatCell[] = [
         <span class="stats__cert-trigger__icon" aria-hidden="true">+</span>
       </button>
 
-      <!-- Panel colapsable -->
+      <!-- Panel colapsable — solo el texto descriptivo -->
       <div class="stats__cert-panel" data-cert-panel>
         <div class="stats__cert-panel__inner">
 
@@ -269,29 +269,29 @@ const stats: StatCell[] = [
             }
           />
 
-          <!-- Botones de acción -->
-          <div class="stats__cert-actions">
-            <!-- Botón: abre el lightbox con el certificado AOC -->
-            <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
-              <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
-                <path d="M1 5.5C1 5.5 3.5 1 8 1C12.5 1 15 5.5 15 5.5C15 5.5 12.5 10 8 10C3.5 10 1 5.5 1 5.5Z"
-                  stroke="currentColor" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="miter"/>
-                <circle cx="8" cy="5.5" r="2" stroke="currentColor" stroke-width="1.2"/>
-              </svg>
-              <span>{lang === 'es' ? 'Ver certificado' : 'View certificate'}</span>
-            </button>
-
-            <!-- Botón: navega a la sección de Seguridad y Calidad -->
-            <a class="stats__cert-btn" href="/#seguridad">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                <path d="M1 12L12 1M12 1H5M12 1V8"
-                  stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
-              </svg>
-              <span>{lang === 'es' ? 'Ir a Seguridad y Calidad' : 'Go to Safety & Quality'}</span>
-            </a>
-          </div>
-
         </div>
+      </div>
+
+      <!-- Botones de acción — FUERA del panel, siempre visibles -->
+      <div class="stats__cert-actions">
+        <!-- Botón: abre el lightbox con el certificado AOC -->
+        <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
+            <path d="M1 5.5C1 5.5 3.5 1 8 1C12.5 1 15 5.5 15 5.5C15 5.5 12.5 10 8 10C3.5 10 1 5.5 1 5.5Z"
+              stroke="currentColor" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="miter"/>
+            <circle cx="8" cy="5.5" r="2" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+          <span>{lang === 'es' ? 'Ver certificado' : 'View certificate'}</span>
+        </button>
+
+        <!-- Botón: navega a la sección de Seguridad y Calidad -->
+        <a class="stats__cert-btn" href="/#seguridad">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+            <path d="M1 12L12 1M12 1H5M12 1V8"
+              stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+          </svg>
+          <span>{lang === 'es' ? 'Ir a Seguridad y Calidad' : 'Go to Safety & Quality'}</span>
+        </a>
       </div>
 
     </div>
@@ -834,6 +834,7 @@ const stats: StatCell[] = [
     flex-direction:  column;
     align-items:     center;
     gap:             0.75rem;
+    padding-bottom:  clamp(20px, 3vw, 32px); /* espacio inferior del bloque cert */
   }
 
   /* ── Botones ghost — ghost sky blue ─────────────────────────────────── */
