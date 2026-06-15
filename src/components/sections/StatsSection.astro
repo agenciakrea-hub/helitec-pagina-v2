@@ -105,8 +105,8 @@ const stats: StatCell[] = [
     value:   null,
     display: lang === 'es' ? 'Taller propio'       : 'In-house workshop',
     label:   lang === 'es'
-      ? 'Inventario y repuestos — disponibilidad operativa total'
-      : 'Parts inventory — full operational availability',
+      ? 'Disponibilidad operativa total'
+      : 'Full operational availability',
     animate: false,
     kind:    'feature',
   },
@@ -122,7 +122,7 @@ const stats: StatCell[] = [
   {
     value:   null,
     display: '',
-    label:   lang === 'es' ? 'Certificaciones activas' : 'Active certifications',
+    label:   lang === 'es' ? 'cumplimiento Anexo 19 y Doc. 9895 de la OACI' : 'Compliance with ICAO Annex 19 & Doc. 9895',
     animate: false,
     kind:    'inac',
   },
@@ -245,8 +245,8 @@ const stats: StatCell[] = [
         </p>
         <p class="stats__cert-body"
           set:html={lang === 'es'
-            ? 'Consorcio Helitec opera bajo <span class="stats__highlight">Certificado AOC</span> otorgado por el <span class="stats__highlight">Instituto Nacional de Aeronáutica Civil (INAC)</span> de Venezuela, garantizando el cumplimiento de todas las normativas de seguridad operacional nacional e internacional.'
-            : 'Consorcio Helitec operates under an <span class="stats__highlight">AOC Certificate</span> granted by Venezuela\'s <span class="stats__highlight">Instituto Nacional de Aeronáutica Civil (INAC)</span>, ensuring compliance with all national and international operational safety regulations.'
+            ? '<span class="stats__highlight">Consorcio Helitec, C.A. ha certificado</span> ante la Autoridad Aeronáutica Venezolana (INAC) su <span class="stats__highlight">Sistema de Gestión de Seguridad Operacional (SMS)</span>. Este robusto sistema con sistemas de monitoreo (FDMS, FOQA, LOSA, PCAD) y capacitaciones sensibles (PEM, GEFP, CRM) incorporan <span class="stats__highlight">componentes avanzados de vanguardia en la industria</span>.'
+            : '<span class="stats__highlight">Consorcio Helitec, C.A. has certified</span> before the Venezuelan Aeronautical Authority (INAC) its <span class="stats__highlight">Safety Management System (SMS)</span>. This robust system with monitoring tools (FDMS, FOQA, LOSA, PCAD) and specialized training (PEM, GEFP, CRM) incorporates <span class="stats__highlight">industry-leading advanced components</span>.'
           }
         />
 
@@ -260,6 +260,16 @@ const stats: StatCell[] = [
           </svg>
           <span>{lang === 'es' ? 'Ver certificado' : 'View certificate'}</span>
         </button>
+
+        <!-- Botón: navega a la sección de Seguridad y Calidad -->
+        <a class="stats__cert-btn" href="/#seguridad">
+          <!-- Ícono external-link / flecha diagonal -->
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+            <path d="M1 12L12 1M12 1H5M12 1V8"
+              stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+          </svg>
+          <span>{lang === 'es' ? 'Ir a Seguridad y Calidad' : 'Go to Safety & Quality'}</span>
+        </a>
       </div>
 
     </div>
@@ -527,7 +537,7 @@ const stats: StatCell[] = [
   .stats__value--text {
     font-family:    var(--font-display);
     font-size:      clamp(1rem, 1.8vw, 1.35rem);
-    font-weight:    var(--fw-regular); /* 400 */
+    font-weight:    700; /* v5 — impacto y legibilidad */
     letter-spacing: var(--ls-wider);
     line-height:    1.3;
     text-transform: uppercase; /* NACIONAL E INTERNACIONAL */
@@ -549,7 +559,7 @@ const stats: StatCell[] = [
   .stats__value--feature {
     font-family:    var(--font-display);
     font-size:      clamp(1.0rem, 1.8vw, 1.40rem);
-    font-weight:    var(--fw-regular); /* 400 */
+    font-weight:    700; /* v5 — impacto y legibilidad */
     letter-spacing: var(--ls-wider);
     text-transform: uppercase;
     line-height:    1.3;
@@ -703,7 +713,8 @@ const stats: StatCell[] = [
   .stats__cert-info {
     display:        flex;
     flex-direction: column;
-    gap:            8px;
+    align-items:    center; /* v5: centrar todo el bloque */
+    gap:            1rem;
   }
 
   .stats__cert-title {
@@ -713,6 +724,7 @@ const stats: StatCell[] = [
     letter-spacing: var(--ls-widest);
     text-transform: uppercase;
     color:          var(--c-sky);
+    text-align:     center; /* v5 */
   }
 
   .stats__cert-body {
@@ -721,7 +733,9 @@ const stats: StatCell[] = [
     font-weight: var(--fw-regular); /* v4: 300→400 para legibilidad */
     color:       var(--c-text-2);
     line-height: 1.65;
-    max-width:   72ch;
+    max-width:   800px;     /* v5: más ancho */
+    margin:      0 auto;    /* v5: centrar el párrafo en el contenedor */
+    text-align:  justify;   /* v5 */
   }
 
   /* Palabras resaltadas estilo Licorn — fondo azul Helitec sutil */
@@ -732,24 +746,25 @@ const stats: StatCell[] = [
     border-radius:    2px; /* ≤ 4px — ANTI-SLOP */
   }
 
-  /* Botón "Ver documento AOC" — ghost sky blue + flecha animada */
+  /* Botones cert — ghost sky blue + ícono animado */
   .stats__cert-btn {
-    display:     inline-flex;
-    align-items: center;
-    gap:         8px;
-    margin-top:  var(--sp-3);
+    display:         inline-flex;
+    align-items:     center;
+    gap:             8px;
+    width:           fit-content; /* v5: no ocupar 100% del ancho */
 
     padding: 8px 14px;
 
-    font-family:    var(--font-sans);
-    font-size:      0.6875rem; /* 11px */
-    font-weight:    var(--fw-semibold);
-    letter-spacing: var(--ls-wider);
-    text-transform: uppercase;
-    color:          var(--c-text-1);
+    font-family:     var(--font-sans);
+    font-size:       0.6875rem; /* 11px */
+    font-weight:     var(--fw-semibold);
+    letter-spacing:  var(--ls-wider);
+    text-transform:  uppercase;
+    text-decoration: none; /* para el <a> */
+    color:           var(--c-text-1);
 
     background:    transparent;
-    border:        1px solid rgba(88, 181, 240, 0.35);
+    border:        1px solid rgba(88, 181, 240, 0.40); /* v5: borde más visible */
     border-radius: var(--r-micro);
     cursor:        pointer;
 
