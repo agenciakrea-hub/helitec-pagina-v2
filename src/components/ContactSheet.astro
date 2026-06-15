@@ -215,7 +215,7 @@ const { lang = 'es' } = Astro.props;
 >
   <span class="csheet__fab-label" aria-hidden="true">Nuestro Linktree</span>
   <img
-    src="/assets/recurso_logo_avion_helitec.png"
+    src="/recurso_logo_avion_helitec.png"
     alt=""
     class="csheet__linktree-img"
     loading="eager"
@@ -486,12 +486,12 @@ const { lang = 'es' } = Astro.props;
     position: fixed;
     right:    0;
     bottom:   104px;
-    z-index:  893; /* encima de Linktree (890); ambos por debajo del backdrop (898) */
+    z-index:  992; /* encima de Linktree (990) y Cotización (991) */
 
     width:      44px;
     height:     auto;
     min-height: 134px;
-    padding:    14px 0;
+    padding:    12px 0; /* idéntico a Cotización — alineación perfecta */
 
     display:         flex;
     flex-direction:  column;
@@ -601,9 +601,9 @@ const { lang = 'es' } = Astro.props;
 
   .csheet__linktree-btn {
     position: fixed;
-    right:    0;
-    bottom:   24px;
-    z-index:  890; /* por debajo de Contacto (893) y Cotización (892) */
+    right:    15px;
+    bottom:   5%;
+    z-index:  990; /* por debajo de Contacto (992) y Cotización (991) */
 
     display:         block;
     cursor:          pointer;
@@ -611,8 +611,8 @@ const { lang = 'es' } = Astro.props;
   }
 
   .csheet__linktree-img {
-    height:     72px;
-    width:      auto;
+    width:      65px;
+    height:     65px;
     display:    block;
     object-fit: contain;
 
