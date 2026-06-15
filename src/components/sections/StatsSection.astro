@@ -236,40 +236,62 @@ const stats: StatCell[] = [
 
     </div>
 
-    <!-- ── Bloque de certificación AOC ──────────────────────────────────── -->
-    <div class="stats__cert">
+    <!-- ── Bloque de certificación AOC — acordeón ───────────────────────── -->
+    <!--
+      Misma mecánica que el FAQ de FleetSection:
+        data-cert-trigger → dispara open/close
+        data-cert-panel   → max-height: 0 → scrollHeight
+        .is-open          → rota el "+" a "×" y activa .hl sweeps
+    -->
+    <div class="stats__cert" data-cert-item>
 
-      <div class="stats__cert-info">
-        <p class="stats__cert-title">
+      <!-- Trigger: título + ícono "+" -->
+      <button
+        class="stats__cert-trigger"
+        type="button"
+        aria-expanded="false"
+        data-cert-trigger
+      >
+        <span class="stats__cert-trigger__text">
           {lang === 'es' ? 'Certificado de Operador Aéreo' : 'Air Operator Certificate'}
-        </p>
-        <p class="stats__cert-body"
-          set:html={lang === 'es'
-            ? '<span class="stats__highlight">Consorcio Helitec, C.A. ha certificado</span> ante la Autoridad Aeronáutica Venezolana (INAC) su <span class="stats__highlight">Sistema de Gestión de Seguridad Operacional (SMS)</span>. Este robusto sistema con sistemas de monitoreo (FDMS, FOQA, LOSA, PCAD) y capacitaciones sensibles (PEM, GEFP, CRM) incorporan <span class="stats__highlight">componentes avanzados de vanguardia en la industria</span>.'
-            : '<span class="stats__highlight">Consorcio Helitec, C.A. has certified</span> before the Venezuelan Aeronautical Authority (INAC) its <span class="stats__highlight">Safety Management System (SMS)</span>. This robust system with monitoring tools (FDMS, FOQA, LOSA, PCAD) and specialized training (PEM, GEFP, CRM) incorporates <span class="stats__highlight">industry-leading advanced components</span>.'
-          }
-        />
+        </span>
+        <span class="stats__cert-trigger__icon" aria-hidden="true">+</span>
+      </button>
 
-        <!-- Botón: abre el lightbox con el certificado AOC -->
-        <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
-          <!-- Ícono ojo — indica "visualizar", no descargar -->
-          <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
-            <path d="M1 5.5C1 5.5 3.5 1 8 1C12.5 1 15 5.5 15 5.5C15 5.5 12.5 10 8 10C3.5 10 1 5.5 1 5.5Z"
-              stroke="currentColor" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="miter"/>
-            <circle cx="8" cy="5.5" r="2" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-          <span>{lang === 'es' ? 'Ver certificado' : 'View certificate'}</span>
-        </button>
+      <!-- Panel colapsable -->
+      <div class="stats__cert-panel" data-cert-panel>
+        <div class="stats__cert-panel__inner">
 
-        <!-- Botón: navega a la sección de Seguridad y Calidad -->
-        <a class="stats__cert-btn" href="/#seguridad">
-          <!-- Ícono external-link / flecha diagonal -->
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-            <path d="M1 12L12 1M12 1H5M12 1V8"
-              stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
-          </svg>
-          <span>{lang === 'es' ? 'Ir a Seguridad y Calidad' : 'Go to Safety & Quality'}</span>
-        </a>
+          <p class="stats__cert-body"
+            set:html={lang === 'es'
+              ? '<span class="hl">Consorcio Helitec, C.A. ha certificado</span> ante la Autoridad Aeronáutica Venezolana (INAC) su <span class="hl">Sistema de Gestión de Seguridad Operacional (SMS)</span>. Este robusto sistema con sistemas de monitoreo (FDMS, FOQA, LOSA, PCAD) y capacitaciones sensibles (PEM, GEFP, CRM) incorporan <span class="hl">componentes avanzados de vanguardia en la industria</span>.'
+              : '<span class="hl">Consorcio Helitec, C.A. has certified</span> before the Venezuelan Aeronautical Authority (INAC) its <span class="hl">Safety Management System (SMS)</span>. This robust system with monitoring tools (FDMS, FOQA, LOSA, PCAD) and specialized training (PEM, GEFP, CRM) incorporates <span class="hl">industry-leading advanced components</span>.'
+            }
+          />
+
+          <!-- Botones de acción -->
+          <div class="stats__cert-actions">
+            <!-- Botón: abre el lightbox con el certificado AOC -->
+            <button class="stats__cert-btn" id="aoc-open-btn" type="button" aria-haspopup="dialog">
+              <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
+                <path d="M1 5.5C1 5.5 3.5 1 8 1C12.5 1 15 5.5 15 5.5C15 5.5 12.5 10 8 10C3.5 10 1 5.5 1 5.5Z"
+                  stroke="currentColor" stroke-width="1.2" stroke-linecap="square" stroke-linejoin="miter"/>
+                <circle cx="8" cy="5.5" r="2" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <span>{lang === 'es' ? 'Ver certificado' : 'View certificate'}</span>
+            </button>
+
+            <!-- Botón: navega a la sección de Seguridad y Calidad -->
+            <a class="stats__cert-btn" href="/#seguridad">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <path d="M1 12L12 1M12 1H5M12 1V8"
+                  stroke="currentColor" stroke-width="1.3" stroke-linecap="square" stroke-linejoin="miter"/>
+              </svg>
+              <span>{lang === 'es' ? 'Ir a Seguridad y Calidad' : 'Go to Safety & Quality'}</span>
+            </a>
+          </div>
+
+        </div>
       </div>
 
     </div>
@@ -699,59 +721,128 @@ const stats: StatCell[] = [
   }
 
   /* ════════════════════════════════════════════════════════════════════════
-     BLOQUE DE CERTIFICACIÓN AOC (debajo del grid)
+     BLOQUE DE CERTIFICACIÓN AOC — ACORDEÓN
+     Misma mecánica que el FAQ de FleetSection.
   ════════════════════════════════════════════════════════════════════════ */
 
   .stats__cert {
     margin-top:       clamp(28px, 4vh, 48px);
-
-    padding:          clamp(20px, 3vw, 32px) 0;
-    border-top:       1px solid var(--c-line); /* separador sutil — mismo tono que el fondo */
+    border-top:       1px solid var(--c-line);
     background-color: transparent;
   }
 
-  .stats__cert-info {
-    display:        flex;
-    flex-direction: column;
-    align-items:    center; /* v5: centrar todo el bloque */
-    gap:            1rem;
+  /* ── Trigger (botón que hace de título clickeable) ───────────────────── */
+
+  .stats__cert-trigger {
+    width:           100%;
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    gap:             var(--sp-5);
+
+    padding-block:   clamp(16px, 2.5vw, 24px);
+    padding-inline:  0;
+
+    background:  none;
+    border:      none;
+    cursor:      pointer;
+    text-align:  left;
   }
 
-  .stats__cert-title {
+  .stats__cert-trigger:focus-visible {
+    outline:        2px solid var(--c-sky);
+    outline-offset: 2px;
+    border-radius:  2px;
+  }
+
+  .stats__cert-trigger__text {
     font-family:    var(--font-sans);
     font-size:      var(--text-xs);
     font-weight:    var(--fw-semibold);
     letter-spacing: var(--ls-widest);
     text-transform: uppercase;
     color:          var(--c-sky);
-    text-align:     center; /* v5 */
+    line-height:    1.5;
+
+    transition: color var(--dur-fast) var(--ease-out);
   }
+
+  .stats__cert-trigger:hover .stats__cert-trigger__text,
+  .stats__cert.is-open       .stats__cert-trigger__text {
+    color: var(--c-text-1);
+  }
+
+  .stats__cert-trigger__icon {
+    flex-shrink:     0;
+    width:           20px;
+    height:          20px;
+
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+
+    font-size:   1.1rem;
+    font-weight: var(--fw-light);
+    line-height: 1;
+    color:       var(--c-sky);
+
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stats__cert.is-open .stats__cert-trigger__icon {
+    transform: rotate(45deg); /* "+" → "×" */
+  }
+
+  /* ── Panel colapsable ────────────────────────────────────────────────── */
+
+  .stats__cert-panel {
+    max-height: 0;
+    overflow:   hidden;
+    transition: max-height 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stats__cert-panel__inner {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            1.25rem;
+    padding-bottom: clamp(20px, 3vw, 32px);
+  }
+
+  /* ── Cuerpo del texto — más grande y legible al expandirse ──────────── */
 
   .stats__cert-body {
     font-family: var(--font-sans);
-    font-size:   clamp(0.78rem, 1.3vw, 0.875rem);
-    font-weight: var(--fw-regular); /* v4: 300→400 para legibilidad */
+    font-size:   clamp(0.9rem, 1.5vw, 1.05rem); /* v6: subido de 0.78rem */
+    font-weight: 500;                             /* v6: regular→medium */
     color:       var(--c-text-2);
-    line-height: 1.65;
-    max-width:   800px;     /* v5: más ancho */
-    margin:      0 auto;    /* v5: centrar el párrafo en el contenedor */
-    text-align:  justify;   /* v5 */
+    line-height: 1.70;
+    max-width:   800px;
+    margin:      0 auto;
+    text-align:  justify;
   }
 
-  /* Palabras resaltadas estilo Licorn — fondo azul Helitec sutil */
-  .stats__highlight {
-    background-color: rgba(88, 181, 240, 0.10);
-    color:            var(--c-sky);
-    padding:          1px 5px;
-    border-radius:    2px; /* ≤ 4px — ANTI-SLOP */
+  /*
+   * .hl / .hl.is-highlighted — definidos como :global en FleetSection.astro.
+   * Se activan en openCert() vía JS (mismo patrón que FAQ).
+   */
+
+  /* ── Contenedor de botones de acción ─────────────────────────────────── */
+
+  .stats__cert-actions {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    gap:             0.75rem;
   }
 
-  /* Botones cert — ghost sky blue + ícono animado */
+  /* ── Botones ghost — ghost sky blue ─────────────────────────────────── */
+
   .stats__cert-btn {
     display:         inline-flex;
     align-items:     center;
     gap:             8px;
-    width:           fit-content; /* v5: no ocupar 100% del ancho */
+    width:           fit-content;
 
     padding: 8px 14px;
 
@@ -760,11 +851,11 @@ const stats: StatCell[] = [
     font-weight:     var(--fw-semibold);
     letter-spacing:  var(--ls-wider);
     text-transform:  uppercase;
-    text-decoration: none; /* para el <a> */
+    text-decoration: none;
     color:           var(--c-text-1);
 
     background:    transparent;
-    border:        1px solid rgba(88, 181, 240, 0.40); /* v5: borde más visible */
+    border:        1px solid rgba(88, 181, 240, 0.40);
     border-radius: var(--r-micro);
     cursor:        pointer;
 
@@ -1031,21 +1122,19 @@ const stats: StatCell[] = [
   }
 
   /* Cert block — textos en tema claro (fondo blanco/gradiente) */
-  .stats__cert-title {
-    color:       #111111; /* v4: navy → negro — más contraste sobre blanco */
-    font-weight: 700;     /* v4: semibold → bold */
+  .stats__cert-trigger__text {
+    color: var(--c-brand); /* v6: navy azul Helitec — legible sobre blanco */
+  }
+  .stats__cert-trigger:hover .stats__cert-trigger__text,
+  .stats__cert.is-open       .stats__cert-trigger__text {
+    color: #111111;
+  }
+  .stats__cert-trigger__icon {
+    color: var(--c-brand);
   }
   .stats__cert-body {
-    color:       #222222; /* v4: #444 → #222 — más oscuro, más legible */
-    font-weight: var(--fw-regular); /* v4: light → regular */
-  }
-
-  /* Palabras resaltadas en cert body */
-  .stats__highlight {
-    background-color: rgba(2, 58, 120, 0.08);
-    color:            var(--c-brand);
-    padding:          1px 5px;
-    border-radius:    2px;
+    color:       #222222; /* v6: oscuro — legible sobre fondo claro */
+    font-weight: 500;     /* v6: medium — coherente con override principal */
   }
 
   /* Botón "Ver certificado" — tema claro */
@@ -1194,6 +1283,57 @@ const stats: StatCell[] = [
     );
 
     observer.observe(grid);
+
+
+    /* ════════════════════════════════════════════════════════════════════
+       B. ACORDEÓN — CERTIFICADO AOC
+       Misma mecánica que el FAQ de FleetSection:
+         closeCert → colapsa panel, remueve .hl highlights al instante
+         openCert  → expande panel con max-height real, activa .hl sweeps
+                     con delay de 200ms (panel abre primero, luego sweep)
+    ════════════════════════════════════════════════════════════════════ */
+
+    var certItem    = /** @type {HTMLElement|null} */ (document.querySelector('[data-cert-item]'));
+    var certTrigger = certItem && certItem.querySelector('[data-cert-trigger]');
+    var certPanel   = certItem && /** @type {HTMLElement|null} */ (certItem.querySelector('[data-cert-panel]'));
+    var certInner   = certPanel && /** @type {HTMLElement|null} */ (certPanel.querySelector('.stats__cert-panel__inner'));
+
+    function closeCert() {
+      if (!certItem || !certPanel || !certTrigger) return;
+      certItem.classList.remove('is-open');
+      certPanel.style.maxHeight = '0';
+      certTrigger.setAttribute('aria-expanded', 'false');
+      /* Reset highlights: sin animación (transition vacía en .hl base) */
+      certItem.querySelectorAll('.hl').forEach(function (el) {
+        el.classList.remove('is-highlighted');
+      });
+    }
+
+    function openCert() {
+      if (!certItem || !certPanel || !certInner || !certTrigger) return;
+      certItem.classList.add('is-open');
+      certPanel.style.maxHeight = certInner.scrollHeight + 'px';
+      certTrigger.setAttribute('aria-expanded', 'true');
+      /* Highlights: delay 200ms — panel abre parcialmente antes del sweep */
+      setTimeout(function () {
+        certItem.querySelectorAll('.hl').forEach(function (el, idx) {
+          void (/** @type {HTMLElement} */ (el)).offsetWidth; /* fuerza reflow → transition dispara */
+          setTimeout(function () {
+            el.classList.add('is-highlighted');
+          }, idx * 110);
+        });
+      }, 200);
+    }
+
+    if (certTrigger) {
+      certTrigger.addEventListener('click', function () {
+        if (certItem && certItem.classList.contains('is-open')) {
+          closeCert();
+        } else {
+          openCert();
+        }
+      });
+    }
 
 
     /* ════════════════════════════════════════════════════════════════════
