@@ -901,10 +901,9 @@
     justify-content: center;
     gap:            8px;
 
-    width:       44px;
-    height:      auto;
-    min-height:  134px;
-    padding:     12px 0;
+    width:   44px;
+    height:  134px;
+    padding: 12px 0;
 
     background:   rgba(5, 50, 130, 0.55);
     border:       1px solid rgba(88, 181, 240, 0.22);
@@ -1007,6 +1006,16 @@
     opacity:        0;
     visibility:     hidden;
     pointer-events: none;
+  }
+
+  /* Ocultar Cotización cuando el panel de Contacto está abierto */
+  :global(body.csheet-is-open) .slcta__trigger {
+    opacity:        0;
+    visibility:     hidden;
+    pointer-events: none;
+    transition:
+      opacity    0.20s var(--ease-out),
+      visibility 0s    linear 0.20s;
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -1293,15 +1302,16 @@
 
       if (!validateForm(data)) return;
 
-      /* Extraer valores */
-      const tripType     = data.get('trip_type').toString().trim();
-      const origen       = data.get('origen').toString().trim();
-      const destino      = data.get('destino').toString().trim();
-      const fechaSalida  = data.get('fecha_salida').toString().trim();
-      const fechaRegreso = data.get('fecha_regreso').toString().trim();
-      const pasajeros    = data.get('pasajeros').toString().trim();
-      const nombre       = data.get('nombre').toString().trim();
-      const empresa      = data.get('empresa').toString().trim();
+      /* Extraer valores — optional chaining + fallback para campos opcionales o
+         ausentes del FormData (fecha_regreso en solo-ida, empresa opcional) */
+      const tripType     = data.get('trip_type')?.toString().trim()     || '';
+      const origen       = data.get('origen')?.toString().trim()        || '';
+      const destino      = data.get('destino')?.toString().trim()       || '';
+      const fechaSalida  = data.get('fecha_salida')?.toString().trim()  || '';
+      const fechaRegreso = data.get('fecha_regreso')?.toString().trim() || '';
+      const pasajeros    = data.get('pasajeros')?.toString().trim()     || '';
+      const nombre       = data.get('nombre')?.toString().trim()        || '';
+      const empresa      = data.get('empresa')?.toString().trim()       || '';
 
       /* Formatear tipo de viaje para el mensaje */
       const tipoLabel = tripType === 'round-trip' ? 'Ida y Vuelta' : 'Solo Ida';

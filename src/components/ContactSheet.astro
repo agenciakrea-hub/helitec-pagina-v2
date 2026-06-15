@@ -215,7 +215,7 @@ const { lang = 'es' } = Astro.props;
 >
   <span class="csheet__fab-label" aria-hidden="true">Nuestro Linktree</span>
   <img
-    src="/recurso_logo_avion_helitec.png"
+    src="/assets/recurso logo avion helitec (1).png"
     alt=""
     class="csheet__linktree-img"
     loading="eager"
@@ -488,10 +488,9 @@ const { lang = 'es' } = Astro.props;
     bottom:   104px;
     z-index:  992; /* encima de Linktree (990) y Cotización (991) */
 
-    width:      44px;
-    height:     auto;
-    min-height: 134px;
-    padding:    12px 0; /* idéntico a Cotización — alineación perfecta */
+    width:   44px;
+    height:  134px;
+    padding: 12px 0; /* idéntico a Cotización */
 
     display:         flex;
     flex-direction:  column;
@@ -639,6 +638,17 @@ const { lang = 'es' } = Astro.props;
 
   /* Ocultar Linktree cuando el cotizador está abierto */
   :global(body.slcta-is-open) .csheet__linktree-btn {
+    opacity:        0;
+    visibility:     hidden;
+    pointer-events: none;
+    transition:
+      opacity    0.20s var(--ease-out),
+      visibility 0s    linear 0.20s;
+  }
+
+  /* Ocultar los 3 flotantes cuando el panel de Contacto está abierto */
+  :global(body.csheet-is-open) .csheet__contact-strip,
+  :global(body.csheet-is-open) .csheet__linktree-btn {
     opacity:        0;
     visibility:     hidden;
     pointer-events: none;
