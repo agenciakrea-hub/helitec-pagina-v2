@@ -37,7 +37,8 @@ import ContactSheet    from '../components/ContactSheet.astro';
 import StatsSection    from '../components/sections/StatsSection.astro';
 import ServicesSection from '../components/sections/ServicesSection.astro';
 import FleetSection    from '../components/sections/FleetSection.astro';
-import Footer          from '../components/Footer.astro';
+import Footer              from '../components/Footer.astro';
+import PresentationModal  from '../components/PresentationModal.astro';
 ---
 
 <BaseLayout
@@ -169,5 +170,8 @@ import Footer          from '../components/Footer.astro';
     · Campos [DATO: ...] requieren completar por el cliente
   -->
   <Footer lang="es" />
+
+  <!-- Nota estratégica del rediseño — visible solo al llegar al footer -->
+  <PresentationModal />
 
 </BaseLayout>

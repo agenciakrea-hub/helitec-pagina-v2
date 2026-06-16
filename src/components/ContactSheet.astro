@@ -149,10 +149,9 @@ const { lang = 'es' } = Astro.props;
       data-type="whatsapp"
     >
       <span class="csheet__card-icon" aria-hidden="true">
-        <!-- Cruz médica en círculo -->
+        <!-- Cruz médica limpia (forma de plus con brazos iguales) -->
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L12 22M2 12L22 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
         </svg>
       </span>
       <div class="csheet__card-info">
@@ -208,10 +207,8 @@ const { lang = 'es' } = Astro.props;
 ──────────────────────────────────────────────────────────────────────────────── -->
 <a
   class="csheet__linktree-btn"
-  href="https://linktr.ee/helitec"
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="Ver todas las redes de Consorcio Helitec en Linktree"
+  href="/links"
+  aria-label="Ver todas las redes de Consorcio Helitec"
 >
   <span class="csheet__fab-label" aria-hidden="true">Ver Linktree&nbsp;<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
   <img
@@ -697,11 +694,16 @@ const { lang = 'es' } = Astro.props;
     -webkit-backdrop-filter: blur(10px) saturate(1.2);
     border:        1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--r-micro);
-    padding:       5px 10px;
+    padding:       5px 12px;
 
     opacity:         0;
     animation:       fab-label-show 3.5s ease forwards;
     animation-delay: 0.85s;
+  }
+
+  .csheet__fab-label svg {
+    flex-shrink: 0;
+    display:     block;
   }
 
   /* Mini-flecha apuntando hacia el botón (derecha) */
