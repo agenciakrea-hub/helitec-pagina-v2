@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=Montserrat:wght@200;300;400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@200;300;400;500&display=swap"
     rel="stylesheet"
   />
 
@@ -34,7 +34,7 @@
       --dur-fast:     200ms;
     }
 
-    /* ── Body: fondo sólido sin textura ─────────────────────────────────── */
+    /* ── Body: fondo sólido ─────────────────────────────────────────────── */
     body {
       min-height: 100dvh;
       overflow-x: hidden;
@@ -43,31 +43,18 @@
       background-color: #48699a;
     }
 
-    /* ── Imagen decorativa 1: avión esquina superior izquierda ───────────── */
-    .deco-corner {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 50vw;
-      max-width: 300px;
-      height: auto;
-      z-index: 1;
-      pointer-events: none;
-      user-select: none;
-      opacity: 0.70;
-    }
-
-    /* ── Imagen decorativa 2: cola del avión fondo inferior derecha ──────── */
+    /* ── Imagen decorativa: cola del avión fondo inferior derecha ────────── */
     .deco-tail {
       position: fixed;
       bottom: 0;
       right: 0;
-      width: clamp(280px, 55vw, 680px);
-      height: auto;
+      height: 85vh;
+      width: auto;
       z-index: 0;
       pointer-events: none;
       user-select: none;
-      opacity: 0.40;
+      opacity: 0.45;
+      object-fit: contain;
     }
 
     /* ── Wrapper principal ───────────────────────────────────────────────── */
@@ -249,20 +236,18 @@
 
     /* ── Etiqueta de grupo ───────────────────────────────────────────────── */
     .lt-group-label {
-      font-family: var(--font-display);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.15em;
+      font-family: var(--font-sans);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: #ffffff;
-      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
-      align-self: flex-start;
-      padding: 4px 10px;
-      background: rgba(0, 0, 0, 0.25);
-      border-left: 3px solid rgba(255, 255, 255, 0.70);
+      color: rgba(255, 255, 255, 0.90);
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.30);
+      text-align: center;
+      align-self: center;
     }
 
-    /* ── Botones estilo neobrutalismo ────────────────────────────────────── */
+    /* ── Botones pill minimalistas ───────────────────────────────────────── */
     .lt-btn {
       display: grid;
       grid-template-columns: 28px 1fr 28px;
@@ -271,14 +256,14 @@
       padding: 15px 20px;
       border-radius: 9999px;
       background: #ffffff;
-      color: #000000;
+      color: #1a2536;
       font-family: var(--font-sans);
-      font-size: 0.95rem;
-      font-weight: 800;
+      font-size: 0.9rem;
+      font-weight: 500;
       letter-spacing: 0.01em;
       text-decoration: none;
-      border: 2px solid #000000;
-      box-shadow: 4px 4px 0px 0px #000000;
+      border: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
       cursor: pointer;
       transition:
         transform var(--dur-fast) var(--ease-out),
@@ -286,13 +271,13 @@
     }
 
     .lt-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0px 0px #000000;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
     }
 
     .lt-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px 0px #000000;
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     /* Ícono: anclado a la izquierda */
@@ -303,17 +288,17 @@
     }
 
     .lt-btn__icon svg {
-      width: 18px;
-      height: 18px;
+      width: 17px;
+      height: 17px;
       flex-shrink: 0;
-      stroke: #000000;
-      stroke-width: 2;
+      stroke: #1a2536;
+      stroke-width: 1.8;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    /* Texto: centrado en el espacio restante */
+    /* Texto: centrado */
     .lt-btn__text {
       text-align: center;
     }
@@ -330,9 +315,8 @@
 
 <body>
 
-  <!-- Imágenes decorativas -->
-  <img src="/assets/fotolinktreecola.png" alt="" aria-hidden="true" class="deco-corner" />
-  <img src="/assets/fondolinktree.png"    alt="" aria-hidden="true" class="deco-tail" />
+  <!-- Imagen decorativa -->
+  <img src="/assets/fondolinktree.png" alt="" aria-hidden="true" class="deco-tail" />
 
   <div class="lt-wrapper">
 
