@@ -26,7 +26,8 @@
  */
 
 import { Image } from 'astro:assets';
-import aocCert from '../../assets/AOC.png';
+import aocCert  from '../../assets/AOC.png';
+import inacLogo from '../../assets/recurso amarillo helitec (1).png';
 
 interface Props {
   lang?: 'es' | 'en';
@@ -199,12 +200,13 @@ const stats: StatCell[] = [
                * Celda INAC: imagen del recurso amarillo (sello de certificación).
                * Fila 5, columna derecha.
                */
-              <img
-                src="/assets/recurso%20amarillo%20helitec%20(1).png"
+              <Image
+                src={inacLogo}
                 alt="INAC — Instituto Nacional de Aeronáutica Civil de Venezuela"
                 class="stats__cert-logo"
-                width="72"
-                height="72"
+                width={150}
+                format="webp"
+                quality={90}
                 loading="lazy"
                 decoding="async"
               />

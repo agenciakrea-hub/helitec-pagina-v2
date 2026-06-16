@@ -21,60 +21,73 @@
  *   H3 font-weight: 200             ✓
  */
 
+import { Image, getImage } from 'astro:assets';
+import imgEjecutiva  from '../../assets/IMG_0968.jpg';
+import imgPetroleras from '../../assets/opepetroleras.png';
+import imgAeromedico from '../../assets/Avion y Ambulancia1.jpg';
+import imgAeroMobile from '../../assets/f5-fullsizerender.jpg';
+import imgEslinga    from '../../assets/Helicoptero Eslinga 2.jpg';
+
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 
+/* URL WebP optimizada para el <source> mobile de la tarjeta 03 (art-direction) */
+const aeroMobileOpt = await getImage({ src: imgAeroMobile, format: 'webp', width: 400, quality: 80 });
+
 const services = [
   {
-    num:   '01',
-    title: lang === 'es' ? 'Aviación Ejecutiva'            : 'Executive Aviation',
-    desc:  lang === 'es'
+    num:          '01',
+    title:        lang === 'es' ? 'Aviación Ejecutiva'            : 'Executive Aviation',
+    desc:         lang === 'es'
       ? 'Flota Metro y Merlin de ala fija para transporte corporativo de alta eficiencia. Conexión directa entre Caracas, el interior y el Caribe.'
       : 'Fixed-wing Metro and Merlin fleet for high-efficiency corporate transport. Direct connections between Caracas, interior, and the Caribbean.',
-    cta:       lang === 'es' ? 'Solicitar vuelo ejecutivo'     : 'Request executive flight',
-    href:      '/#contacto',
-    img:       '/assets/IMG_0968.jpg',
-    alt:       lang === 'es'
+    cta:          lang === 'es' ? 'Solicitar vuelo ejecutivo'     : 'Request executive flight',
+    href:         '/#contacto',
+    img:          imgEjecutiva,
+    imgMobileSrc: null as string | null,
+    alt:          lang === 'es'
       ? 'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium'
       : 'Helitec executive cabin — premium leather seating',
   },
   {
-    num:   '02',
-    title: lang === 'es' ? 'Operaciones Petroleras'          : 'Petroleum Operations',
-    desc:  lang === 'es'
+    num:          '02',
+    title:        lang === 'es' ? 'Operaciones Petroleras'          : 'Petroleum Operations',
+    desc:         lang === 'es'
       ? 'Helicópteros MD con disponibilidad 24/7 para soporte aéreo en plataformas marítimas e instalaciones del sector energético.'
       : 'MD helicopters with 24/7 availability for aerial support on offshore platforms and onshore energy sector facilities.',
-    cta:       lang === 'es' ? 'Consultar operaciones'         : 'Inquire about operations',
-    href:      '/#contacto',
-    img:       '/assets/opepetroleras.png',
-    alt:       lang === 'es'
+    cta:          lang === 'es' ? 'Consultar operaciones'         : 'Inquire about operations',
+    href:         '/#contacto',
+    img:          imgPetroleras,
+    imgMobileSrc: null as string | null,
+    alt:          lang === 'es'
       ? 'Helicóptero Helitec en operación petrolera'
       : 'Helitec helicopter on petroleum operations',
   },
   {
-    num:   '03',
-    title: lang === 'es' ? 'Traslados Aeromédicos'           : 'Aeromedical Transfers',
-    desc:  lang === 'es'
+    num:          '03',
+    title:        lang === 'es' ? 'Traslados Aeromédicos'           : 'Aeromedical Transfers',
+    desc:         lang === 'es'
       ? 'Metro III con configuración aeromédica certificada y camilla Spectrum Aeromed. Coordinación inmediata con ambulancias en tierra. Respuesta 24/7.'
       : 'Metro III with certified aeromedical configuration and Spectrum Aeromed stretcher. Immediate coordination with ground ambulances. 24/7 response.',
-    cta:       lang === 'es' ? 'Ver servicio aeromédico'       : 'View aeromedical service',
-    href:      '/servicio-aeromedico',
-    img:       '/assets/Avion%20y%20Ambulancia1.jpg',
-    imgMobile: '/assets/f5-fullsizerender.jpg',
-    alt:       lang === 'es'
+    cta:          lang === 'es' ? 'Ver servicio aeromédico'       : 'View aeromedical service',
+    href:         '/servicio-aeromedico',
+    img:          imgAeromedico,
+    imgMobileSrc: aeroMobileOpt.src,
+    alt:          lang === 'es'
       ? 'Metro III Helitec junto a ambulancia — servicio aeromédico'
       : 'Helitec Metro III alongside ambulance — aeromedical service',
   },
   {
-    num:   '04',
-    title: lang === 'es' ? 'Operaciones de Carga y Eslinga'  : 'Cargo & Sling Operations',
-    desc:  lang === 'es'
+    num:          '04',
+    title:        lang === 'es' ? 'Operaciones de Carga y Eslinga'  : 'Cargo & Sling Operations',
+    desc:         lang === 'es'
       ? 'Helicópteros MD equipados para carga externa con eslinga certificada. Transporte de equipos industriales a zonas de difícil acceso. Hasta 650 kg externos.'
       : 'MD helicopters equipped for external sling load operations. Industrial equipment transport to hard-to-reach zones. Up to 650 kg external capacity.',
-    cta:       lang === 'es' ? 'Consultar operaciones de carga': 'Inquire about cargo ops',
-    href:      '/#contacto',
-    img:       '/assets/Helicoptero%20Eslinga%202.jpg',
-    alt:       lang === 'es'
+    cta:          lang === 'es' ? 'Consultar operaciones de carga': 'Inquire about cargo ops',
+    href:         '/#contacto',
+    img:          imgEslinga,
+    imgMobileSrc: null as string | null,
+    alt:          lang === 'es'
       ? 'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación'
       : 'Helitec MD helicopter with external sling load over vegetation',
   },
@@ -132,13 +145,16 @@ const services = [
           <!-- Imagen con parallax + encuadre per-card vía imgStyle inline -->
           <!-- <picture> permite asset diferente en móvil (ej: card-03 aeromédicos) -->
           <picture>
-            {svc.imgMobile && (
-              <source media="(max-width: 767px)" srcset={svc.imgMobile} />
+            {svc.imgMobileSrc && (
+              <source media="(max-width: 767px)" srcset={svc.imgMobileSrc} type="image/webp" />
             )}
-            <img
+            <Image
               class="sgrid__photo"
               src={svc.img}
               alt={svc.alt}
+              width={600}
+              format="webp"
+              quality={80}
               style={svc.imgStyle ?? ''}
               loading={i < 2 ? 'eager' : 'lazy'}
               decoding="async"
