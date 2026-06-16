@@ -32,6 +32,12 @@
  *   YV1923_1.jpg · Helicoptero%20en%20pantano.jpg · Avion%20y%20Ambulancia%201.jpg · Helicoptero%20Eslinga%201.jpg
  */
 
+import { Image } from 'astro:assets';
+import imgEjecutiva  from '../assets/IMG_0968.jpg';
+import imgPetroleras from '../assets/opepetroleras.png';
+import imgAeromedico from '../assets/f5-fullsizerender.jpg';
+import imgEslinga    from '../assets/Helicoptero Eslinga 2.jpg';
+
 interface Props {
   /** Idioma activo — marca el link correcto en ES | EN */
   lang?: 'es' | 'en';
@@ -56,26 +62,25 @@ const services = [
   {
     label: 'Aviación Ejecutiva',
     href:  '/#servicios',
-    img:   '/assets/IMG_0968.jpg',
+    img:   imgEjecutiva,
     alt:   'Cabina ejecutiva Consorcio Helitec — asientos de cuero premium',
   },
   {
     label: 'Operaciones Petroleras',
     href:  '/#servicios',
-    img:   '/assets/opepetroleras.png',
+    img:   imgPetroleras,
     alt:   'Helicóptero Helitec en operación petrolera',
   },
   {
-    label:     'Traslados Aeromédicos',
-    href:      '/#servicios',
-    img:       '/assets/Avion%20y%20Ambulancia1.jpg',
-    imgMobile: '/assets/f5-fullsizerender.jpg',
-    alt:       'Metro III Helitec junto a ambulancia — servicio aeromédico',
+    label: 'Traslados Aeromédicos',
+    href:  '/#servicios',
+    img:   imgAeromedico,
+    alt:   'Metro III Helitec junto a ambulancia — servicio aeromédico',
   },
   {
     label: 'Carga y Eslinga',
     href:  '/#servicios',
-    img:   '/assets/Helicoptero%20Eslinga%202.jpg',
+    img:   imgEslinga,
     alt:   'Helicóptero MD Helitec con eslinga de carga externa sobre vegetación',
   },
 ];
@@ -169,20 +174,17 @@ const services = [
           aria-hidden="true": el <span> del label ya describe el servicio.
           object-fit: cover OBLIGATORIO (ver reset.css + refuerzo explícito aquí).
         -->
-        <!-- <picture> permite asset diferente en móvil (ej: card aeromédicos) -->
-        <picture>
-          {service.imgMobile && (
-            <source media="(max-width: 767px)" srcset={service.imgMobile} />
-          )}
-          <img
-            src={service.img}
-            alt={service.alt}
-            class="menu-modal__card-img"
-            loading="lazy"
-            decoding="async"
-            aria-hidden="true"
-          />
-        </picture>
+        <Image
+          src={service.img}
+          alt={service.alt}
+          class="menu-modal__card-img"
+          width={400}
+          format="webp"
+          quality={75}
+          loading="lazy"
+          decoding="async"
+          aria-hidden="true"
+        />
 
         <!--
           Overlay rgba: SOLO para legibilidad del texto sobre foto real.
