@@ -1,0 +1,500 @@
+---
+// links.astro — Página Linktree Corporativo de Helitec
+// Página independiente: sin Navbar ni Footer principal
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Helitec — Links</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@200;300;400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+      --font-sans:    'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --c-white:      #ffffff;
+      --c-dark:       #0d1117;
+      --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+      --dur-fast:     200ms;
+    }
+
+    body {
+      min-height: 100dvh;
+      overflow-x: hidden;
+      font-family: var(--font-sans);
+      color: var(--c-white);
+      background-color: #48699a;
+      background-image:
+        radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.18) 1px,
+          transparent 1px
+        ),
+        radial-gradient(
+          ellipse 80% 60% at 50% 40%,
+          transparent 55%,
+          rgba(72, 105, 154, 0.85) 100%
+        );
+      background-size: 18px 18px, 100% 100%;
+    }
+
+    /* ── Imágenes decorativas ────────────────────────────────────────── */
+    .deco-tail {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: clamp(280px, 55vw, 680px);
+      height: auto;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.40;
+    }
+
+    .deco-corner {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: clamp(120px, 22vw, 260px);
+      height: auto;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.70;
+    }
+
+    /* ── Wrapper principal ───────────────────────────────────────────── */
+    .lt-wrapper {
+      position: relative;
+      z-index: 2;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 56px;
+    }
+
+    /* ── Top Bar ─────────────────────────────────────────────────────── */
+    .lt-topbar {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+    }
+
+    .lt-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.30);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--c-white);
+      text-decoration: none;
+      cursor: pointer;
+      transition:
+        background var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
+    }
+
+    .lt-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.55);
+    }
+
+    .lt-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ── Logo / Cabecera ─────────────────────────────────────────────── */
+    .lt-profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 8px 24px 32px;
+    }
+
+    .lt-logo {
+      width: 120px;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* ── Fila de redes sociales ──────────────────────────────────────── */
+    .lt-social {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .lt-social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.10);
+      color: var(--c-white);
+      text-decoration: none;
+      transition:
+        background var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out);
+    }
+
+    .lt-social-link:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.60);
+      transform: translateY(-2px);
+    }
+
+    .lt-social-link svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* WhatsApp: fill sólido en su ícono */
+    .lt-social-link--wa svg {
+      stroke: none;
+      fill: currentColor;
+    }
+
+    /* ── Contenedor de links ─────────────────────────────────────────── */
+    .lt-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 520px;
+      padding: 0 20px;
+    }
+
+    /* ── Botones pill ────────────────────────────────────────────────── */
+    .lt-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px 24px;
+      border-radius: 9999px;
+      background: var(--c-white);
+      color: #1a2536;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition:
+        transform var(--dur-fast) var(--ease-out),
+        background var(--dur-fast) var(--ease-out);
+    }
+
+    .lt-btn:hover {
+      transform: scale(1.02);
+      background: #f0f4ff;
+    }
+
+    .lt-btn:active {
+      transform: scale(0.99);
+    }
+
+    .lt-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Separador visual entre grupos */
+    .lt-divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.25);
+      margin: 4px 0;
+    }
+
+    /* ── Etiqueta de grupo ───────────────────────────────────────────── */
+    .lt-group-label {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.50);
+      align-self: center;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Imágenes decorativas -->
+  <img src="/assets/fondolinktree.png"    alt="" aria-hidden="true" class="deco-tail" />
+  <img src="/assets/fotolinktreecola.png" alt="" aria-hidden="true" class="deco-corner" />
+
+  <div class="lt-wrapper">
+
+    <!-- Top Bar -->
+    <nav class="lt-topbar" aria-label="Navegación de la página de links">
+      <a href="/" class="lt-icon-btn" aria-label="Volver al sitio principal">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </a>
+      <button class="lt-icon-btn" aria-label="Compartir" id="share-btn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Logo / Cabecera -->
+    <header class="lt-profile">
+      <img
+        src="/assets/Logo-Helitec-Vert-no-bkg-1.png"
+        alt="Consorcio Helitec"
+        class="lt-logo"
+        loading="eager"
+      />
+
+      <!-- Redes sociales -->
+      <div class="lt-social" role="list" aria-label="Redes sociales">
+
+        <!-- Instagram -->
+        <a
+          href="https://instagram.com/helitec"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="lt-social-link"
+          aria-label="Instagram de Helitec"
+          role="listitem"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" stroke="none" fill="currentColor"/>
+          </svg>
+        </a>
+
+        <!-- Gmail / Correo -->
+        <a
+          href="mailto:contacto@helitec.com"
+          class="lt-social-link"
+          aria-label="Enviar correo a Helitec"
+          role="listitem"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <polyline points="2,4 12,13 22,4"/>
+          </svg>
+        </a>
+
+        <!-- WhatsApp -->
+        <a
+          href="https://wa.me/5491100000000"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="lt-social-link lt-social-link--wa"
+          aria-label="WhatsApp de Helitec"
+          role="listitem"
+        >
+          <!-- WhatsApp logo simplificado (fill) -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.659 1.438 5.168L2 22l4.975-1.405A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.946 7.946 0 0 1-4.054-1.107l-.29-.172-3.01.85.808-2.964-.19-.304A7.96 7.96 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
+          </svg>
+        </a>
+
+        <!-- LinkedIn -->
+        <a
+          href="https://linkedin.com/company/helitec"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="lt-social-link"
+          aria-label="LinkedIn de Helitec"
+          role="listitem"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2" y="9" width="4" height="12" rx="1"/>
+            <circle cx="4" cy="4" r="2"/>
+            <path d="M10 9h4v2s1-2 4-2c3 0 4 2 4 5v6h-4v-6c0-1-.5-2-2-2s-2 1-2 2v6h-4V9z"/>
+          </svg>
+        </a>
+
+      </div>
+    </header>
+
+    <!-- Links principales -->
+    <main class="lt-links" aria-label="Links de Helitec">
+
+      <!-- Grupo: Servicios -->
+      <p class="lt-group-label">Nuestros Servicios</p>
+
+      <a
+        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Vuelos Ejecutivos')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="lt-btn"
+      >
+        <!-- Ícono: avión -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22 16.21v-1.895L14 9V3.5a1.5 1.5 0 0 0-3 0V9L3 14.315v1.895l8-2.526V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.315l8 2.526z"/>
+        </svg>
+        Vuelos Ejecutivos
+      </a>
+
+      <a
+        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Ambulancia Aérea')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="lt-btn"
+      >
+        <!-- Ícono: cruz médica -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        Ambulancia Aérea
+      </a>
+
+      <a
+        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Turismo / Vuelos Panorámicos')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="lt-btn"
+      >
+        <!-- Ícono: cámara / panorámica -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="13" r="4"/>
+          <path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2l-2-3H9L7 7z"/>
+        </svg>
+        Turismo &amp; Vuelos Panorámicos
+      </a>
+
+      <a
+        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Carga Aérea')}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="lt-btn"
+      >
+        <!-- Ícono: caja / carga -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        Carga Aérea
+      </a>
+
+      <!-- Separador -->
+      <div class="lt-divider" aria-hidden="true"></div>
+
+      <!-- Grupo: Contacto -->
+      <p class="lt-group-label">Contacto</p>
+
+      <a href="tel:5491100000000" class="lt-btn">
+        <!-- Ícono: teléfono -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.79a16 16 0 0 0 6.29 6.29l1.18-1.18a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Llamar por Teléfono
+      </a>
+
+      <a href="/" class="lt-btn">
+        <!-- Ícono: globo / web -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        Ir a la Página Web
+      </a>
+
+      <a href="#" class="lt-btn">
+        <!-- Ícono: documento / legal -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Aviso Legal
+      </a>
+
+    </main>
+  </div>
+
+  <script>
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', async () => {
+        const shareData = {
+          title: 'Consorcio Helitec',
+          text: 'Aviación privada, ejecutiva y aeromédica.',
+          url: window.location.href,
+        };
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+          } else {
+            await navigator.clipboard.writeText(window.location.href);
+            shareBtn.style.borderColor = 'rgba(255,255,255,0.8)';
+            setTimeout(() => { shareBtn.style.borderColor = ''; }, 1200);
+          }
+        } catch (_) {}
+      });
+    }
+  </script>
+
+</body>
+</html>
