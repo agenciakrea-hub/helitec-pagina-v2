@@ -65,6 +65,14 @@ export default defineConfig({
     build: {
       cssMinify:            true,   // Minificación de CSS (ya default en Vite, explícito)
       reportCompressedSize: true,   // Reporte brotli/gzip en consola al hacer build
+      rollupOptions: {
+        output: {
+          // Fusiona chunks más pequeños que 20KB en su importador.
+          // Evita que el browser descubra 3-4 archivos JS micro en cadena.
+          // Solo aplica a los chunks bundleados (Lenis + runtime Astro).
+          experimentalMinChunkSize: 20_000,
+        },
+      },
     },
   },
 });
