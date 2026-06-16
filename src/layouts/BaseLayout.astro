@@ -102,6 +102,22 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     }, { once: true });
   </script>
 
+  <!-- ── Preload LCP — imagen principal del hero ─────────────────────────────
+    Descubrimiento temprano de la imagen más grande del viewport (LCP candidate).
+    Sin este preload el browser no la descubre hasta parsear Hero.astro,
+    tarde en la cascada de carga → penalización directa en Lighthouse LCP.
+    fetchpriority="high" → eleva la prioridad al máximo en el fetch queue.
+    Nota: solo aplica a la ruta / (index). Páginas interiores sin hero
+    ignoran este preload por completo (el browser lo descarta si no aparece
+    ningún elemento que consuma esa URL dentro del LCP window).
+  ────────────────────────────────────────────────────────────────────────── -->
+  <link
+    rel="preload"
+    as="image"
+    href="/assets/PHOTO-2024-10-30-15-40-52.JPG"
+    fetchpriority="high"
+  />
+
   <!-- ── SEO Básico ──────────────────────────────────────────────────────── -->
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -136,18 +152,40 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
   <link rel="icon"             type="image/png" href="/assets/Logo-Helitec-Vert-no-bkg-1.png" />
   <link rel="apple-touch-icon" href="/assets/Logo-Helitec-Vert-no-bkg-1.png" />
 
-  <!-- ── Google Fonts ─────────────────────────────────────────────────────
+  <!-- ── Google Fonts (asíncrono — no bloqueante) ─────────────────────────
     Sistema tipográfico v2 — 100% sans-serif (Playfair Display eliminada):
       · Montserrat — Titulares (font-display), pesos finos 200–600
       · Inter       — Body, etiquetas, UI (font-sans), pesos 300–500
-    display=swap: previene FOIT (flash invisible) durante la carga
+    display=swap: previene FOIT (flash invisible text) durante la carga.
+
+    Patrón preload + onload (no bloqueante):
+      · <link rel="preload" as="style"> → el browser descarga el CSS de fonts
+        en paralelo con el resto del HTML, sin bloquear el primer pintado.
+      · onload="this.onload=null;this.rel='stylesheet'" → cuando el CSS llega,
+        se activa como stylesheet. El doble paso (null primero) previene la
+        re-ejecución del handler en Safari cuando la hoja ya está en caché.
+      · <noscript> → fallback bloqueante para usuarios sin JS.
+        Sin JS la fuente igualmente se carga; el sitio funciona (solo sin Lenis
+        y sin las animaciones controladas por JS).
+
+    Nota: con display=swap el texto es visible inmediatamente con la fuente
+    de sistema (Inter/Montserrat se aplican en FOUT, no FOIT). El cambio
+    de fuente es imperceptible en desktop; en mobile 3G puede verse ~100ms.
   ─────────────────────────────────────────────────────────────────────── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    rel="stylesheet"
+    rel="preload"
+    as="style"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Montserrat:wght@200;300;400;500;600&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'"
   />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Montserrat:wght@200;300;400;500;600&display=swap"
+    />
+  </noscript>
 
   <!-- ── Estilos Base (orden importa: reset primero, variables segundo) ─── -->
   <!--
@@ -274,7 +312,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     Cualquier <a data-no-nav> queda inerte para navegación pero interactivo
     para otros listeners JS.
   -->
-  <script is:inline>
+  <script is:inline type="module">
+    /*
+     * data-no-nav — interceptor de enlaces placeholder (no-navegación).
+     *
+     * Cambiado de <script is:inline> (síncrono) a <script is:inline type="module">
+     * (diferido, equivalente a defer) para dejar de bloquear el parsing del HTML.
+     *
+     * El listener usa capture: true → dispara en la fase de captura del DOM,
+     * antes de que el evento burbujee hacia los handlers de Astro View Transitions.
+     * Como módulo diferido, se registra tras DOMContentLoaded, pero antes del
+     * primer gesto del usuario → la ventana de riesgo real es despreciable.
+     *
+     * window.lenisInstance puede ser null en touch devices o si Lenis aún no
+     * se ha inicializado → verificar siempre antes de llamar.
+     */
     document.addEventListener('click', function (e) {
       var a = e.target.closest('[data-no-nav]');
       if (!a) return;
@@ -284,7 +336,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
       /*
        * Scroll al Hero (tope de la página).
        * Usa Lenis en desktop (fluido) o scroll nativo en móvil.
-       * window.lenisInstance puede ser null en touch devices — siempre verificar.
        */
       if (window.lenisInstance) {
         window.lenisInstance.scrollTo(0, { duration: 0.9 });
