@@ -147,7 +147,36 @@
           <p><strong>Mantenimiento Ágil:</strong> Arquitectura flexible que permite un soporte personalizado, rápido y la fácil reubicación de nuevo material.</p>
         </li>
 
+        <li class="pm-modal__item">
+          <span class="pm-modal__check" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <p><strong>Escalabilidad Multi-idioma:</strong> Arquitectura base preparada para soporte multi-idioma (ES/EN) nativo, respetando la estructura requerida originalmente.</p>
+        </li>
+
+        <li class="pm-modal__item">
+          <span class="pm-modal__check" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <p><strong>Seguridad y Hosting Moderno:</strong> Infraestructura de última generación, robusta y a prueba de caídas, garantizando disponibilidad y rendimiento continuo.</p>
+        </li>
+
       </ul>
+
+      <!-- Separador + Firma de agencia -->
+      <div class="pm-modal__divider" aria-hidden="true"></div>
+
+      <div class="pm-cobrand">
+        <img
+          src="/assets/Logo-Helitec-Vert-no-bkg-1-blanco.png"
+          alt="Consorcio Helitec"
+          class="pm-cobrand__logo"
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="pm-cobrand__krea">+ Krea</span>
+      </div>
+
     </div><!-- /pm-modal__body -->
 
   </div><!-- /pm-modal__box -->
@@ -399,13 +428,13 @@
     margin:     0;
     display:    flex;
     flex-direction: column;
-    gap:        14px;
+    gap:        18px;
   }
 
   .pm-modal__item {
-    display:    flex;
+    display:     flex;
     align-items: flex-start;
-    gap:        12px;
+    gap:         14px;
   }
 
   .pm-modal__check {
@@ -414,9 +443,9 @@
     align-items: center;
     justify-content: center;
 
-    width:   22px;
-    height:  22px;
-    margin-top: 1px;
+    width:      24px;
+    height:     24px;
+    margin-top: 2px;
 
     background:    rgba(52, 211, 153, 0.14);
     border:        1px solid rgba(52, 211, 153, 0.35);
@@ -426,10 +455,10 @@
 
   .pm-modal__item p {
     font-family:  var(--font-sans);
-    font-size:    var(--text-sm);
+    font-size:    var(--text-base);
     font-weight:  var(--fw-light);
-    line-height:  1.70;
-    color:        rgba(209, 250, 229, 0.80);
+    line-height:  1.85;
+    color:        rgba(209, 250, 229, 0.85);
     margin:       0;
   }
 
@@ -451,6 +480,47 @@
     border-radius:  2px;
     padding:        1px 5px;
     color:          #6ee7b7;
+  }
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     CO-BRANDING — FIRMA DE AGENCIA
+  ════════════════════════════════════════════════════════════════════════ */
+
+  .pm-modal__divider {
+    height:     1px;
+    background: rgba(52, 211, 153, 0.15);
+    margin:     24px 0;
+  }
+
+  .pm-cobrand {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    gap:             20px;
+
+    background:    #000;
+    border-radius: 4px;
+    padding:       24px 32px;
+  }
+
+  .pm-cobrand__logo {
+    height:      40px;
+    width:       auto;
+    display:     block;
+    object-fit:  contain;
+    flex-shrink: 0;
+  }
+
+  .pm-cobrand__krea {
+    font-family:    var(--font-sans);
+    font-size:      clamp(1.75rem, 4vw, 2.25rem);
+    font-weight:    900;
+    font-style:     italic;
+    letter-spacing: -0.03em;
+    color:          #cbfb45;
+    line-height:    1;
+    flex-shrink:    0;
   }
 
 
