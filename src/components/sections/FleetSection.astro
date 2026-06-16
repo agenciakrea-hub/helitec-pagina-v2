@@ -9,6 +9,9 @@
  * Highlight sweeps: <span class="hl"> con delay al abrir acordeón.
  */
 
+import { Image } from 'astro:assets';
+import planeDeco from '../../assets/recurso logo avion helitec (1).png';
+
 interface Props {
   lang?: 'es' | 'en';
 }
@@ -46,11 +49,13 @@ const faqItems = [
 
 <section class="ops" id="flota" aria-labelledby="ops-heading" data-ops-section>
 
-  <img
-    src="/assets/recurso%20logo%20avion%20helitec%20(1).png"
+  <Image
+    src={planeDeco}
     class="ops__plane-deco"
     alt=""
     aria-hidden="true"
+    format="webp"
+    quality={80}
     loading="lazy"
     decoding="async"
   />
