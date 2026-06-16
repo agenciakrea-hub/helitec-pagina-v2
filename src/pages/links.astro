@@ -14,11 +14,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@200;300;400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=Montserrat:wght@200;300;400;500&display=swap"
     rel="stylesheet"
   />
 
   <style>
+    /* ── Reset ───────────────────────────────────────────────────────────── */
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
@@ -29,32 +30,34 @@
       --font-display: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
       --font-sans:    'Inter', 'Helvetica Neue', Arial, sans-serif;
       --c-white:      #ffffff;
-      --c-dark:       #0d1117;
       --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
       --dur-fast:     200ms;
     }
 
+    /* ── Body: fondo sólido sin textura ─────────────────────────────────── */
     body {
       min-height: 100dvh;
       overflow-x: hidden;
       font-family: var(--font-sans);
       color: var(--c-white);
       background-color: #48699a;
-      background-image:
-        radial-gradient(
-          circle,
-          rgba(255, 255, 255, 0.18) 1px,
-          transparent 1px
-        ),
-        radial-gradient(
-          ellipse 80% 60% at 50% 40%,
-          transparent 55%,
-          rgba(72, 105, 154, 0.85) 100%
-        );
-      background-size: 18px 18px, 100% 100%;
     }
 
-    /* ── Imágenes decorativas ────────────────────────────────────────── */
+    /* ── Imagen decorativa 1: avión esquina superior izquierda ───────────── */
+    .deco-corner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 50vw;
+      max-width: 300px;
+      height: auto;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.70;
+    }
+
+    /* ── Imagen decorativa 2: cola del avión fondo inferior derecha ──────── */
     .deco-tail {
       position: fixed;
       bottom: 0;
@@ -67,19 +70,7 @@
       opacity: 0.40;
     }
 
-    .deco-corner {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: clamp(120px, 22vw, 260px);
-      height: auto;
-      z-index: 1;
-      pointer-events: none;
-      user-select: none;
-      opacity: 0.70;
-    }
-
-    /* ── Wrapper principal ───────────────────────────────────────────── */
+    /* ── Wrapper principal ───────────────────────────────────────────────── */
     .lt-wrapper {
       position: relative;
       z-index: 2;
@@ -90,7 +81,9 @@
       padding-bottom: 56px;
     }
 
-    /* ── Top Bar ─────────────────────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════════════════════
+       TOP BAR
+    ════════════════════════════════════════════════════════════════════════ */
     .lt-topbar {
       position: relative;
       z-index: 10;
@@ -101,6 +94,16 @@
       padding: 20px 24px;
     }
 
+    /* Contenedor de cada botón + tooltip */
+    .lt-topbar__slot {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Botón circular */
     .lt-icon-btn {
       display: inline-flex;
       align-items: center;
@@ -108,8 +111,8 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.30);
-      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.12);
       color: var(--c-white);
       text-decoration: none;
       cursor: pointer;
@@ -119,8 +122,8 @@
     }
 
     .lt-icon-btn:hover {
-      background: rgba(255, 255, 255, 0.18);
-      border-color: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.65);
     }
 
     .lt-icon-btn svg {
@@ -133,28 +136,64 @@
       stroke-linejoin: round;
     }
 
-    /* ── Logo / Cabecera ─────────────────────────────────────────────── */
+    /* ── Tooltip animado ─────────────────────────────────────────────────── */
+    /*
+     * Visible al cargar, desaparece solos a los 3.8s.
+     * animation-fill-mode: forwards mantiene el estado final (oculto).
+     */
+    @keyframes tooltip-fade {
+      0%   { opacity: 1; visibility: visible; }
+      70%  { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden;  }
+    }
+
+    .lt-tooltip {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.90);
+
+      background: rgba(0, 0, 0, 0.45);
+      padding: 4px 10px;
+      border-radius: 3px;
+      pointer-events: none;
+
+      animation: tooltip-fade 3.8s ease forwards;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       PERFIL / LOGO
+    ════════════════════════════════════════════════════════════════════════ */
     .lt-profile {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
-      padding: 8px 24px 32px;
+      gap: 20px;
+      padding: 8px 24px 28px;
     }
 
     .lt-logo {
-      width: 120px;
+      width: 220px;
+      max-width: 60vw;
       height: auto;
       display: block;
       object-fit: contain;
     }
 
-    /* ── Fila de redes sociales ──────────────────────────────────────── */
+    /* ── Redes sociales ──────────────────────────────────────────────────── */
     .lt-social {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 16px;
     }
 
     .lt-social-link {
@@ -164,7 +203,7 @@
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.30);
       background: rgba(255, 255, 255, 0.10);
       color: var(--c-white);
       text-decoration: none;
@@ -176,7 +215,7 @@
 
     .lt-social-link:hover {
       background: rgba(255, 255, 255, 0.22);
-      border-color: rgba(255, 255, 255, 0.60);
+      border-color: rgba(255, 255, 255, 0.65);
       transform: translateY(-2px);
     }
 
@@ -190,13 +229,14 @@
       stroke-linejoin: round;
     }
 
-    /* WhatsApp: fill sólido en su ícono */
     .lt-social-link--wa svg {
       stroke: none;
       fill: currentColor;
     }
 
-    /* ── Contenedor de links ─────────────────────────────────────────── */
+    /* ════════════════════════════════════════════════════════════════════════
+       CONTENEDOR DE LINKS
+    ════════════════════════════════════════════════════════════════════════ */
     .lt-links {
       display: flex;
       flex-direction: column;
@@ -207,67 +247,83 @@
       padding: 0 20px;
     }
 
-    /* ── Botones pill ────────────────────────────────────────────────── */
+    /* ── Etiqueta de grupo ───────────────────────────────────────────────── */
+    .lt-group-label {
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+      align-self: flex-start;
+      padding: 4px 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border-left: 3px solid rgba(255, 255, 255, 0.70);
+    }
+
+    /* ── Botones estilo neobrutalismo ────────────────────────────────────── */
     .lt-btn {
-      display: flex;
+      display: grid;
+      grid-template-columns: 28px 1fr 28px;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
       width: 100%;
-      padding: 15px 24px;
+      padding: 15px 20px;
       border-radius: 9999px;
-      background: var(--c-white);
-      color: #1a2536;
+      background: #ffffff;
+      color: #000000;
       font-family: var(--font-sans);
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 0.95rem;
+      font-weight: 800;
       letter-spacing: 0.01em;
       text-decoration: none;
-      border: none;
+      border: 2px solid #000000;
+      box-shadow: 4px 4px 0px 0px #000000;
       cursor: pointer;
       transition:
         transform var(--dur-fast) var(--ease-out),
-        background var(--dur-fast) var(--ease-out);
+        box-shadow var(--dur-fast) var(--ease-out);
     }
 
     .lt-btn:hover {
-      transform: scale(1.02);
-      background: #f0f4ff;
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px 0px #000000;
     }
 
     .lt-btn:active {
-      transform: scale(0.99);
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px #000000;
     }
 
-    .lt-btn svg {
+    /* Ícono: anclado a la izquierda */
+    .lt-btn__icon {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .lt-btn__icon svg {
       width: 18px;
       height: 18px;
       flex-shrink: 0;
-      stroke: currentColor;
-      stroke-width: 1.8;
+      stroke: #000000;
+      stroke-width: 2;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    /* Separador visual entre grupos */
+    /* Texto: centrado en el espacio restante */
+    .lt-btn__text {
+      text-align: center;
+    }
+
+    /* Separador */
     .lt-divider {
       width: 40px;
       height: 1px;
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.30);
       margin: 4px 0;
-    }
-
-    /* ── Etiqueta de grupo ───────────────────────────────────────────── */
-    .lt-group-label {
-      font-family: var(--font-display);
-      font-size: 0.65rem;
-      font-weight: 400;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.50);
-      align-self: center;
-      margin-bottom: 2px;
     }
   </style>
 </head>
@@ -275,31 +331,41 @@
 <body>
 
   <!-- Imágenes decorativas -->
-  <img src="/assets/fondolinktree.png"    alt="" aria-hidden="true" class="deco-tail" />
   <img src="/assets/fotolinktreecola.png" alt="" aria-hidden="true" class="deco-corner" />
+  <img src="/assets/fondolinktree.png"    alt="" aria-hidden="true" class="deco-tail" />
 
   <div class="lt-wrapper">
 
-    <!-- Top Bar -->
+    <!-- ── Top Bar ──────────────────────────────────────────────────────── -->
     <nav class="lt-topbar" aria-label="Navegación de la página de links">
-      <a href="/" class="lt-icon-btn" aria-label="Volver al sitio principal">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </a>
-      <button class="lt-icon-btn" aria-label="Compartir" id="share-btn" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-          <polyline points="16 6 12 2 8 6"/>
-          <line x1="12" y1="2" x2="12" y2="15"/>
-        </svg>
-      </button>
+
+      <!-- Botón: Volver + tooltip -->
+      <div class="lt-topbar__slot">
+        <a href="/" class="lt-icon-btn" aria-label="Volver al sitio principal">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </a>
+        <span class="lt-tooltip" aria-hidden="true">Volver</span>
+      </div>
+
+      <!-- Botón: Compartir + tooltip -->
+      <div class="lt-topbar__slot">
+        <button class="lt-icon-btn" aria-label="Compartir" id="share-btn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+        </button>
+        <span class="lt-tooltip" aria-hidden="true">Compartir</span>
+      </div>
     </nav>
 
-    <!-- Logo / Cabecera -->
+    <!-- ── Logo / Cabecera ──────────────────────────────────────────────── -->
     <header class="lt-profile">
       <img
-        src="/assets/Logo-Helitec-Vert-no-bkg-1.png"
+        src="/assets/Logo-Helitec-horiz-no-bkg-1-blanco.png"
         alt="Consorcio Helitec"
         class="lt-logo"
         loading="eager"
@@ -308,7 +374,6 @@
       <!-- Redes sociales -->
       <div class="lt-social" role="list" aria-label="Redes sociales">
 
-        <!-- Instagram -->
         <a
           href="https://instagram.com/helitec"
           target="_blank"
@@ -324,11 +389,10 @@
           </svg>
         </a>
 
-        <!-- Gmail / Correo -->
         <a
           href="mailto:contacto@helitec.com"
           class="lt-social-link"
-          aria-label="Enviar correo a Helitec"
+          aria-label="Correo electrónico de Helitec"
           role="listitem"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -337,23 +401,20 @@
           </svg>
         </a>
 
-        <!-- WhatsApp -->
         <a
-          href="https://wa.me/5491100000000"
+          href="https://wa.me/584166235254"
           target="_blank"
           rel="noopener noreferrer"
           class="lt-social-link lt-social-link--wa"
           aria-label="WhatsApp de Helitec"
           role="listitem"
         >
-          <!-- WhatsApp logo simplificado (fill) -->
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
             <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.659 1.438 5.168L2 22l4.975-1.405A9.955 9.955 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.946 7.946 0 0 1-4.054-1.107l-.29-.172-3.01.85.808-2.964-.19-.304A7.96 7.96 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
           </svg>
         </a>
 
-        <!-- LinkedIn -->
         <a
           href="https://linkedin.com/company/helitec"
           target="_blank"
@@ -368,71 +429,77 @@
             <path d="M10 9h4v2s1-2 4-2c3 0 4 2 4 5v6h-4v-6c0-1-.5-2-2-2s-2 1-2 2v6h-4V9z"/>
           </svg>
         </a>
-
       </div>
     </header>
 
-    <!-- Links principales -->
+    <!-- ── Links ────────────────────────────────────────────────────────── -->
     <main class="lt-links" aria-label="Links de Helitec">
 
       <!-- Grupo: Servicios -->
-      <p class="lt-group-label">Nuestros Servicios</p>
+      <p class="lt-group-label">Nuestros Servicios (vía WhatsApp)</p>
 
       <a
-        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Vuelos Ejecutivos')}`}
+        href={`https://wa.me/584166235254?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Aviación Ejecutiva')}`}
         target="_blank"
         rel="noopener noreferrer"
         class="lt-btn"
       >
-        <!-- Ícono: avión -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22 16.21v-1.895L14 9V3.5a1.5 1.5 0 0 0-3 0V9L3 14.315v1.895l8-2.526V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.315l8 2.526z"/>
-        </svg>
-        Vuelos Ejecutivos
+        <span class="lt-btn__icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22 16.21v-1.895L14 9V3.5a1.5 1.5 0 0 0-3 0V9L3 14.315v1.895l8-2.526V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.315l8 2.526z"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Aviación Ejecutiva</span>
       </a>
 
       <a
-        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Ambulancia Aérea')}`}
+        href={`https://wa.me/584166235254?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Operaciones Petroleras')}`}
         target="_blank"
         rel="noopener noreferrer"
         class="lt-btn"
       >
-        <!-- Ícono: cruz médica -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <line x1="12" y1="8" x2="12" y2="16"/>
-          <line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>
-        Ambulancia Aérea
+        <span class="lt-btn__icon">
+          <!-- Ícono: plataforma / engranaje petrolero -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Operaciones Petroleras</span>
       </a>
 
       <a
-        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Turismo / Vuelos Panorámicos')}`}
+        href={`https://wa.me/584166235254?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Traslados Aeromédicos')}`}
         target="_blank"
         rel="noopener noreferrer"
         class="lt-btn"
       >
-        <!-- Ícono: cámara / panorámica -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="13" r="4"/>
-          <path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2l-2-3H9L7 7z"/>
-        </svg>
-        Turismo &amp; Vuelos Panorámicos
+        <span class="lt-btn__icon">
+          <!-- Ícono: cruz médica -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8"  y1="12" x2="16" y2="12"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Traslados Aeromédicos</span>
       </a>
 
       <a
-        href={`https://wa.me/5491100000000?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Carga Aérea')}`}
+        href={`https://wa.me/584166235254?text=${encodeURIComponent('Hola, vengo del Linktree y quiero más información sobre el servicio de Operaciones de Carga y Eslinga')}`}
         target="_blank"
         rel="noopener noreferrer"
         class="lt-btn"
       >
-        <!-- Ícono: caja / carga -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-          <line x1="12" y1="22.08" x2="12" y2="12"/>
-        </svg>
-        Carga Aérea
+        <span class="lt-btn__icon">
+          <!-- Ícono: carga / paquete -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Operaciones de Carga y Eslinga</span>
       </a>
 
       <!-- Separador -->
@@ -441,39 +508,42 @@
       <!-- Grupo: Contacto -->
       <p class="lt-group-label">Contacto</p>
 
-      <a href="tel:5491100000000" class="lt-btn">
-        <!-- Ícono: teléfono -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.79a16 16 0 0 0 6.29 6.29l1.18-1.18a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-        </svg>
-        Llamar por Teléfono
+      <a href="tel:584166235254" class="lt-btn">
+        <span class="lt-btn__icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.79a16 16 0 0 0 6.29 6.29l1.18-1.18a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Llamar por Teléfono</span>
       </a>
 
       <a href="/" class="lt-btn">
-        <!-- Ícono: globo / web -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-        Ir a la Página Web
+        <span class="lt-btn__icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Ir a la Página Web</span>
       </a>
 
       <a href="#" class="lt-btn">
-        <!-- Ícono: documento / legal -->
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
-        </svg>
-        Aviso Legal
+        <span class="lt-btn__icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </span>
+        <span class="lt-btn__text">Legal</span>
       </a>
 
     </main>
   </div>
 
+  <!-- ── Web Share API ────────────────────────────────────────────────────── -->
   <script>
     const shareBtn = document.getElementById('share-btn');
     if (shareBtn) {
@@ -488,7 +558,7 @@
             await navigator.share(shareData);
           } else {
             await navigator.clipboard.writeText(window.location.href);
-            shareBtn.style.borderColor = 'rgba(255,255,255,0.8)';
+            shareBtn.style.borderColor = 'rgba(255,255,255,0.9)';
             setTimeout(() => { shareBtn.style.borderColor = ''; }, 1200);
           }
         } catch (_) {}
