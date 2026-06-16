@@ -1166,8 +1166,10 @@ const stats: StatCell[] = [
 
 
 <script is:inline>
+document.addEventListener('astro:page-load', function () {
   /**
    * StatsSection v2 — Motor de animaciones
+   * [astro:page-load] → se re-ejecuta en cada navegación VT.
    *
    * A. IntersectionObserver:
    *    Observa [data-stats-grid]. Cuando el 20% del grid entra en el
@@ -1646,4 +1648,5 @@ const stats: StatCell[] = [
     });
 
   })();
+}); /* astro:page-load */
 </script>

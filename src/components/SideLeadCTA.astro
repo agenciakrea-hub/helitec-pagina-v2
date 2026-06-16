@@ -1022,8 +1022,17 @@
 
 
 <script is:inline>
-  /**
+(function () {
+  'use strict';
+
+  /*
    * SideLeadCTA v2 — Controller
+   * Re-inicializado en cada astro:page-load (compatibilidad con View Transitions).
+   *
+   * AbortController (_ctrl):
+   *   Cancela los listeners de document/window ANTES de crear los nuevos en cada
+   *   navegación VT. Previene la acumulación de handlers de keydown y scroll
+   *   tras múltiples transiciones de página.
    *
    * Responsabilidades:
    *   A. Abrir / cerrar el panel (trigger strip + botón cerrar + backdrop + Escape)
@@ -1035,6 +1044,18 @@
    *   F. Formateador del mensaje de WhatsApp con codificación URI
    *   G. Focus trap mientras el panel está abierto (accesibilidad)
    */
+
+  /** @type {AbortController|null} */
+  var _ctrl = null;
+
+  function init() {
+    if (_ctrl) _ctrl.abort();
+    _ctrl = new AbortController();
+    var signal = _ctrl.signal;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     PANEL CONTROLLER
+  ═══════════════════════════════════════════════════════════════════════ */
   (function () {
 
     /* ── Referencias al DOM ─────────────────────────────────────────────── */
@@ -1114,12 +1135,13 @@
 
     backdrop.addEventListener('click', closePanel);
 
+    /* signal: cancela este listener cuando init() se re-ejecuta en la siguiente VT */
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault();
         closePanel();
       }
-    });
+    }, { signal: signal });
 
     /* ════════════════════════════════════════════════════════════════════
        B. TABS DE TIPO DE VIAJE
@@ -1426,9 +1448,10 @@
         }
         ticking = false;
       }
+      /* signal: cancela este listener cuando init() se re-ejecuta en la siguiente VT */
       window.addEventListener('scroll', function () {
         if (!ticking) { requestAnimationFrame(checkScroll); ticking = true; }
-      }, { passive: true });
+      }, { passive: true, signal: signal });
       checkScroll();
     }
   })();
@@ -1450,4 +1473,9 @@
       });
     });
   })();
+
+  } /* end init */
+
+  document.addEventListener('astro:page-load', init);
+})();
 </script>
