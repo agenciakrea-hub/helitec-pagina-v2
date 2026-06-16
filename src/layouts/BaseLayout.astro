@@ -345,8 +345,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     }, true /* capture: true → dispara ANTES que Astro VT */);
   </script>
 
-  <script is:inline type="module">
-    import Lenis from 'https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs';
+  <script>
+    import Lenis from 'lenis';
 
     /*
      * FIX TÁCTIL — Touch Hijacking Bug
@@ -365,55 +365,60 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
      * Header.astro ya verifica `if (window.lenisInstance)` antes de llamar
      * stop()/start() → no hay errores en mobile.
      * ─────────────────────────────────────────────────────────────────────────
-     */
-    const isTouch = window.matchMedia('(pointer: coarse)').matches
-                  || ('ontouchstart' in window);
-
-    /*
+     *
      * FIX MÚLTIPLES RAF LOOPS — View Transitions
      * ─────────────────────────────────────────────────────────────────────────
-     * Con Astro View Transitions, este script se re-ejecuta en cada navegación.
-     * Sin limpieza, cada ejecución crea un nuevo RAF loop que nunca se cancela,
-     * acumulando loops concurrentes que degradan el rendimiento del scroll.
+     * Este script está empaquetado por Astro/Vite y sólo se ejecuta UNA vez
+     * en la carga inicial. Para las navegaciones con View Transitions se usa
+     * el evento `astro:page-load`, que Astro dispara en cada swap de página.
      *
-     * Solución:
+     * Lógica de limpieza en cada ejecución de initLenis():
      *   1. Cancelar el RAF loop anterior (window._lenisRafId)
      *   2. Destruir la instancia anterior (lenis.destroy() limpia listeners)
      *   3. Crear la nueva instancia limpia
      * ─────────────────────────────────────────────────────────────────────────
      */
-    if (window._lenisRafId) {
-      cancelAnimationFrame(window._lenisRafId);
-      window._lenisRafId = null;
-    }
-    if (window.lenisInstance) {
-      window.lenisInstance.destroy();
-      window.lenisInstance = null;
-    }
 
-    if (!isTouch) {
-      const lenis = new Lenis({
-        duration:    1.35,
-        easing:      t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        smoothWheel: true,
-        infinite:    false,
-        /* smoothTouch y touchMultiplier eliminados: Lenis no corre en touch */
-      });
+    function initLenis() {
+      const isTouch = window.matchMedia('(pointer: coarse)').matches
+                    || ('ontouchstart' in window);
 
-      /* Exponer globalmente — Header.astro llama stop()/start() al toggle del menú */
-      window.lenisInstance = lenis;
-
-      /* RAF loop — el ID se guarda para poder cancelarlo en la próxima navegación */
-      function raf(time) {
-        lenis.raf(time);
-        window._lenisRafId = requestAnimationFrame(raf);
+      if (window._lenisRafId) {
+        cancelAnimationFrame(window._lenisRafId);
+        window._lenisRafId = null;
       }
-      window._lenisRafId = requestAnimationFrame(raf);
+      if (window.lenisInstance) {
+        window.lenisInstance.destroy();
+        window.lenisInstance = null;
+      }
 
-    } else {
-      /* Touch device: scroll 100% nativo — sin Lenis */
-      window.lenisInstance = null;
+      if (!isTouch) {
+        const lenis = new Lenis({
+          duration:    1.35,
+          easing:      t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          smoothWheel: true,
+          infinite:    false,
+          /* smoothTouch y touchMultiplier eliminados: Lenis no corre en touch */
+        });
+
+        /* Exponer globalmente — Header.astro llama stop()/start() al toggle del menú */
+        window.lenisInstance = lenis;
+
+        /* RAF loop — el ID se guarda para poder cancelarlo en la próxima navegación */
+        function raf(time) {
+          lenis.raf(time);
+          window._lenisRafId = requestAnimationFrame(raf);
+        }
+        window._lenisRafId = requestAnimationFrame(raf);
+
+      } else {
+        /* Touch device: scroll 100% nativo — sin Lenis */
+        window.lenisInstance = null;
+      }
     }
+
+    /* Carga inicial + cada navegación con View Transitions */
+    document.addEventListener('astro:page-load', initLenis);
   </script>
 
 </body>
