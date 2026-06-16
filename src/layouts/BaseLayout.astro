@@ -156,14 +156,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://helitec.
     En modo estático se pueden servir desde public/styles/.
   -->
 
-  <!-- ── Preload del hero image por defecto ──────────────────────────────── -->
-  <link
-    rel="preload"
-    as="image"
-    href="/assets/atardecer.jpg"
-    fetchpriority="high"
-  />
-
   <!-- ── Slot para meta tags adicionales por página ───────────────────────── -->
   <slot name="head" />
 
