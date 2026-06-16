@@ -554,21 +554,24 @@
     if (!trigger || !modal) return;
 
     /* ── Aparición del botón — anclado al footer ─────────────────────── */
-    var footer = document.querySelector('[data-footer]');
-
-    if (footer && 'IntersectionObserver' in window) {
-      var footerObs = new IntersectionObserver(
-        function (entries) {
-          if (entries[0].isIntersecting) {
-            trigger.classList.add('is-visible');
-          } else {
-            trigger.classList.remove('is-visible');
-          }
-        },
-        { threshold: 0 }
+    /*
+     * ANTES: IntersectionObserver propio sobre [data-footer].
+     * AHORA: MutationObserver sobre document.body que escucha la clase
+     *        'footer-visible'. Footer.astro ya tiene su propio IO que
+     *        añade/quita esa clase en el body — nos acoplamos a él sin
+     *        crear un segundo observer redundante sobre el mismo elemento.
+     *
+     * Ventaja: un solo IO en toda la página observa el footer; este
+     * componente sólo reacciona a la mutación del class attribute del body,
+     * que es O(1) y no requiere otro hilo de layout.
+     */
+    var bodyObs = new MutationObserver(function () {
+      trigger.classList.toggle(
+        'is-visible',
+        document.body.classList.contains('footer-visible')
       );
-      footerObs.observe(footer);
-    }
+    });
+    bodyObs.observe(document.body, { attributeFilter: ['class'] });
 
     /* ── Abrir modal ─────────────────────────────────────────────────── */
     function openModal() {

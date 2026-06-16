@@ -22,6 +22,9 @@
  *   Los marcados con [NÚMERO] son placeholders.
  */
 
+import { Image } from 'astro:assets';
+import linktreeLogo from '../assets/recurso logo avion helitec (1).png';
+
 interface Props {
   lang?: 'es' | 'en';
 }
@@ -211,10 +214,12 @@ const { lang = 'es' } = Astro.props;
   aria-label="Ver todas las redes de Consorcio Helitec"
 >
   <span class="csheet__fab-label" aria-hidden="true">Ver Linktree&nbsp;<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
-  <img
-    src="/assets/recurso logo avion helitec (1).png"
+  <Image
+    src={linktreeLogo}
     alt=""
     class="csheet__linktree-img"
+    format="webp"
+    quality={80}
     loading="eager"
     decoding="async"
     aria-hidden="true"

@@ -25,6 +25,9 @@
  *   border-radius ≤ 4px        — ✓ (var(--r-micro) en todo)
  */
 
+import { Image } from 'astro:assets';
+import aocCert from '../../assets/AOC.png';
+
 interface Props {
   lang?: 'es' | 'en';
 }
@@ -344,11 +347,13 @@ const stats: StatCell[] = [
 
         <!-- Viewport: contiene la imagen y maneja el pan/zoom -->
         <div class="stats__aoc-viewport" id="aoc-viewport">
-          <img
-            src="/assets/AOC.png"
+          <Image
+            src={aocCert}
             alt="Certificado de Operador Aéreo — INAC Venezuela"
             class="stats__aoc-img"
             id="aoc-img"
+            format="webp"
+            quality={85}
             draggable="false"
             loading="lazy"
             decoding="async"
@@ -1496,19 +1501,35 @@ const stats: StatCell[] = [
       e.preventDefault();
     });
 
-    window.addEventListener('mousemove', function (e) {
+    /*
+     * OPTIMIZACIÓN — Lazy-register de mousemove/mouseup en window.
+     *
+     * Antes: ambos listeners vivían PERMANENTEMENTE en window, incluyendo
+     * todo el tiempo que el lightbox está cerrado. Un listener `mousemove`
+     * en window obliga al browser a llamar al callback en cada micromovimiento
+     * del cursor, aunque el lightbox ni siquiera esté abierto → overhead
+     * continuo en el hilo principal durante el scroll normal de la página.
+     *
+     * Ahora: los listeners se registran justo cuando el dialog se abre
+     * (openBtn.click → dialog.showModal()) y se eliminan cuando se cierra
+     * (dialog.close event). Mientras el lightbox está cerrado, window
+     * no tiene ningún listener de mousemove activo.
+     *
+     * Referencia: Hallazgo #3 del Performance Audit — 2026-06-16.
+     */
+    function onMouseMove(e) {
       if (!isDragging) return;
       state.panX = dragOrigin.panX + (e.clientX - dragOrigin.x);
       state.panY = dragOrigin.panY + (e.clientY - dragOrigin.y);
       clampPan();
       applyTransform();
-    });
+    }
 
-    window.addEventListener('mouseup', function () {
+    function onMouseUp() {
       if (!isDragging) return;
       isDragging = false;
       viewport.classList.remove('is-dragging');
-    });
+    }
 
 
     /* ── TOUCH — pinch zoom + drag de un dedo ──────────────────────── */
@@ -1579,6 +1600,14 @@ const stats: StatCell[] = [
     if (openBtn) {
       openBtn.addEventListener('click', function () {
         dialog.showModal();
+        /*
+         * Activar listeners de drag solo mientras el dialog está abierto.
+         * Se registran aquí y se remueven en el evento 'close' del dialog.
+         * Cualquier mecanismo de cierre (botón X, backdrop, Escape, dialog.close())
+         * dispara el evento 'close' → los listeners se limpian siempre.
+         */
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup',   onMouseUp);
       });
     }
 
@@ -1601,8 +1630,18 @@ const stats: StatCell[] = [
       }
     });
 
-    /* Resetear zoom al cerrar */
-    dialog.addEventListener('close', resetZoom);
+    /* Resetear zoom y limpiar listeners al cerrar */
+    dialog.addEventListener('close', function () {
+      resetZoom();
+      /*
+       * Remover los listeners de drag. Cualquier cierre (X, backdrop,
+       * Escape, dialog.close() llamado desde otro handler) llega aquí.
+       * removeEventListener con la misma referencia de función es idempotente:
+       * si por alguna razón el listener ya no estaba registrado, no hay error.
+       */
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup',   onMouseUp);
+    });
 
   })();
 </script>

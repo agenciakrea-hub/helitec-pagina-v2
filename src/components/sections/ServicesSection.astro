@@ -196,6 +196,23 @@ const services = [
     padding-block:    clamp(48px, 7vh, 80px);
     padding-inline:   calc(var(--sidebar-w) + var(--gutter));
     overflow-x:       hidden; /* recorta el recurso rojo durante el dibujado */
+
+    /*
+     * RENDIMIENTO — content-visibility: auto
+     * El browser omite layout + paint de esta sección hasta que entra
+     * en el viewport (o se acerca ~1 viewport de distancia). Reduce el
+     * TBT (Total Blocking Time) de la carga inicial eliminando el trabajo
+     * de renderizado de contenido que el usuario aún no puede ver.
+     *
+     * contain-intrinsic-size: 0 900px → estimación de la altura de la
+     * sección para que el scroll bar tenga el tamaño correcto mientras
+     * la sección está fuera de pantalla. Ajustar si el layout cambia.
+     *
+     * Nota: content-visibility no afecta eventos, JS ni posicionamiento.
+     * La sección sigue reservando su espacio en el layout (height normal).
+     */
+    content-visibility:      auto;
+    contain-intrinsic-size:  0 900px;
   }
 
 

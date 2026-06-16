@@ -154,6 +154,21 @@ const faqItems = [
      * del faqModule en mobile (ver setInitialState y applyFrame abajo).
      */
     overflow: hidden;
+
+    /*
+     * RENDIMIENTO — content-visibility: auto
+     * Omite layout + paint de esta sección hasta que se aproxima al viewport.
+     * Reduce el TBT de carga inicial. No afecta overflow, sticky, ni JS.
+     *
+     * contain-intrinsic-size: 0 900px → altura estimada para el scroll bar
+     * mientras la sección está fuera de pantalla. Ajustar si cambia el layout.
+     *
+     * ⚠️  Esta sección ya tiene overflow:hidden (CRÍTICO para .ops__plane-deco
+     * y el comportamiento sticky desactivado — ver comentario arriba).
+     * content-visibility es compatible: opera en el render pipeline, no en layout.
+     */
+    content-visibility:     auto;
+    contain-intrinsic-size: 0 900px;
   }
 
 
