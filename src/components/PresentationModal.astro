@@ -170,11 +170,18 @@
         <img
           src="/assets/Logo-Helitec-Vert-no-bkg-1-blanco.png"
           alt="Consorcio Helitec"
-          class="pm-cobrand__logo"
+          class="pm-cobrand__img"
           loading="lazy"
           decoding="async"
         />
-        <span class="pm-cobrand__krea">+ Krea</span>
+        <span class="pm-cobrand__plus" aria-hidden="true">+</span>
+        <img
+          src="/assets/Krea.png"
+          alt="Krea"
+          class="pm-cobrand__img"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
 
     </div><!-- /pm-modal__body -->
@@ -497,30 +504,28 @@
     display:         flex;
     align-items:     center;
     justify-content: center;
-    gap:             20px;
+    gap:             12px;
 
     background:    #000;
-    border-radius: 4px;
-    padding:       24px 32px;
+    border-radius: 999px; /* píldora */
+    padding:       8px 24px;
   }
 
-  .pm-cobrand__logo {
-    height:      40px;
+  .pm-cobrand__img {
+    height:      24px;
     width:       auto;
     display:     block;
     object-fit:  contain;
     flex-shrink: 0;
   }
 
-  .pm-cobrand__krea {
-    font-family:    var(--font-sans);
-    font-size:      clamp(1.75rem, 4vw, 2.25rem);
-    font-weight:    900;
-    font-style:     italic;
-    letter-spacing: -0.03em;
-    color:          #cbfb45;
-    line-height:    1;
-    flex-shrink:    0;
+  .pm-cobrand__plus {
+    font-family:  var(--font-sans);
+    font-size:    1rem;
+    font-weight:  var(--fw-bold);
+    color:        rgba(255, 255, 255, 0.55);
+    line-height:  1;
+    flex-shrink:  0;
   }
 
 
