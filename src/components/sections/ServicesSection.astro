@@ -21,18 +21,14 @@
  *   H3 font-weight: 200             ✓
  */
 
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import imgEjecutiva  from '../../assets/IMG_0968.jpg';
 import imgPetroleras from '../../assets/opepetroleras.png';
-import imgAeromedico from '../../assets/Avion y Ambulancia1.jpg';
-import imgAeroMobile from '../../assets/f5-fullsizerender.jpg';
+import imgAeromedico from '../../assets/f5-fullsizerender.jpg';
 import imgEslinga    from '../../assets/Helicoptero Eslinga 2.jpg';
 
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
-
-/* URL WebP optimizada para el <source> mobile de la tarjeta 03 (art-direction) */
-const aeroMobileOpt = await getImage({ src: imgAeroMobile, format: 'webp', width: 400, quality: 80 });
 
 const services = [
   {
@@ -72,7 +68,7 @@ const services = [
     cta:          lang === 'es' ? 'Ver servicio aeromédico'       : 'View aeromedical service',
     href:         '/servicio-aeromedico',
     img:          imgAeromedico,
-    imgMobileSrc: aeroMobileOpt.src,
+    imgMobileSrc: null as string | null,
     alt:          lang === 'es'
       ? 'Metro III Helitec junto a ambulancia — servicio aeromédico'
       : 'Helitec Metro III alongside ambulance — aeromedical service',
